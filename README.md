@@ -1,1 +1,21 @@
 # optaplanner-demo
+
+###### Prerequisite 
+is to have Docker installed and configured.
+
+For Fedora-based linux, follow e.g. the https://developer.fedoraproject.org/tools/docker/docker-installation.html.
+
+###### Build & run
+ 
+To build the application as a Docker image, run the `./build.sh`.
+
+To run the Docker container, use the `run.sh`.
+
+###### Toubleshooting
+
+**Issue** 
+_Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?_ 
+
+**Solution**
+Start the Docker daemon e.g. by `sudo systemctl start docker`.
+    
