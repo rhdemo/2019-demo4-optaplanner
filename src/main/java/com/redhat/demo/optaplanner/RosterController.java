@@ -38,12 +38,16 @@ import org.springframework.stereotype.Controller;
 public class RosterController {
 
     private static final Logger log = LoggerFactory.getLogger(RosterController.class);
+    public static final int TIME_TICK_MILLIS = 40;
 
     // TODO use @Inject
     private UpstreamConnector upstreamConnector = new FakeUpstreamConnector();
 
     private Machine[] machines;
     private List<Mechanic> mechanicList;
+
+    private boolean pauzed = false;
+    private long timeMillis = 0L; // This class is the keeper of time
 
     public RosterController() {
         machines = new Machine[UpstreamConnector.MACHINES_LENGTH];
@@ -57,11 +61,18 @@ public class RosterController {
         }
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = TIME_TICK_MILLIS)
     public void tick() {
-        log.info("  Tick currently at 1 second ");
+        if (pauzed) {
+            return;
+        }
+        timeMillis += TIME_TICK_MILLIS;
+        if (timeMillis % 1000 == 0) {
+            log.info("  Ticked 1 second.");
+        }
         double[] aggregatedDamages = upstreamConnector.fetchAggregatedDamagePerMachine();
         // TODO adjust health
+        // TODO If a mechanic has fixed a machine, reset health and dispatch it to next location
     }
 
     @MessageMapping("/setupUI")
@@ -70,15 +81,16 @@ public class RosterController {
         return new SetupUIResponse(machines);
     }
 
-    @MessageMapping("/unpauze")
-    public void unpauze() {
-        log.info("Unpauze");
-        // TODO
-    }
-
     @MessageMapping("/pauze")
     public void pauze() {
         log.info("Pauze");
+        pauzed = true;
+    }
+
+    @MessageMapping("/unpauze")
+    public void unpauze() {
+        log.info("Unpauze");
+        pauzed = false;
     }
 
     @MessageMapping("/addMechanic")

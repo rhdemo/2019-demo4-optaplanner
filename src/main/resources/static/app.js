@@ -22,8 +22,8 @@ $(function () {
     });
     $( "#connect" ).click(function() { connect(); });
     $( "#disconnect" ).click(function() { disconnect(); });
-    $( "#unpauze" ).click(function() { unpauze(); });
     $( "#pauze" ).click(function() { pauze(); });
+    $( "#unpauze" ).click(function() { unpauze(); });
     $( "#addMechanic" ).click(function() { addMechanic(); });
     $( "#removeMechanic" ).click(function() { removeMechanic(); });
 });
@@ -61,12 +61,16 @@ function setConnected(connected) {
     $("#machines").html("");
 }
 
-function unpauze() {
-    stompClient.send("/app/unpauze", {});
-}
-
 function pauze() {
     stompClient.send("/app/pauze", {});
+    $("#pauze").prop("disabled", true);
+    $("#unpauze").prop("disabled", false);
+}
+
+function unpauze() {
+    stompClient.send("/app/unpauze", {});
+    $("#pauze").prop("disabled", false);
+    $("#unpauze").prop("disabled", true);
 }
 
 function addMechanic() {
