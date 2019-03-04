@@ -76,7 +76,7 @@
 
 	<build>
 		<!-- to avoid the version suffix -->
-		<finalName>${project.artifactId}</finalName>
+		<finalName>app</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
