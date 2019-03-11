@@ -19,18 +19,14 @@ package com.redhat.demo.optaplanner.restapi;
 public class AddMechanicResponse extends AbstractResponse {
 
     private int mechanicIndex;
-    private int x;
-    private int y;
 
     public AddMechanicResponse() {
         super(ResponseType.ADD_MECHANIC);
     }
 
-    public AddMechanicResponse(int mechanicIndex, int x, int y) {
+    public AddMechanicResponse(int mechanicIndex) {
         super(ResponseType.ADD_MECHANIC);
         this.mechanicIndex = mechanicIndex;
-        this.x = x;
-        this.y = y;
     }
 
     public int getMechanicIndex() {
@@ -40,21 +36,4 @@ public class AddMechanicResponse extends AbstractResponse {
     public void setMechanicIndex(int mechanicIndex) {
         this.mechanicIndex = mechanicIndex;
     }
-
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
 }

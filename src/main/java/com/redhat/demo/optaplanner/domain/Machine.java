@@ -16,7 +16,9 @@
 
 package com.redhat.demo.optaplanner.domain;
 
-public class Machine {
+import java.util.Objects;
+
+public class Machine implements Comparable<Machine> {
 
     private int machineIndex;
     private double health;
@@ -45,4 +47,25 @@ public class Machine {
         this.health = health;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Machine)) {
+            return false;
+        }
+        Machine machine = (Machine) o;
+        return machineIndex == machine.machineIndex;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(machineIndex);
+    }
+
+    @Override
+    public int compareTo(Machine o) {
+        return Double.compare(health, o.health);
+    }
 }

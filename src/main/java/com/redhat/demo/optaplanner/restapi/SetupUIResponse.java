@@ -17,19 +17,22 @@
 package com.redhat.demo.optaplanner.restapi;
 
 import com.redhat.demo.optaplanner.domain.Machine;
+import com.redhat.demo.optaplanner.domain.Mechanic;
 
 public class SetupUIResponse extends AbstractResponse {
 
     // TODO Change to double[] machineHealths? Or include mechanic paths, travel time matrix, etc?
     private Machine[] machines;
+    private Mechanic[] mechanics;
 
     public SetupUIResponse() {
         super(ResponseType.SETUP_UI);
     }
 
-    public SetupUIResponse(Machine[] machines) {
+    public SetupUIResponse(Machine[] machines, Mechanic[] mechanics) {
         super(ResponseType.SETUP_UI);
         this.machines = machines;
+        this.mechanics = mechanics;
     }
 
     public Machine[] getMachines() {
@@ -40,4 +43,11 @@ public class SetupUIResponse extends AbstractResponse {
         this.machines = machines;
     }
 
+    public Mechanic[] getMechanics() {
+        return mechanics;
+    }
+
+    public void setMechanics(Mechanic[] mechanics) {
+        this.mechanics = mechanics;
+    }
 }

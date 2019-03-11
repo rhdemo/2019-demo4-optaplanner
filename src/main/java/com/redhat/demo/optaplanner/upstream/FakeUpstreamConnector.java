@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class FakeUpstreamConnector implements UpstreamConnector {
 
     private Queue<DamageEvent> queue = new ArrayDeque<>(1024);

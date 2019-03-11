@@ -16,20 +16,19 @@
 
 package com.redhat.demo.optaplanner.domain;
 
+import java.util.Objects;
+
 public class Mechanic {
 
     private int mechanicIndex;
-
-    private int x;
-    private int y;
+    private Integer machineIndex;
 
     public Mechanic() {
     }
 
-    public Mechanic(int mechanicIndex, int x, int y) {
+    public Mechanic(int mechanicIndex, Integer machineIndex) {
         this.mechanicIndex = mechanicIndex;
-        this.x = x;
-        this.y = y;
+        this.machineIndex = machineIndex;
     }
 
     public int getMechanicIndex() {
@@ -40,20 +39,28 @@ public class Mechanic {
         this.mechanicIndex = mechanicIndex;
     }
 
-    public int getX() {
-        return x;
+    public Integer getMachineIndex() {
+        return machineIndex;
     }
 
-    public void setX(int x) {
-        this.x = x;
+    public void setMachineIndex(Integer machineIndex) {
+        this.machineIndex = machineIndex;
     }
 
-    public int getY() {
-        return y;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Mechanic)) {
+            return false;
+        }
+        Mechanic mechanic = (Mechanic) o;
+        return mechanicIndex == mechanic.mechanicIndex;
     }
 
-    public void setY(int y) {
-        this.y = y;
+    @Override
+    public int hashCode() {
+        return Objects.hash(mechanicIndex);
     }
-
 }
