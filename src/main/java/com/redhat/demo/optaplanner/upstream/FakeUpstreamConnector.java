@@ -16,34 +16,33 @@
 
 package com.redhat.demo.optaplanner.upstream;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.Arrays;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class FakeUpstreamConnector implements UpstreamConnector {
 
-    private Queue<DamageEvent> queue = new ArrayDeque<>(1024);
+    private long[] machineHealths;
 
-    @Override
-    public List<DamageEvent> fetchRawDamageEventBatch() {
-        List<DamageEvent> damageEventList = new ArrayList<>(128);
-        while (true) {
-            DamageEvent damageEvent = queue.poll();
-            if (damageEvent == null) {
-                break;
-            }
-            damageEventList.add(damageEvent);
-        }
-        return damageEventList;
+    public FakeUpstreamConnector() {
+        machineHealths = new long[MACHINES_LENGTH];
+        Arrays.fill(machineHealths, FULL_HEALTH / 10L * 8L);
     }
 
     @Override
-    public void addRawDamageEventBatch(List<DamageEvent> damageEventList) {
-        queue.addAll(damageEventList);
+    public synchronized long[] fetchMachineHealths() {
+        return Arrays.copyOf(machineHealths, machineHealths.length);
+    }
+
+    @Override
+    public synchronized void resetMachineHealth(int machineIndex) {
+        machineHealths[machineIndex] = FULL_HEALTH;
+    }
+
+    @Override
+    public synchronized void damageMachine(int machineIndex, long damage) {
+        machineHealths[machineIndex] -= damage;
     }
 
 }

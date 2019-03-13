@@ -19,7 +19,6 @@ package com.redhat.demo.optaplanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -80,8 +79,8 @@ public class RosterController {
         timeMillis += TIME_TICK_MILLIS;
         if (timeMillis % 5000 == 0) {
             log.info("  Ticked 1 second.");
-            double[] aggregatedDamages = upstreamConnector.fetchAggregatedDamagePerMachine();
-            updateMachineHealth(aggregatedDamages);
+//            double[] aggregatedDamages = upstreamConnector.fetchAggregatedDamagePerMachine();
+//            updateMachineHealth(aggregatedDamages);
 
             // TODO If a mechanic has fixed a machine, reset health and dispatch it to next location
             mechanicList.stream()
