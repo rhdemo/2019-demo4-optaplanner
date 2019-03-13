@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +15,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.org.springframework.boot>2.1.3.RELEASE</version.org.springframework.boot>
     <version.fabric8.maven.plugin>3.5.41</version.fabric8.maven.plugin>
+    <version.infinispan>9.4.8.Final</version.infinispan>
   </properties>
 
   <dependencyManagement>
@@ -30,6 +31,13 @@
         <groupId>org.optaplanner</groupId>
         <artifactId>optaplanner-bom</artifactId>
         <version>7.18.0.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-bom</artifactId>
+        <version>${version.infinispan}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -83,6 +91,15 @@
       <groupId>org.webjars</groupId>
       <artifactId>jquery</artifactId>
       <version>3.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-client-hotrod</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-clustered-counter</artifactId>
     </dependency>
   </dependencies>
 

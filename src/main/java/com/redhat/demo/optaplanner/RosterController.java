@@ -28,6 +28,7 @@ import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -41,6 +42,7 @@ public class RosterController {
     private static final Logger log = LoggerFactory.getLogger(RosterController.class);
 
     @Autowired
+    @Qualifier("fakeUpstreamConnector")
     private UpstreamConnector upstreamConnector;
     @Autowired
     private TravelSolverManager solverManager;
