@@ -16,36 +16,29 @@
 
 package com.redhat.demo.optaplanner.upstream;
 
-import java.util.List;
-
 // TODO Needs better name?
 public interface UpstreamConnector {
 
-    // The number is hard coded in the UX image, so there is no point in having it read from configuration
+    // This number is hard coded in the UX image, so there is no point in having it read from configuration
     int MACHINES_LENGTH = 20;
+    long FULL_HEALTH = 1_000_000_000_000_000_000L;
 
     /**
-     * Similar to {@link #fetchRawDamageEventBatch()} but aggregates per machine.
-     * @return never null, of length {@value #MACHINES_LENGTH}, each index represents a machineIndex.
+     * @return never null, of length {@value MACHINES_LENGTH},
+     * index is machineIndex, each element between 0L and {@value FULL_HEALTH}
      */
-    default double[] fetchAggregatedDamagePerMachine() {
-        double[] aggregatedDamages = new double[MACHINES_LENGTH];
-        for (DamageEvent damageEvent : fetchRawDamageEventBatch()) {
-            aggregatedDamages[damageEvent.getMachineIndex()] += damageEvent.getDamage();
-        }
-        return aggregatedDamages;
-    }
+    long[] fetchMachineHealths();
 
     /**
-     * Fetches all events up to now that haven't been fetched before.
-     * @return never null, might contain the same machine twice
+     * @param machineIndex >= 0, <= {@value MACHINES_LENGTH}
      */
-    List<DamageEvent> fetchRawDamageEventBatch();
+    void resetMachineHealth(int machineIndex);
 
     /**
-     * Use for simulations only!
-     * @param damageEventList never null
+     * For simulation only.
+     * @param machineIndex >= 0, <= {@value MACHINES_LENGTH}
+     * @param damage between 0L and {@value FULL_HEALTH}
      */
-    void addRawDamageEventBatch(List<DamageEvent> damageEventList);
+    void damageMachine(int machineIndex, long damage);
 
 }
