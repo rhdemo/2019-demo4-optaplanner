@@ -23,25 +23,25 @@ import org.springframework.stereotype.Service;
 @Service
 public class FakeUpstreamConnector implements UpstreamConnector {
 
-    private long[] machineHealths;
+    private double[] machineHealths;
 
     public FakeUpstreamConnector() {
-        machineHealths = new long[MACHINES_LENGTH];
-        Arrays.fill(machineHealths, FULL_HEALTH / 10L * 8L);
+        machineHealths = new double[MACHINES_LENGTH];
+        Arrays.fill(machineHealths, 0.9);
     }
 
     @Override
-    public synchronized long[] fetchMachineHealths() {
+    public synchronized double[] fetchMachineHealths() {
         return Arrays.copyOf(machineHealths, machineHealths.length);
     }
 
     @Override
     public synchronized void resetMachineHealth(int machineIndex) {
-        machineHealths[machineIndex] = FULL_HEALTH;
+        machineHealths[machineIndex] = 1.0;
     }
 
     @Override
-    public synchronized void damageMachine(int machineIndex, long damage) {
+    public synchronized void damageMachine(int machineIndex, double damage) {
         machineHealths[machineIndex] -= damage;
     }
 
