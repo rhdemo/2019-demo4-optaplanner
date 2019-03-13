@@ -21,13 +21,12 @@ public interface UpstreamConnector {
 
     // This number is hard coded in the UX image, so there is no point in having it read from configuration
     int MACHINES_LENGTH = 20;
-    long FULL_HEALTH = 1_000_000_000_000_000_000L;
 
     /**
      * @return never null, of length {@value MACHINES_LENGTH},
-     * index is machineIndex, each element between 0L and {@value FULL_HEALTH}
+     * index is machineIndex, each element between 0.0 (broken) and 1.0 (full health)
      */
-    long[] fetchMachineHealths();
+    double[] fetchMachineHealths();
 
     /**
      * @param machineIndex >= 0, <= {@value MACHINES_LENGTH}
@@ -37,8 +36,8 @@ public interface UpstreamConnector {
     /**
      * For simulation only.
      * @param machineIndex >= 0, <= {@value MACHINES_LENGTH}
-     * @param damage between 0L and {@value FULL_HEALTH}
+     * @param damage between 0.0 (no damage) and 1.0 (kill it)
      */
-    void damageMachine(int machineIndex, long damage);
+    void damageMachine(int machineIndex, double damage);
 
 }
