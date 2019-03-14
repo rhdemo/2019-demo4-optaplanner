@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 /* TODO
     - make array machineHealths thread safe
-    - get hot-rod connection properties from hotrod-client.properties
  */
 
 @Component
@@ -50,7 +49,8 @@ public class InfinispanConnector implements UpstreamConnector {
                 );
     }
 
-    /* Test functionality
+/*
+    // Test functionality
     @Scheduled(fixedRate = 2000)
     private void fixRandomMachine() {
         int index = random.nextInt(20);
@@ -65,7 +65,7 @@ public class InfinispanConnector implements UpstreamConnector {
         System.out.println("InfinispanConnector.damageRandomMachine: " + index + "by " + damage + ".");
         damageMachine(index, damage);
     }
-    */
+*/
 
     @Override
     public double[] fetchMachineHealths() {
