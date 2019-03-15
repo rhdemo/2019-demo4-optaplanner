@@ -16,13 +16,16 @@
 
 package com.redhat.demo.optaplanner;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.PostConstruct;
 
 import com.redhat.demo.optaplanner.domain.JsonMachine;
 import com.redhat.demo.optaplanner.domain.JsonMechanic;
 import com.redhat.demo.optaplanner.restapi.AbstractResponse;
 import com.redhat.demo.optaplanner.restapi.SetupUIResponse;
+import com.redhat.demo.optaplanner.restapi.UpdateMachineHealthsResponse;
 import com.redhat.demo.optaplanner.solver.TravelSolverManager;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.slf4j.Logger;
@@ -42,7 +45,7 @@ public class RosterController {
     private static final Logger log = LoggerFactory.getLogger(RosterController.class);
 
     @Autowired
-    @Qualifier("fakeUpstreamConnector")
+    @Qualifier("infinispanConnector")
     private UpstreamConnector upstreamConnector;
     @Autowired
     private TravelSolverManager solverManager;
@@ -94,6 +97,9 @@ public class RosterController {
             solverManager.updateMachineHealths(machines);
         }
         // TODO send MachineHealthResponse to websocket (iff open)
+        template.convertAndSend(WEB_SOCKET_ENDPOINT, new UpdateMachineHealthsResponse(Arrays.stream(machines)
+                .mapToDouble(JsonMachine::getHealth)
+                .toArray()));
 
         // Check mechanic fixed or departure events
         for (int i = 0; i < mechanics.length; i++) {
@@ -136,7 +142,6 @@ public class RosterController {
 //        solverManager.removeMechanic(mechanicIndex);
 //        return new RemoveMechanicResponse(mechanicIndex);
         }
-
 
 //        if (timeMillis % 5000 == 0) {
 //            log.info("  Ticked 1 second.");
@@ -218,5 +223,4 @@ public class RosterController {
         // To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
         mechanicAdditionCount.getAndDecrement();
     }
-
 }
