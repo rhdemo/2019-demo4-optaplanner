@@ -1,0 +1,49 @@
+/*
+ * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.redhat.summit2019.optaplanner.solver;
+
+import org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScoreHolder;
+
+import com.redhat.demo.optaplanner.solver.domain.OptaMachine;
+import com.redhat.demo.optaplanner.solver.domain.OptaMechanic;
+import com.redhat.demo.optaplanner.solver.domain.OptaVisit;
+
+global HardSoftLongScoreHolder scoreHolder;
+
+// ############################################################################
+// Hard constraints
+// ############################################################################
+
+rule "Attrition"
+    when
+        $visit : OptaVisit(previous != null, $timeMillis : departureTimeMillis, $attritionMicros : attritionMicros)
+    then
+        scoreHolder.addHardConstraintMatch(kcontext, - $timeMillis * $attritionMicros);
+end
+
+// ############################################################################
+// Soft constraints
+// ############################################################################
+
+rule "TravelTimeMillis"
+    when
+        $visit : OptaVisit(previous != null, $timeMillis : departureTimeMillis)
+    then
+        scoreHolder.addSoftConstraintMatch(kcontext, - $timeMillis);
+end
+
+

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver>
+  <!--<environmentMode>FULL_ASSERT</environmentMode>--><!-- To slowly prove there are no bugs in this code -->
+  <!--<moveThreadCount>AUTO</moveThreadCount>--><!-- To solve faster by saturating multiple CPU cores -->
+
+  <solutionClass>com.redhat.demo.optaplanner.solver.domain.OptaSolution</solutionClass>
+  <entityClass>com.redhat.demo.optaplanner.solver.domain.OptaVisit</entityClass>
+  <entityClass>com.redhat.demo.optaplanner.solver.domain.OptaVisitOrMechanic</entityClass>
+
+  <scoreDirectorFactory>
+    <scoreDrl>com/redhat/demo/optaplanner/solver/travelingMechanicScoreRules.drl</scoreDrl>
+    <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+  </scoreDirectorFactory>
+
+  <constructionHeuristic/>
+  <localSearch>
+    <localSearchType>TABU_SEARCH</localSearchType>
+    <unionMoveSelector>
+      <changeMoveSelector/>
+      <swapMoveSelector/>
+      <tailChainSwapMoveSelector/>
+      <subChainChangeMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+      </subChainChangeMoveSelector>
+      <subChainSwapMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+      </subChainSwapMoveSelector>
+    </unionMoveSelector>
+  </localSearch>
+</solver>
