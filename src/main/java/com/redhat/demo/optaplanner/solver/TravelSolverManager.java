@@ -84,7 +84,7 @@ public class TravelSolverManager {
         executorService.submit(() -> solver.solve(solution));
     }
 
-    public void updateFutureMachineIndexes(JsonMechanic[] jsonMechanics) {
+    public void fetchAndUpdateFutureMachineIndexes(JsonMechanic[] jsonMechanics) {
         OptaSolution bestSolution = bestSolutionReference.getAndSet(null);
         if (bestSolution == null) {
             return;

@@ -16,12 +16,12 @@
 
 package com.redhat.demo.optaplanner;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 
 import com.redhat.demo.optaplanner.domain.JsonMachine;
 import com.redhat.demo.optaplanner.domain.JsonMechanic;
 import com.redhat.demo.optaplanner.restapi.AbstractResponse;
-import com.redhat.demo.optaplanner.restapi.AddMechanicResponse;
 import com.redhat.demo.optaplanner.restapi.SetupUIResponse;
 import com.redhat.demo.optaplanner.solver.TravelSolverManager;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
@@ -53,6 +53,8 @@ public class RosterController {
     private JsonMachine[] machines;
     private JsonMechanic[] mechanics;
 
+    private AtomicInteger mechanicAdditionCount = new AtomicInteger(0);
+
     public RosterController() {
     }
 
@@ -79,7 +81,7 @@ public class RosterController {
         timeMillis += AppConstants.TIME_TICK_MILLIS;
 
         // Update futureMachineIndexes first (it might affect mechanic dispatch events)
-        solverManager.updateFutureMachineIndexes(mechanics);
+        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
 
         // Update machine healths
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
@@ -94,23 +96,44 @@ public class RosterController {
         // Check mechanic fixed or departure events
         for (int i = 0; i < mechanics.length; i++) {
             JsonMechanic mechanic = mechanics[i];
-            if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - AppConstants.FIX_TIME_MILLIS) {
+            if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - AppConstants.BREATHING_TIME_MILLIS) {
                 // TODO If it didn't already happen for this fix case...
                 // upstreamConnector.resetMachineHealth(mechanic.getFocusMachineIndex());
             }
             if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
+                int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
                 int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
-                int futureMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
+                int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
                         : futureMachineIndexes[0];
-                mechanic.setFocusMachineIndex(futureMachineIndex);
-                mechanic.setFocusDepartureTimeMillis(timeMillis + AppConstants.FIX_TIME_MILLIS + AppConstants.BREATHING_TIME_MILLIS);
+                mechanic.setFocusMachineIndex(newFocusMachineIndex);
+                long travelTime = machines[oldFocusMachineIndex]
+                        .getToMachineIndexTravelTimeMillis()[newFocusMachineIndex];
+                mechanic.setFocusDepartureTimeMillis(timeMillis + travelTime + AppConstants.FIX_TIME_MILLIS + AppConstants.BREATHING_TIME_MILLIS);
                 // TODO send Dispatch event to websocket (iff open)
             }
         }
 
-        // TODO The effectively adding or removing of mechanics we want to do in this thread too
-        // TODO To avoid a race condition on JsonMachine[] machines and JsonMechanic[] mechanics
-
+        int mechanicAddition = mechanicAdditionCount.getAndSet(0);
+        if (mechanicAddition > 0) {
+            // TODO add mechanic
+            // TODO send event to UI
+//        int mechanicIndex = mechanicList.size();
+//        JsonMechanic mechanic = new JsonMechanic(mechanicIndex, null);
+//        mechanicList.add(mechanic);
+//        solverManager.addMechanic(mechanicIndex, foo, foo);
+//        return new AddMechanicResponse(mechanic.getMechanicIndex());
+        } else if (mechanicAddition < 0) {
+            // TODO remove mechanic
+            // TODO send event to UI
+//        if (mechanicList.size() <= 1) {
+//            throw new IllegalStateException(
+//                    "Remove mechanic failed because there must always be at least one mechanic.");
+//        }
+//        int mechanicIndex = mechanicList.size() - 1;
+//        mechanicList.remove(mechanicIndex);
+//        solverManager.removeMechanic(mechanicIndex);
+//        return new RemoveMechanicResponse(mechanicIndex);
+        }
 
 
 //        if (timeMillis % 5000 == 0) {
@@ -183,28 +206,15 @@ public class RosterController {
     }
 
     @MessageMapping("/addMechanic")
-    @SendTo(WEB_SOCKET_ENDPOINT)
-    public AddMechanicResponse addMechanic() {
-        return null; // TODO Doing the code below in the rest thread instead of the tick() thread causes race conditions
-//        int mechanicIndex = mechanicList.size();
-//        JsonMechanic mechanic = new JsonMechanic(mechanicIndex, null);
-//        mechanicList.add(mechanic);
-//        solverManager.addMechanic(mechanicIndex, foo, foo);
-//        return new AddMechanicResponse(mechanic.getMechanicIndex());
+    public void addMechanic() {
+        // To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
+        mechanicAdditionCount.getAndIncrement();
     }
 
     @MessageMapping("/removeMechanic")
-    @SendTo(WEB_SOCKET_ENDPOINT)
-    public AbstractResponse removeMechanic() {
-        return null; // TODO Doing the code below in the rest thread instead of the tick() thread causes race conditions
-//        if (mechanicList.size() <= 1) {
-//            throw new IllegalStateException(
-//                    "Remove mechanic failed because there must always be at least one mechanic.");
-//        }
-//        int mechanicIndex = mechanicList.size() - 1;
-//        mechanicList.remove(mechanicIndex);
-//        solverManager.removeMechanic(mechanicIndex);
-//        return new RemoveMechanicResponse(mechanicIndex);
+    public void removeMechanic() {
+        // To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
+        mechanicAdditionCount.getAndDecrement();
     }
 
 }
