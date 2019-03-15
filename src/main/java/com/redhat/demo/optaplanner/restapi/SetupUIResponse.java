@@ -16,38 +16,38 @@
 
 package com.redhat.demo.optaplanner.restapi;
 
-import com.redhat.demo.optaplanner.domain.Machine;
-import com.redhat.demo.optaplanner.domain.Mechanic;
+import com.redhat.demo.optaplanner.domain.JsonMachine;
+import com.redhat.demo.optaplanner.domain.JsonMechanic;
 
 public class SetupUIResponse extends AbstractResponse {
 
     // TODO Change to double[] machineHealths? Or include mechanic paths, travel time matrix, etc?
-    private Machine[] machines;
-    private Mechanic[] mechanics;
+    private JsonMachine[] machines;
+    private JsonMechanic[] mechanics;
 
     public SetupUIResponse() {
         super(ResponseType.SETUP_UI);
     }
 
-    public SetupUIResponse(Machine[] machines, Mechanic[] mechanics) {
+    public SetupUIResponse(JsonMachine[] machines, JsonMechanic[] mechanics) {
         super(ResponseType.SETUP_UI);
         this.machines = machines;
         this.mechanics = mechanics;
     }
 
-    public Machine[] getMachines() {
+    public JsonMachine[] getMachines() {
         return machines;
     }
 
-    public void setMachines(Machine[] machines) {
+    public void setMachines(JsonMachine[] machines) {
         this.machines = machines;
     }
 
-    public Mechanic[] getMechanics() {
+    public JsonMechanic[] getMechanics() {
         return mechanics;
     }
 
-    public void setMechanics(Mechanic[] mechanics) {
+    public void setMechanics(JsonMechanic[] mechanics) {
         this.mechanics = mechanics;
     }
 }

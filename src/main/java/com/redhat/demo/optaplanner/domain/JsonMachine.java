@@ -16,18 +16,18 @@
 
 package com.redhat.demo.optaplanner.domain;
 
-import java.util.Objects;
-
-public class Machine implements Comparable<Machine> {
+public class JsonMachine {
 
     private int machineIndex;
+    private long[] toMachineIndexTravelTimeMillis;
     private double health;
 
-    public Machine() {
+    public JsonMachine() {
     }
 
-    public Machine(int machineIndex, double health) {
+    public JsonMachine(int machineIndex, long[] toMachineIndexTravelTimeMillis, double health) {
         this.machineIndex = machineIndex;
+        this.toMachineIndexTravelTimeMillis = toMachineIndexTravelTimeMillis;
         this.health = health;
     }
 
@@ -37,6 +37,14 @@ public class Machine implements Comparable<Machine> {
 
     public void setMachineIndex(int machineIndex) {
         this.machineIndex = machineIndex;
+    }
+
+    public long[] getToMachineIndexTravelTimeMillis() {
+        return toMachineIndexTravelTimeMillis;
+    }
+
+    public void setToMachineIndexTravelTimeMillis(long[] toMachineIndexTravelTimeMillis) {
+        this.toMachineIndexTravelTimeMillis = toMachineIndexTravelTimeMillis;
     }
 
     public double getHealth() {
@@ -52,20 +60,16 @@ public class Machine implements Comparable<Machine> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Machine)) {
+        if (!(o instanceof JsonMachine)) {
             return false;
         }
-        Machine machine = (Machine) o;
+        JsonMachine machine = (JsonMachine) o;
         return machineIndex == machine.machineIndex;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(machineIndex);
+        return machineIndex;
     }
 
-    @Override
-    public int compareTo(Machine o) {
-        return Double.compare(health, o.health);
-    }
 }

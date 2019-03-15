@@ -16,11 +16,13 @@
 
 package com.redhat.demo.optaplanner.upstream;
 
+import com.redhat.demo.optaplanner.AppConstants;
+
 // TODO Needs better name?
 public interface UpstreamConnector {
 
-    // This number is hard coded in the UX image, so there is no point in having it read from configuration
-    int MACHINES_LENGTH = 20;
+    // TODO remove this and directly use AppConstants.MACHINES_LENGTH
+    int MACHINES_LENGTH = AppConstants.MACHINES_LENGTH;
 
     /**
      * @return never null, of length {@value MACHINES_LENGTH},

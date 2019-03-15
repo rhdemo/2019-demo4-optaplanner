@@ -19,16 +19,16 @@ package com.redhat.demo.optaplanner.restapi;
 public class DispatchMechanicResponse extends AbstractResponse {
 
     private int mechanicIndex;
-    private int toMachineIndex;
+    private int newFocusMachineIndex;
 
     public DispatchMechanicResponse() {
         super(ResponseType.DISPATCH_MECHANIC);
     }
 
-    public DispatchMechanicResponse(int mechanicIndex, int toMachineIndex) {
+    public DispatchMechanicResponse(int mechanicIndex, int newFocusMachineIndex) {
         super(ResponseType.DISPATCH_MECHANIC);
         this.mechanicIndex = mechanicIndex;
-        this.toMachineIndex = toMachineIndex;
+        this.newFocusMachineIndex = newFocusMachineIndex;
     }
 
     public int getMechanicIndex() {
@@ -39,12 +39,12 @@ public class DispatchMechanicResponse extends AbstractResponse {
         this.mechanicIndex = mechanicIndex;
     }
 
-    public int getToMachineIndex() {
-        return toMachineIndex;
+    public int getNewFocusMachineIndex() {
+        return newFocusMachineIndex;
     }
 
-    public void setToMachineIndex(int toMachineIndex) {
-        this.toMachineIndex = toMachineIndex;
+    public void setNewFocusMachineIndex(int newFocusMachineIndex) {
+        this.newFocusMachineIndex = newFocusMachineIndex;
     }
 
 }

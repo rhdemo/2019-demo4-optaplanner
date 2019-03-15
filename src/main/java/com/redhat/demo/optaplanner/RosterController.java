@@ -16,19 +16,14 @@
 
 package com.redhat.demo.optaplanner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.PostConstruct;
 
-import com.redhat.demo.optaplanner.domain.Machine;
-import com.redhat.demo.optaplanner.domain.Mechanic;
+import com.redhat.demo.optaplanner.domain.JsonMachine;
+import com.redhat.demo.optaplanner.domain.JsonMechanic;
 import com.redhat.demo.optaplanner.restapi.AbstractResponse;
-import com.redhat.demo.optaplanner.restapi.AddMechanicResponse;
-import com.redhat.demo.optaplanner.restapi.DispatchMechanicResponse;
-import com.redhat.demo.optaplanner.restapi.RemoveMechanicResponse;
 import com.redhat.demo.optaplanner.restapi.SetupUIResponse;
+import com.redhat.demo.optaplanner.solver.TravelSolverManager;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,112 +37,160 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class RosterController {
 
-    private static final String WEBSOCKET_ENDPOINT = "/topic/roster";
-
+    private static final String WEB_SOCKET_ENDPOINT = "/topic/roster";
     private static final Logger log = LoggerFactory.getLogger(RosterController.class);
-    public static final int TIME_TICK_MILLIS = 40;
 
     @Autowired
     private UpstreamConnector upstreamConnector;
+    @Autowired
+    private TravelSolverManager solverManager;
 
     @Autowired
     private SimpMessagingTemplate template;
 
-    private Machine[] machines;
-    private List<Mechanic> mechanicList;
-
     private boolean pauzed = false;
     private long timeMillis = 0L; // This class is the keeper of time
+    private JsonMachine[] machines;
+    private JsonMechanic[] mechanics;
+
+    private AtomicInteger mechanicAdditionCount = new AtomicInteger(0);
 
     public RosterController() {
-        machines = new Machine[UpstreamConnector.MACHINES_LENGTH];
-        for (int i = 0; i < machines.length; i++) {
-            machines[i] = new Machine(i, 0.80 + (Math.random() * 0.20));
-        }
-        int MECHANIC_LIST_SIZE = 2;
-        mechanicList = new ArrayList<>(MECHANIC_LIST_SIZE);
-        for (int i = 0; i < MECHANIC_LIST_SIZE; i++) {
-            mechanicList.add(new Mechanic(i, null));
-        }
     }
 
-    @Scheduled(fixedDelay = TIME_TICK_MILLIS)
+    @PostConstruct
+    public void init() {
+        machines = new JsonMachine[UpstreamConnector.MACHINES_LENGTH];
+        double[] machineHealths = upstreamConnector.fetchMachineHealths();
+        for (int i = 0; i < machines.length; i++) {
+            long[] toMachineIndexTravelTimeMillis = AppConstants.TRAVEL_TIME_MILLIS_MATRIX[i];
+            machines[i] = new JsonMachine(i, toMachineIndexTravelTimeMillis, machineHealths[i]);
+        }
+        mechanics = new JsonMechanic[AppConstants.INIT_MECHANICS_LENGTH];
+        for (int i = 0; i < mechanics.length; i++) {
+            mechanics[i] = new JsonMechanic(i, i, timeMillis);
+        }
+        solverManager.startSolver(machines, mechanics);
+    }
+
+    @Scheduled(fixedDelay = AppConstants.TIME_TICK_MILLIS)
     public void tick() {
         if (pauzed) {
             return;
         }
-        timeMillis += TIME_TICK_MILLIS;
-        if (timeMillis % 5000 == 0) {
-            log.info("  Ticked 1 second.");
-//            double[] aggregatedDamages = upstreamConnector.fetchAggregatedDamagePerMachine();
-//            updateMachineHealth(aggregatedDamages);
+        timeMillis += AppConstants.TIME_TICK_MILLIS;
 
-            // TODO If a mechanic has fixed a machine, reset health and dispatch it to next location
-            mechanicList.stream()
-                    .filter(mechanic -> mechanic.getMachineIndex() != null)
-                    .collect(Collectors.toList())
-                    .forEach(mechanic -> {
-                        // fix the machine
-                        machines[mechanic.getMachineIndex()].setHealth(1.0);
-                        // make the mechanic available again
-                        mechanic.setMachineIndex(null);
-                    });
+        // Update futureMachineIndexes first (it might affect mechanic dispatch events)
+        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
 
-            // simplification: pick the component with the lowest health.
-            // TODO: connect OptaPlanner
-            List<Mechanic> availableMechanics = getAvailableMechanics();
-            List<Machine> lowestHealthMachines = getMachinesWithLowestHealth(availableMechanics.size());
-
-            int available = Math.min(availableMechanics.size(), lowestHealthMachines.size());
-            for (int i = 0; i < available; i++) {
-                Mechanic mechanic = availableMechanics.get(i);
-                Machine machine = lowestHealthMachines.get(i);
-                mechanic.setMachineIndex(machine.getMachineIndex());
-                DispatchMechanicResponse dispatchMechanicResponse =
-                        new DispatchMechanicResponse(mechanic.getMechanicIndex(), machine.getMachineIndex());
-                this.template.convertAndSend(WEBSOCKET_ENDPOINT, dispatchMechanicResponse);
-            }
-        }
-    }
-
-    private List<Mechanic> getAvailableMechanics() {
-        return mechanicList.stream().filter(mechanic -> mechanic.getMachineIndex() == null).collect(Collectors.toList());
-    }
-
-    private void updateMachineHealth(double[] aggregatedDamages) {
-        if (machines.length != aggregatedDamages.length) {
-            throw new IllegalArgumentException(
-                    "The number of machines and aggregated damages must be the same. Machines ("
-                            + machines.length + "), aggregated damages (" + aggregatedDamages.length + ")");
-        }
-
+        // Update machine healths
+        double[] machineHealths = upstreamConnector.fetchMachineHealths();
         for (int i = 0; i < machines.length; i++) {
-            double value = machines[i].getHealth() - aggregatedDamages[i];
-            if (value < 0.0) {
-                value = 0.0;
+            machines[i].setHealth(machineHealths[i]);
+        }
+        if (timeMillis % AppConstants.OPTA_MACHINE_HEALTH_REFRESH_RATE == 0L) {
+            solverManager.updateMachineHealths(machines);
+        }
+        // TODO send MachineHealthResponse to websocket (iff open)
+
+        // Check mechanic fixed or departure events
+        for (int i = 0; i < mechanics.length; i++) {
+            JsonMechanic mechanic = mechanics[i];
+            if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - AppConstants.BREATHING_TIME_MILLIS) {
+                // TODO If it didn't already happen for this fix case...
+                // upstreamConnector.resetMachineHealth(mechanic.getFocusMachineIndex());
             }
-            machines[i].setHealth(value);
-        }
-    }
-
-    private List<Machine> getMachinesWithLowestHealth(int maxCount) {
-        TreeSet<Machine> sortedMachines = Arrays.stream(machines)
-                .filter(machine -> machine.getHealth() < 1.0)
-                .collect(Collectors.toCollection(TreeSet::new));
-        maxCount = Math.min(sortedMachines.size(), maxCount);
-        List<Machine> machinesWithLowestHealth = new ArrayList<>(maxCount);
-
-        for (int i = 0; i < maxCount; i++) {
-            machinesWithLowestHealth.add(sortedMachines.pollFirst());
+            if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
+                int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
+                int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
+                int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
+                        : futureMachineIndexes[0];
+                mechanic.setFocusMachineIndex(newFocusMachineIndex);
+                long travelTime = machines[oldFocusMachineIndex]
+                        .getToMachineIndexTravelTimeMillis()[newFocusMachineIndex];
+                mechanic.setFocusDepartureTimeMillis(timeMillis + travelTime + AppConstants.FIX_TIME_MILLIS + AppConstants.BREATHING_TIME_MILLIS);
+                // TODO send Dispatch event to websocket (iff open)
+            }
         }
 
-        return machinesWithLowestHealth;
+        int mechanicAddition = mechanicAdditionCount.getAndSet(0);
+        if (mechanicAddition > 0) {
+            // TODO add mechanic
+            // TODO send event to UI
+//        int mechanicIndex = mechanicList.size();
+//        JsonMechanic mechanic = new JsonMechanic(mechanicIndex, null);
+//        mechanicList.add(mechanic);
+//        solverManager.addMechanic(mechanicIndex, foo, foo);
+//        return new AddMechanicResponse(mechanic.getMechanicIndex());
+        } else if (mechanicAddition < 0) {
+            // TODO remove mechanic
+            // TODO send event to UI
+//        if (mechanicList.size() <= 1) {
+//            throw new IllegalStateException(
+//                    "Remove mechanic failed because there must always be at least one mechanic.");
+//        }
+//        int mechanicIndex = mechanicList.size() - 1;
+//        mechanicList.remove(mechanicIndex);
+//        solverManager.removeMechanic(mechanicIndex);
+//        return new RemoveMechanicResponse(mechanicIndex);
+        }
+
+
+//        if (timeMillis % 5000 == 0) {
+//            log.info("  Ticked 1 second.");
+//            long[] machineHealths = upstreamConnector.fetchMachineHealths();
+//            updateMachineHealth(machineHealths);
+//
+//            // TODO If a mechanic has fixed a machine, reset health and dispatch it to next location
+//            mechanicList.stream()
+//                    .filter(mechanic -> mechanic.getFocusMachineIndex() != null)
+//                    .collect(Collectors.toList())
+//                    .forEach(mechanic -> {
+//                        // fix the machine
+//                        machines[mechanic.getFocusMachineIndex()].setHealth(1.0);
+//                        // make the mechanic available again
+//                        mechanic.setFocusMachineIndex(null);
+//                    });
+
+//            // simplification: pick the component with the lowest health.
+//            // TODO: connect OptaPlanner
+//            List<JsonMechanic> availableMechanics = getAvailableMechanics();
+//            List<JsonMachine> lowestHealthMachines = getMachinesWithLowestHealth(availableMechanics.size());
+//
+//            int available = Math.min(availableMechanics.size(), lowestHealthMachines.size());
+//            for (int i = 0; i < available; i++) {
+//                JsonMechanic mechanic = availableMechanics.get(i);
+//                JsonMachine machine = lowestHealthMachines.get(i);
+//                mechanic.setFocusMachineIndex(machine.getMachineIndex());
+//                DispatchMechanicResponse dispatchMechanicResponse =
+//                        new DispatchMechanicResponse(mechanic.getMechanicIndex(), machine.getMachineIndex());
+//                this.template.convertAndSend(WEB_SOCKET_ENDPOINT, dispatchMechanicResponse);
+//            }
+//        }
     }
+
+//    private List<JsonMechanic> getAvailableMechanics() {
+//        return mechanicList.stream().filter(mechanic -> mechanic.getFocusMachineIndex() == null).collect(Collectors.toList());
+//    }
+//
+//    private List<JsonMachine> getMachinesWithLowestHealth(int maxCount) {
+//        TreeSet<JsonMachine> sortedMachines = Arrays.stream(machines)
+//                .filter(machine -> machine.getHealth() < 1.0)
+//                .collect(Collectors.toCollection(TreeSet::new));
+//        maxCount = Math.min(sortedMachines.size(), maxCount);
+//        List<JsonMachine> machinesWithLowestHealth = new ArrayList<>(maxCount);
+//
+//        for (int i = 0; i < maxCount; i++) {
+//            machinesWithLowestHealth.add(sortedMachines.pollFirst());
+//        }
+//
+//        return machinesWithLowestHealth;
+//    }
 
     @MessageMapping("/setupUI")
-    @SendTo(WEBSOCKET_ENDPOINT)
+    @SendTo(WEB_SOCKET_ENDPOINT)
     public AbstractResponse setupUI() {
-        return new SetupUIResponse(machines, mechanicList.toArray(new Mechanic[0]));
+        return new SetupUIResponse(machines, mechanics);
     }
 
     @MessageMapping("/pauze")
@@ -163,21 +206,15 @@ public class RosterController {
     }
 
     @MessageMapping("/addMechanic")
-    @SendTo(WEBSOCKET_ENDPOINT)
-    public AddMechanicResponse addMechanic() {
-        int mechanicIndex = mechanicList.size();
-        Mechanic mechanic = new Mechanic(mechanicIndex, null);
-        mechanicList.add(mechanic);
-        return new AddMechanicResponse(mechanic.getMechanicIndex());
+    public void addMechanic() {
+        // To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
+        mechanicAdditionCount.getAndIncrement();
     }
 
     @MessageMapping("/removeMechanic")
-    @SendTo(WEBSOCKET_ENDPOINT)
-    public AbstractResponse removeMechanic() {
-        int mechanicIndex = mechanicList.size() - 1;
-        if (mechanicList.size() > 0) {
-            mechanicList.remove(mechanicIndex);
-        }
-        return new RemoveMechanicResponse(mechanicIndex);
+    public void removeMechanic() {
+        // To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
+        mechanicAdditionCount.getAndDecrement();
     }
+
 }
