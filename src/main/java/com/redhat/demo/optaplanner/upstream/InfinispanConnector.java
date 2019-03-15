@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLongArray;
+import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
@@ -13,30 +15,27 @@ import org.infinispan.counter.api.StrongCounter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/* TODO
-    - make array machineHealths thread safe
- */
-
 @Component
 public class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
-    private static final Random random = new Random();
 
     private StrongCounter[] counters = new StrongCounter[MACHINES_LENGTH];
-    private double[] machineHealths = new double[MACHINES_LENGTH]; // Store counter values to be readily available without blocking
     private Map<StrongCounter, Integer> counterIndices = new HashMap<>(MACHINES_LENGTH);
+    private AtomicLongArray machineHealths = new AtomicLongArray(MACHINES_LENGTH); // Store counter values to be readily available without blocking
+    private Random random;
 
     public InfinispanConnector() {
         Configuration configuration = HotRodClientConfiguration.get().build();
         RemoteCacheManager remoteCacheManager = new RemoteCacheManager(configuration);
         CounterManager counterManager = RemoteCounterManagerFactory.asCounterManager(remoteCacheManager);
         for (int i = 0; i < MACHINES_LENGTH; i++) {
-            StrongCounter currentCounter = counterManager.getStrongCounter(String.format("machine-%d", i+1));
+            StrongCounter currentCounter = counterManager.getStrongCounter(String.format("machine-%d", i + 1));
             counters[i] = currentCounter;
             counterIndices.put(currentCounter, i);
+            machineHealths.set(i, FULL_HEALTH);
         }
-        random.setSeed(13);
+        random = new Random(13);
     }
 
     @Scheduled(fixedRate = 40)
@@ -44,7 +43,7 @@ public class InfinispanConnector implements UpstreamConnector {
         Arrays.stream(counters)
                 .forEach(counter ->
                         counter.getValue().thenAccept(machineHealth -> {
-                            machineHealths[counterIndices.get(counter)] = ((double) machineHealth) / FULL_HEALTH;
+                            machineHealths.set(counterIndices.get(counter), machineHealth);
                         })
                 );
     }
@@ -62,21 +61,30 @@ public class InfinispanConnector implements UpstreamConnector {
     private void damageRandomMachine() {
         int index = random.nextInt(20);
         double damage = random.nextDouble();
-        System.out.println("InfinispanConnector.damageRandomMachine: " + index + "by " + damage + ".");
+        System.out.println("InfinispanConnector.damageRandomMachine: " + index + " by " + damage + ".");
         damageMachine(index, damage);
+    }
+
+    @Scheduled(fixedRate = 2000)
+    private void printMachineHealths() {
+        System.out.println(Arrays.toString(fetchMachineHealths()));
     }
 */
 
     @Override
     public double[] fetchMachineHealths() {
-        return machineHealths.clone();
+        double[] result = new double[MACHINES_LENGTH];
+        for (int i = 0; i < MACHINES_LENGTH; i++) {
+            result[i] = (double) machineHealths.get(i) / FULL_HEALTH;
+        }
+        return result;
     }
 
     @Override
     public void resetMachineHealth(int machineIndex) {
         counters[machineIndex]
                 .reset()
-                .thenRun(() -> machineHealths[machineIndex] = 1.0);
+                .thenRun(() -> machineHealths.set(machineIndex, FULL_HEALTH));
     }
 
     @Override
