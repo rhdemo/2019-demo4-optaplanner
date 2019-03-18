@@ -35,10 +35,14 @@ public class InfinispanConnector implements UpstreamConnector {
     public double[] fetchMachineHealths() {
         return Arrays.stream(counters)
                 .mapToLong(strongCounter -> {
+                    int counterIndex = counterIndices.get(strongCounter);
                     try {
-                        return counters[counterIndices.get(strongCounter)].getValue().get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
+                        return counters[counterIndex].getValue().get();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Connector thread was interrupted while getting counter value.", e);
+                    } catch (ExecutionException e) {
+                        throw new IllegalStateException("Couldn't find StringCounter (" + counterIndex + ").", e.getCause());
                     }
                 })
                 .mapToDouble(machineHealthLong -> ((double) machineHealthLong) / ((double) FULL_HEALTH))
