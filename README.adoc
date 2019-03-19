@@ -27,3 +27,23 @@ To undeploy the application from OpenShift, simply run:
     mvn fabric8:undeploy
 
     
+== To run on a local OpenShift cluster with Infinispan/datagrid:
+
+1. Clone datagird setup from demo repository:
+
+    git clone git@github.com:rhdemo/2019-demo4-cluster-setup.git
+
+2. Login to OpenShift cluster (by default this will login to the local cluster at https://127.0.0.1:8443):
+
+    oc login
+
+3. Build datagrid app:
+
+    ./2019-demo4-cluster-setup/datagrid/deploy.sh
+
+4. Deploy/Undeploy optaplanner app following 3/4 from previous section.
+
+
+5. Expose optaplanner-demo service to access the UI:
+
+    oc expose service optaplanner-demo

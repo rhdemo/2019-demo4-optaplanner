@@ -30,7 +30,8 @@ const ResponseType  = {
     SETUP_UI : 'SETUP_UI',
     ADD_MECHANIC : 'ADD_MECHANIC',
     REMOVE_MECHANIC : 'REMOVE_MECHANIC',
-    DISPATCH_MECHANIC: 'DISPATCH_MECHANIC'
+    DISPATCH_MECHANIC: 'DISPATCH_MECHANIC',
+    UPDATE_MACHINE_HEALTHS: 'UPDATE_MACHINE_HEALTHS'
 };
 
 $(function () {
@@ -120,6 +121,10 @@ function processResponse(response) {
         mechanics[response.mechanicIndex].machineIndex = response.toMachineIndex;
         machines[response.toMachineIndex].health = 1.0;
         console.log("Dispatching a mechanic: " + response.mechanicIndex + " to a machine: " + response.toMachineIndex);
+    } else if (response.responseType === ResponseType.UPDATE_MACHINE_HEALTHS) {
+        for (var i = 0; i < response.machineHealths.length; i++) {
+            machines[i].health = response.machineHealths[i];
+        }
     }
 
     drawGame();

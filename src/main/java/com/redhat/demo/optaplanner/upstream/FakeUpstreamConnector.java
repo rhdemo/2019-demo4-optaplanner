@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 import org.springframework.stereotype.Service;
 
-@Service
+@Service("fakeUpstreamConnector")
 public class FakeUpstreamConnector implements UpstreamConnector {
 
     private double[] machineHealths;

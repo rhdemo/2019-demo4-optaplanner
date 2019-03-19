@@ -116,13 +116,22 @@ public class TravelSolverManager {
         }
     }
 
+    // TODO: test this
     public void updateMachineHealths(JsonMachine[] jsonMachines) {
         solver.addProblemFactChange(scoreDirector -> {
-            // TODO
+            OptaSolution workingSolution = scoreDirector.getWorkingSolution();
+            // A SolutionCloner doesn't clone problem fact lists, shallow clone to ensure changes are only applied to the workingSolution
+            List<OptaMachine> machineList = new ArrayList<>(workingSolution.getMachineList());
+            workingSolution.setMachineList(machineList);
 
-
-
-
+            Arrays.stream(jsonMachines)
+                    .forEach(jsonMachine -> {
+                        OptaMachine workingMachine = workingSolution.getMachineList().get(jsonMachine.getMachineIndex());
+                        scoreDirector.beforeProblemPropertyChanged(workingMachine);
+                        workingMachine.setHealth(jsonMachine.getHealth());
+                        scoreDirector.afterProblemPropertyChanged(workingMachine);
+                        scoreDirector.triggerVariableListeners();
+                    });
         });
     }
 
