@@ -4,6 +4,9 @@
 
 `mvn spring-boot:run`
 
+To run with the Infinispan connector, use:
+`mvn spring-boot:run -Dprod`
+
 == Build & run on OpenShift
 
 1. Login to a running OpenShift instance

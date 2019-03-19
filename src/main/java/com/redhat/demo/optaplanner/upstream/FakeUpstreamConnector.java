@@ -18,9 +18,12 @@ package com.redhat.demo.optaplanner.upstream;
 
 import java.util.Arrays;
 
+import com.redhat.demo.optaplanner.SpringProfiles;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-@Service("fakeUpstreamConnector")
+@Service
+@Profile(SpringProfiles.DEVELOPMENT)
 public class FakeUpstreamConnector implements UpstreamConnector {
 
     private double[] machineHealths;

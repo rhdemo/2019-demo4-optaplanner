@@ -5,14 +5,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.redhat.demo.optaplanner.SpringProfiles;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.counter.api.CounterManager;
 import org.infinispan.counter.api.StrongCounter;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
+@Profile(SpringProfiles.PRODUCTION)
 public class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
