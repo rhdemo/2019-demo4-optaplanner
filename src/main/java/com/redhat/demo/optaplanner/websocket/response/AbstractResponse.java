@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.redhat.demo.optaplanner.restapi;
+package com.redhat.demo.optaplanner.websocket.response;
 
 public abstract class AbstractResponse {
 

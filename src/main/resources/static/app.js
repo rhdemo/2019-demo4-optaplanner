@@ -27,7 +27,6 @@ const MECHANIC_SIZE = 20;
 const DISTANCE = 100;
 
 const ResponseType  = {
-    SETUP_UI : 'SETUP_UI',
     ADD_MECHANIC : 'ADD_MECHANIC',
     REMOVE_MECHANIC : 'REMOVE_MECHANIC',
     DISPATCH_MECHANIC: 'DISPATCH_MECHANIC',
@@ -55,7 +54,7 @@ function connect() {
         stompClient.subscribe('/topic/roster', function (roster) {
             processResponse(JSON.parse(roster.body));
         });
-        stompClient.send("/app/setupUI", {});
+        stompClient.send("/app/gameConfig", {});
     });
 }
 
@@ -100,11 +99,12 @@ function removeMechanic() {
 }
 
 function processResponse(response) {
-    $("#machines").append("<tr><td>" + response.responseType + "</td></tr>");
+   // $("#machines").append("<tr><td>" + response.responseType + "</td></tr>");
 
-    if (response.responseType === ResponseType.SETUP_UI) {
+    if (response.responseType === ResponseType.GAME_CONFIG) {
         machines = response.machines;
-        mechanics = response.mechanics;    
+        mechanics = response.mechanics;
+        console.log("Game initialized");
     } else if (response.responseType === ResponseType.ADD_MECHANIC) {
         console.log("Adding a mechanic");
         let mechanic = {
@@ -117,14 +117,14 @@ function processResponse(response) {
             console.log("Removing a mechanic index: " + mechanicIndex)
             mechanics.splice(mechanicIndex, 1);
         }
-    } else if (response.responseType === ResponseType.DISPATCH_MECHANIC) {
-        mechanics[response.mechanicIndex].machineIndex = response.toMachineIndex;
-        machines[response.toMachineIndex].health = 1.0;
-        console.log("Dispatching a mechanic: " + response.mechanicIndex + " to a machine: " + response.toMachineIndex);
     } else if (response.responseType === ResponseType.UPDATE_MACHINE_HEALTHS) {
-        for (var i = 0; i < response.machineHealths.length; i++) {
-            machines[i].health = response.machineHealths[i];
-        }
+        machines = response.machines;
+    } else if (response.responseType === ResponseType.DISPATCH_MECHANIC) {
+        let mechanic = response.mechanic
+        mechanics[mechanic.mechanicIndex] = mechanic;
+        console.log("Dispatching a mechanic: " + mechanic.mechanicIndex + " to a machine: " + mechanic.focusMachineIndex);
+    } else {
+        console.log("Uknown response type: " + response.responseType);
     }
 
     drawGame();
@@ -190,7 +190,7 @@ function getPositionOfMachineComponent(machineIndex) {
 
 function drawMechanic(ctx, index) {
     var positionX, positionY;
-    let machineIndex = mechanics[index].machineIndex;
+    let machineIndex = mechanics[index].focusMachineIndex;
     if (machineIndex != null) {
         let position = getPositionOfMachineComponent(machineIndex);
         positionX = position.x;

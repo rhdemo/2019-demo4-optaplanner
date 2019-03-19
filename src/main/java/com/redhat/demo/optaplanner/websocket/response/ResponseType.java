@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.redhat.demo.optaplanner.restapi;
+package com.redhat.demo.optaplanner.websocket.response;
 
 public enum ResponseType {
-    SETUP_UI,
     ADD_MECHANIC,
     REMOVE_MECHANIC,
     DISPATCH_MECHANIC,

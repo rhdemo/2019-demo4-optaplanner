@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package com.redhat.demo.optaplanner.restapi;
+package com.redhat.demo.optaplanner.websocket.response;
 
-public class DispatchMechanicResponse extends AbstractResponse {
+public class AddMechanicResponse extends AbstractResponse {
 
     private int mechanicIndex;
-    private int newFocusMachineIndex;
 
-    public DispatchMechanicResponse() {
-        super(ResponseType.DISPATCH_MECHANIC);
+    public AddMechanicResponse() {
+        super(ResponseType.ADD_MECHANIC);
     }
 
-    public DispatchMechanicResponse(int mechanicIndex, int newFocusMachineIndex) {
-        super(ResponseType.DISPATCH_MECHANIC);
+    public AddMechanicResponse(int mechanicIndex) {
+        super(ResponseType.ADD_MECHANIC);
         this.mechanicIndex = mechanicIndex;
-        this.newFocusMachineIndex = newFocusMachineIndex;
     }
 
     public int getMechanicIndex() {
@@ -38,13 +36,4 @@ public class DispatchMechanicResponse extends AbstractResponse {
     public void setMechanicIndex(int mechanicIndex) {
         this.mechanicIndex = mechanicIndex;
     }
-
-    public int getNewFocusMachineIndex() {
-        return newFocusMachineIndex;
-    }
-
-    public void setNewFocusMachineIndex(int newFocusMachineIndex) {
-        this.newFocusMachineIndex = newFocusMachineIndex;
-    }
-
 }
