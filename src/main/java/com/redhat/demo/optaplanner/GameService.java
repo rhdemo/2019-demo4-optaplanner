@@ -2,7 +2,7 @@ package com.redhat.demo.optaplanner;
 
 import java.util.List;
 
-public interface GameController {
+public interface GameService {
      void pauseGame();
 
      void resumeGame();

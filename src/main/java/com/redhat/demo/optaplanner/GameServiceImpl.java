@@ -30,9 +30,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GameControllerImpl implements GameController {
+public class GameServiceImpl implements GameService {
 
-    private static final Logger log = LoggerFactory.getLogger(GameControllerImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(GameServiceImpl.class);
 
     // the last "machine" is the entry point to the factory
     private static final int ENTRY_POINT_INDEX = AppConstants.MACHINES_LENGTH - 1;
