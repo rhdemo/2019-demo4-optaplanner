@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.redhat.demo.optaplanner.spring;
+package com.redhat.demo.optaplanner.websocket;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

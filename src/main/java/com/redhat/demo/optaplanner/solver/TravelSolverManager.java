@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import com.redhat.demo.optaplanner.domain.JsonMachine;
-import com.redhat.demo.optaplanner.domain.JsonMechanic;
+import com.redhat.demo.optaplanner.Machine;
+import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.solver.domain.OptaMachine;
 import com.redhat.demo.optaplanner.solver.domain.OptaMechanic;
 import com.redhat.demo.optaplanner.solver.domain.OptaSolution;
@@ -65,16 +65,16 @@ public class TravelSolverManager {
         executorService.shutdownNow();
     }
 
-    public void startSolver(JsonMachine[] jsonMachines, JsonMechanic[] jsonMechanics) {
-        List<OptaMachine> machineList = Arrays.stream(jsonMachines)
-                .map(jsonMachine -> new OptaMachine(
-                        jsonMachine.getMachineIndex(), jsonMachine.getToMachineIndexTravelTimeMillis()))
+    public void startSolver(Machine[] machines, List<Mechanic> mechanics) {
+        List<OptaMachine> machineList = Arrays.stream(machines)
+                .map(machine -> new OptaMachine(
+                        machine.getMachineIndex(), machine.getToMachineIndexTravelTimeMillis()))
                 .collect(Collectors.toList());
-        List<OptaMechanic> mechanicList = Arrays.stream(jsonMechanics)
-                .map(jsonMechanic -> {
-                    OptaMachine focusMachine = machineList.get(jsonMechanic.getFocusMachineIndex());
+        List<OptaMechanic> mechanicList = mechanics.stream()
+                .map(mechanic -> {
+                    OptaMachine focusMachine = machineList.get(mechanic.getFocusMachineIndex());
                     return new OptaMechanic(
-                            jsonMechanic.getMechanicIndex(), focusMachine, jsonMechanic.getFocusDepartureTimeMillis());
+                            mechanic.getMechanicIndex(), focusMachine, mechanic.getFocusDepartureTimeMillis());
                 })
                 .collect(Collectors.toList());
         List<OptaVisit> visitList = machineList.stream()
@@ -84,47 +84,46 @@ public class TravelSolverManager {
         executorService.submit(() -> solver.solve(solution));
     }
 
-    public void fetchAndUpdateFutureMachineIndexes(JsonMechanic[] jsonMechanics) {
+    public void fetchAndUpdateFutureMachineIndexes(List<Mechanic> mechanics) {
         OptaSolution bestSolution = bestSolutionReference.getAndSet(null);
         if (bestSolution == null) {
             return;
         }
-        if (bestSolution.getMachineList().size() != jsonMechanics.length) {
+        if (bestSolution.getMachineList().size() != mechanics.size()) {
             // The best solution is stale
             return;
         }
-        for (int i = 0; i < jsonMechanics.length; i++) {
-            JsonMechanic jsonMechanic = jsonMechanics[i];
-            OptaMechanic mechanic = bestSolution.getMechanicList().get(i);
-            if (mechanic.getFocusMachine().getMachineIndex() != jsonMechanic.getFocusMachineIndex()
-                || mechanic.getFocusDepartureTimeMillis() != jsonMechanic.getFocusDepartureTimeMillis()) {
+        for (int i = 0; i < mechanics.size(); i++) {
+            Mechanic mechanic = mechanics.get(i);
+            OptaMechanic optaMechanic = bestSolution.getMechanicList().get(i);
+            if (optaMechanic.getFocusMachine().getMachineIndex() != mechanic.getFocusMachineIndex()
+                || optaMechanic.getFocusDepartureTimeMillis() != mechanic.getFocusDepartureTimeMillis()) {
                 // The best solution is stale
                 return;
             }
         }
         // The best solution isn't stale (except maybe for machine healths, but that's ok)
-        for (int i = 0; i < jsonMechanics.length; i++) {
-            JsonMechanic jsonMechanic = jsonMechanics[i];
-            OptaMechanic mechanic = bestSolution.getMechanicList().get(i);
+        for (int i = 0; i < mechanics.size(); i++) {
+            Mechanic mechanic = mechanics.get(i);
+            OptaMechanic optaMechanic = bestSolution.getMechanicList().get(i);
             List<Integer> futureMachineIndexList = new ArrayList<>(bestSolution.getMachineList().size());
-            OptaVisit next = mechanic.getNext();
+            OptaVisit next = optaMechanic.getNext();
             while (next != null) {
                 futureMachineIndexList.add(next.getMachineIndex());
                 next = next.getNext();
             }
-            jsonMechanic.setFutureMachineIndexes(futureMachineIndexList.stream().mapToInt(Integer::intValue).toArray());
+            mechanic.setFutureMachineIndexes(futureMachineIndexList.stream().mapToInt(Integer::intValue).toArray());
         }
     }
 
-    // TODO: test this
-    public void updateMachineHealths(JsonMachine[] jsonMachines) {
+    public void updateMachineHealths(Machine[] machines) {
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution workingSolution = scoreDirector.getWorkingSolution();
             // A SolutionCloner doesn't clone problem fact lists, shallow clone to ensure changes are only applied to the workingSolution
             List<OptaMachine> machineList = new ArrayList<>(workingSolution.getMachineList());
             workingSolution.setMachineList(machineList);
 
-            Arrays.stream(jsonMachines)
+            Arrays.stream(machines)
                     .forEach(jsonMachine -> {
                         OptaMachine workingMachine = workingSolution.getMachineList().get(jsonMachine.getMachineIndex());
                         scoreDirector.beforeProblemPropertyChanged(workingMachine);

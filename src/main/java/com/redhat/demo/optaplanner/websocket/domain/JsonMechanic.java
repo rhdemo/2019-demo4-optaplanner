@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.redhat.demo.optaplanner.domain;
+package com.redhat.demo.optaplanner.websocket.domain;
 
 public class JsonMechanic {
 
     private int mechanicIndex;
-
     private int focusMachineIndex;
     private long focusDepartureTimeMillis;
 
@@ -29,42 +28,30 @@ public class JsonMechanic {
     }
 
     public JsonMechanic(int mechanicIndex, int focusMachineIndex, long focusDepartureTimeMillis) {
+        this(mechanicIndex, focusMachineIndex, focusDepartureTimeMillis, new int[0]);
+    }
+
+    public JsonMechanic(int mechanicIndex, int focusMachineIndex, long focusDepartureTimeMillis, int[] futureMachineIndexes) {
         this.mechanicIndex = mechanicIndex;
         this.focusMachineIndex = focusMachineIndex;
         this.focusDepartureTimeMillis = focusDepartureTimeMillis;
-        futureMachineIndexes = new int[0];
+        this.futureMachineIndexes = futureMachineIndexes;
     }
 
     public int getMechanicIndex() {
         return mechanicIndex;
     }
 
-    public void setMechanicIndex(int mechanicIndex) {
-        this.mechanicIndex = mechanicIndex;
-    }
-
     public int getFocusMachineIndex() {
         return focusMachineIndex;
-    }
-
-    public void setFocusMachineIndex(int focusMachineIndex) {
-        this.focusMachineIndex = focusMachineIndex;
     }
 
     public long getFocusDepartureTimeMillis() {
         return focusDepartureTimeMillis;
     }
 
-    public void setFocusDepartureTimeMillis(long focusDepartureTimeMillis) {
-        this.focusDepartureTimeMillis = focusDepartureTimeMillis;
-    }
-
     public int[] getFutureMachineIndexes() {
         return futureMachineIndexes;
-    }
-
-    public void setFutureMachineIndexes(int[] futureMachineIndexes) {
-        this.futureMachineIndexes = futureMachineIndexes;
     }
 
     @Override

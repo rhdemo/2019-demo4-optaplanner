@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-package com.redhat.demo.optaplanner.restapi;
+package com.redhat.demo.optaplanner.websocket.response;
 
-public class RemoveMechanicResponse extends AbstractResponse {
+import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
 
-    private int mechanicIndex;
+public class DispatchMechanicResponse extends AbstractResponse {
 
-    public RemoveMechanicResponse() {
-        super(ResponseType.REMOVE_MECHANIC);
+    private JsonMechanic mechanic;
+
+    public DispatchMechanicResponse() {
+        super(ResponseType.DISPATCH_MECHANIC);
     }
 
-    public RemoveMechanicResponse(int mechanicIndex) {
-        super(ResponseType.REMOVE_MECHANIC);
-        this.mechanicIndex = mechanicIndex;
+    public DispatchMechanicResponse(JsonMechanic mechanic) {
+        super(ResponseType.DISPATCH_MECHANIC);
+        this.mechanic = mechanic;
     }
 
-    public int getMechanicIndex() {
-        return mechanicIndex;
+    public JsonMechanic getMechanic() {
+        return mechanic;
     }
-
-    public void setMechanicIndex(int mechanicIndex) {
-        this.mechanicIndex = mechanicIndex;
-    }
-
 }
