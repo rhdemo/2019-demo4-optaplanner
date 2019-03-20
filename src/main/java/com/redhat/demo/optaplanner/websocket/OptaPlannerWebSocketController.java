@@ -20,11 +20,8 @@ public class OptaPlannerWebSocketController implements DownstreamConnector {
 
     private static final String WEB_SOCKET_ENDPOINT = "/topic/roster";
 
+    @Autowired
     private GameController gameController;
-
-    public OptaPlannerWebSocketController(GameController gameController) {
-        this.gameController = gameController;
-    }
 
     @Autowired
     private SimpMessagingTemplate template;
