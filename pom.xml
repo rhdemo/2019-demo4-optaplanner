@@ -127,19 +127,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>fabric8-maven-plugin</artifactId>
-        <version>${version.fabric8.maven.plugin}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-              <goal>resource</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -167,6 +154,7 @@
         </pluginManagement>
       </build>
     </profile>
+
     <profile>
       <id>spring-prod</id>
       <activation>
@@ -177,6 +165,28 @@
       <properties>
         <spring.profiles.active>prod</spring.profiles.active>
       </properties>
+    </profile>
+
+    <profile>
+      <id>openshift</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>fabric8-maven-plugin</artifactId>
+            <version>${version.fabric8.maven.plugin}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>build</goal>
+                  <goal>resource</goal>
+                  <goal>deploy</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
