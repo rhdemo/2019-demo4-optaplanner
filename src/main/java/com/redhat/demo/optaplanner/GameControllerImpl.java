@@ -35,7 +35,7 @@ public class GameControllerImpl implements GameController {
     private static final Logger log = LoggerFactory.getLogger(GameControllerImpl.class);
 
     // the last "machine" is the entry point to the factory
-    private static final int ENTRY_POINT_INDEX = AppConstants.MACHINES_LENGTH;
+    private static final int ENTRY_POINT_INDEX = AppConstants.MACHINES_LENGTH - 1;
     private static final long ENTRY_POINT_MECHANIC_DELAY = 0L;
     @Autowired
     private UpstreamConnector upstreamConnector;
