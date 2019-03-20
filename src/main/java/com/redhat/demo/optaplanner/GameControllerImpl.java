@@ -34,6 +34,9 @@ public class GameControllerImpl implements GameController {
 
     private static final Logger log = LoggerFactory.getLogger(GameControllerImpl.class);
 
+    // the last "machine" is the entry point to the factory
+    private static final int ENTRY_POINT_INDEX = AppConstants.MACHINES_LENGTH;
+    private static final long ENTRY_POINT_MECHANIC_DELAY = 0L;
     @Autowired
     private UpstreamConnector upstreamConnector;
 
@@ -158,12 +161,9 @@ public class GameControllerImpl implements GameController {
         if (mechanicAddition > 0) {
 
             for (int i = 0; i < mechanicAddition; i++) {
-                Mechanic addedMechanic = new Mechanic();
+                Mechanic addedMechanic = new Mechanic(mechanics.size(), ENTRY_POINT_INDEX, ENTRY_POINT_MECHANIC_DELAY);
                 mechanics.add(addedMechanic);
-
-                //  solverManager.addMechanic();
-                // TODO: solverManager.addMechanic(mechanicIndex, foo, foo);
-
+               // solverManager.addMechanic(mechanics.size() - 1);
                 downstreamConnector.mechanicAdded(addedMechanic);
             }
         } else if (mechanicAddition < 0) {

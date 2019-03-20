@@ -8,9 +8,6 @@ public class Mechanic {
 
     private int[] futureMachineIndexes;
 
-    public Mechanic() {
-    }
-
     public Mechanic(int mechanicIndex, int focusMachineIndex, long focusDepartureTimeMillis) {
         this.mechanicIndex = mechanicIndex;
         this.focusMachineIndex = focusMachineIndex;
