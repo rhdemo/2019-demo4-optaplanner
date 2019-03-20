@@ -21,7 +21,7 @@ import org.optaplanner.core.api.domain.lookup.PlanningId;
 public class OptaMachine {
 
     @PlanningId
-    private int machineIndex;
+    private Integer machineIndex;
     private long[] toMachineIndexTravelTimeMillis;
 
     private double health;
@@ -44,7 +44,7 @@ public class OptaMachine {
     // Getter and setters boilerplate
     // ************************************************************************
 
-    public int getMachineIndex() {
+    public Integer getMachineIndex() {
         return machineIndex;
     }
 

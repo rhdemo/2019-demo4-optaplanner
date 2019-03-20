@@ -31,7 +31,7 @@ public class OptaVisit extends OptaVisitOrMechanic {
     public static final long SERVICE_TIME_MILLIS = 500L;
 
     @PlanningId
-    private int machineIndex;
+    private Integer machineIndex;
     private OptaMachine machine;
 
     @PlanningVariable(valueRangeProviderRefs = {"mechanicRange", "visitRange"},
@@ -74,7 +74,7 @@ public class OptaVisit extends OptaVisitOrMechanic {
     // Getter and setters boilerplate
     // ************************************************************************
 
-    public int getMachineIndex() {
+    public Integer getMachineIndex() {
         return machineIndex;
     }
 

@@ -52,7 +52,7 @@ public class TravelSolverManager {
     }
 
     @PostConstruct
-    private void initSolver() {
+    protected void initSolver() {
         executorService = Executors.newFixedThreadPool(1);
         solver = solverFactory.buildSolver();
         solver.addEventListener(bestSolutionEvent -> {
@@ -61,7 +61,7 @@ public class TravelSolverManager {
     }
 
     @PreDestroy
-    private void preDestroy() {
+    protected void preDestroy() {
         executorService.shutdownNow();
     }
 
@@ -81,7 +81,14 @@ public class TravelSolverManager {
                 .map(machine -> new OptaVisit(machine.getMachineIndex(), machine))
                 .collect(Collectors.toList());
         OptaSolution solution = new OptaSolution(machineList, mechanicList, visitList);
-        executorService.submit(() -> solver.solve(solution));
+
+        executorService.submit(() -> {
+            try {
+                solver.solve(solution);
+            } catch (Throwable th) {
+                th.printStackTrace();
+            }
+        });
     }
 
     public void fetchAndUpdateFutureMachineIndexes(List<Mechanic> mechanics) {
@@ -124,10 +131,10 @@ public class TravelSolverManager {
             workingSolution.setMachineList(machineList);
 
             Arrays.stream(machines)
-                    .forEach(jsonMachine -> {
-                        OptaMachine workingMachine = workingSolution.getMachineList().get(jsonMachine.getMachineIndex());
+                    .forEach(machine -> {
+                        OptaMachine workingMachine = workingSolution.getMachineList().get(machine.getMachineIndex());
                         scoreDirector.beforeProblemPropertyChanged(workingMachine);
-                        workingMachine.setHealth(jsonMachine.getHealth());
+                        workingMachine.setHealth(machine.getHealth());
                         scoreDirector.afterProblemPropertyChanged(workingMachine);
                         scoreDirector.triggerVariableListeners();
                     });
@@ -135,12 +142,16 @@ public class TravelSolverManager {
     }
 
 
-    public void addMechanic(int mechanicIndex, OptaMachine focusMachine, long focusFinishTimeMillis) {
+    public void addMechanic(int mechanicIndex) {
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
+            List<OptaMachine> machines = solution.getMachineList();
+
+            // The last machine is the entry point to the factory. A new mechanic is supposed to show up there.
+            OptaMachine factoryEntryPoint = machines.get(machines.size() - 1);
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
-            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, focusMachine, focusFinishTimeMillis);
+            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, factoryEntryPoint, 0L);
             scoreDirector.beforeEntityAdded(mechanic);
             mechanicList.add(mechanic);
             scoreDirector.afterEntityAdded(mechanic);
