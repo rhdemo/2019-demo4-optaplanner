@@ -45,7 +45,9 @@ public class FakeUpstreamConnector implements UpstreamConnector {
 
     @Override
     public synchronized void damageMachine(int machineIndex, double damage) {
-        machineHealths[machineIndex] -= damage;
+        if (machineHealths[machineIndex] >= 0.0) {
+            machineHealths[machineIndex] -= damage;
+        }
     }
 
 }
