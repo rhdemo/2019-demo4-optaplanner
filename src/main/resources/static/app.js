@@ -43,6 +43,8 @@ $(function () {
     $( "#unpauze" ).click(function() { unpauze(); });
     $( "#addMechanic" ).click(function() { addMechanic(); });
     $( "#removeMechanic" ).click(function() { removeMechanic(); });
+    $( "#start-simulation" ).click(function() { startSimulation() });
+    $( "#stop-simulation" ).click(function() { stopSimulation() });
 });
 
 function connect() {
@@ -96,6 +98,20 @@ function addMechanic() {
 
 function removeMechanic() {
     stompClient.send("/app/removeMechanic", {});
+}
+
+function startSimulation() {
+    console.log('starting simulation');
+    $.post('/simulation/start', {}, function(data, status, jqXHR) { console.log('sent post start simulation') });
+    $("#start-simulation").prop("disabled", true);
+    $("#stop-simulation").prop("disabled", false);
+}
+
+function stopSimulation() {
+    console.log('stopping simulation');
+    $.post('/simulation/stop', {}, function(data, status, jqXHR) { console.log('sent post stop simulation') });
+    $("#start-simulation").prop("disabled", false);
+    $("#stop-simulation").prop("disabled", true);
 }
 
 function processResponse(response) {
