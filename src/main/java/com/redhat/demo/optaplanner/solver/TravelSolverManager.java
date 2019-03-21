@@ -48,7 +48,7 @@ public class TravelSolverManager {
     private AtomicReference<OptaSolution> bestSolutionReference = new AtomicReference<>();
 
     public TravelSolverManager() {
-        solverFactory = SolverFactory.createFromXmlResource(SOLVER_CONFIG);
+        solverFactory = SolverFactory.createFromXmlResource(SOLVER_CONFIG, TravelSolverManager.class.getClassLoader());
     }
 
     @PostConstruct
