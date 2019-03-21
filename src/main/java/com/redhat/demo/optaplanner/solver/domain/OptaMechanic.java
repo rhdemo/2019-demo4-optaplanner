@@ -21,7 +21,7 @@ import org.optaplanner.core.api.domain.lookup.PlanningId;
 public class OptaMechanic extends OptaVisitOrMechanic {
 
     @PlanningId
-    private int mechanicIndex;
+    private Integer mechanicIndex;
 
     // The machine component that the mechanic is currently working on, on-route to or has just finished working on
     private OptaMachine focusMachine;
@@ -56,7 +56,7 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     // Getter and setters boilerplate
     // ************************************************************************
 
-    public int getMechanicIndex() {
+    public Integer getMechanicIndex() {
         return mechanicIndex;
     }
 
