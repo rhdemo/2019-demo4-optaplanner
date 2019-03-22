@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -96,7 +97,7 @@ public class TravelSolverManager {
         if (bestSolution == null) {
             return;
         }
-        if (bestSolution.getMachineList().size() != mechanics.size()) {
+        if (bestSolution.getMechanicList().size() != mechanics.size()) {
             // The best solution is stale
             return;
         }
@@ -104,7 +105,8 @@ public class TravelSolverManager {
             Mechanic mechanic = mechanics.get(i);
             OptaMechanic optaMechanic = bestSolution.getMechanicList().get(i);
             if (optaMechanic.getFocusMachine().getMachineIndex() != mechanic.getFocusMachineIndex()
-                || optaMechanic.getFocusDepartureTimeMillis() != mechanic.getFocusDepartureTimeMillis()) {
+//                || optaMechanic.getFocusDepartureTimeMillis() != mechanic.getFocusDepartureTimeMillis()) {
+                    ) { // TODO uncomment above line after syncing focusDepartureTimeMillie between UI and OptaPlanner
                 // The best solution is stale
                 return;
             }
@@ -142,7 +144,6 @@ public class TravelSolverManager {
         });
     }
 
-
     public void addMechanic(int mechanicIndex) {
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
@@ -169,6 +170,32 @@ public class TravelSolverManager {
             scoreDirector.beforeEntityAdded(mechanic);
             mechanicList.remove(mechanicIndex);
             scoreDirector.afterEntityAdded(mechanic);
+            scoreDirector.triggerVariableListeners();
+        });
+    }
+
+    public void resetMachineVisit(int focusMachineIndex) {
+        solver.addProblemFactChange(scoreDirector -> {
+            OptaSolution solution = scoreDirector.getWorkingSolution();
+
+            // First remove old visit
+            OptaVisit oldVisit = solution.getVisitList().get(focusMachineIndex);
+            OptaVisit nextVisit = oldVisit.getNext();
+            if (nextVisit != null) {
+                scoreDirector.beforeVariableChanged(nextVisit, "previous");
+                nextVisit.setPrevious(oldVisit.getPrevious());
+                scoreDirector.afterVariableChanged(nextVisit, "previous");
+            }
+            scoreDirector.beforeEntityRemoved(oldVisit);
+            solution.getVisitList().remove(oldVisit);
+            scoreDirector.afterEntityRemoved(oldVisit);
+            scoreDirector.triggerVariableListeners();
+
+            // Add a new visit:
+            OptaVisit newVisit = new OptaVisit(focusMachineIndex, oldVisit.getMachine());
+            scoreDirector.beforeEntityAdded(newVisit);
+            solution.getVisitList().add(newVisit.getMachineIndex(), newVisit);
+            scoreDirector.afterEntityAdded(newVisit);
             scoreDirector.triggerVariableListeners();
         });
     }

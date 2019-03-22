@@ -30,7 +30,7 @@ global HardSoftLongScoreHolder scoreHolder;
 
 rule "Attrition"
     when
-        $visit : OptaVisit(previous != null, $timeMillis : departureTimeMillis, $attritionMicros : attritionMicros)
+        $visit : OptaVisit(previous != null, $timeMillis : departureTimeMillis, $attritionMicros : getAttritionMicros())
     then
         scoreHolder.addHardConstraintMatch(kcontext, - $timeMillis * $attritionMicros);
 end
