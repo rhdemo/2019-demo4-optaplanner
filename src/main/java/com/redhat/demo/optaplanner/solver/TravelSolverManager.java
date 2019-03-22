@@ -129,15 +129,16 @@ public class TravelSolverManager {
             // A SolutionCloner doesn't clone problem fact lists, shallow clone to ensure changes are only applied to the workingSolution
             List<OptaMachine> machineList = new ArrayList<>(workingSolution.getMachineList());
             workingSolution.setMachineList(machineList);
+            // Ideally we should clone the actual OptaMachine instances and rewire OptaMechanic and OptaVisits accordingly
+            // to avoid corrupting previous best solutions, but we ignore their health anyway, so no problem.
 
-            Arrays.stream(machines)
-                    .forEach(machine -> {
-                        OptaMachine workingMachine = workingSolution.getMachineList().get(machine.getMachineIndex());
-                        scoreDirector.beforeProblemPropertyChanged(workingMachine);
-                        workingMachine.setHealth(machine.getHealth());
-                        scoreDirector.afterProblemPropertyChanged(workingMachine);
-                        scoreDirector.triggerVariableListeners();
-                    });
+            for (Machine machine : machines) {
+                OptaMachine workingMachine = workingSolution.getMachineList().get(machine.getMachineIndex());
+                scoreDirector.beforeProblemPropertyChanged(workingMachine);
+                workingMachine.setHealth(machine.getHealth());
+                scoreDirector.afterProblemPropertyChanged(workingMachine);
+            }
+            scoreDirector.triggerVariableListeners();
         });
     }
 
@@ -151,7 +152,7 @@ public class TravelSolverManager {
             OptaMachine factoryEntryPoint = machines.get(machines.size() - 1);
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
-            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, factoryEntryPoint, 0L);
+            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, factoryEntryPoint, 0L); // TODO the 0L is a bug
             scoreDirector.beforeEntityAdded(mechanic);
             mechanicList.add(mechanic);
             scoreDirector.afterEntityAdded(mechanic);
