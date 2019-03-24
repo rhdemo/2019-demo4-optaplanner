@@ -183,6 +183,7 @@ public class TravelSolverManager {
             OptaMechanic optaMechanic = solution.getMechanicList().get(mechanic.getMechanicIndex());
             scoreDirector.beforeProblemPropertyChanged(optaMechanic);
             optaMechanic.setFocusMachine(newFocusMachine);
+            optaMechanic.setFocusDepartureTimeMillis(mechanic.getFocusDepartureTimeMillis());
             scoreDirector.afterProblemPropertyChanged(optaMechanic);
 
             OptaVisit visit = solution.getVisitList().get(newFocusMachine.getMachineIndex());
