@@ -148,7 +148,7 @@ public class GameServiceImpl implements GameService {
                 long travelTime = machines[oldFocusMachineIndex]
                         .getToMachineIndexTravelTimeMillis()[newFocusMachineIndex];
                 mechanic.setFocusDepartureTimeMillis(timeMillis + travelTime + AppConstants.FIX_TIME_MILLIS + AppConstants.BREATHING_TIME_MILLIS);
-
+                solverManager.dispatchMechanic(mechanic);
                 downstreamConnector.dispatchMechanic(mechanic);
             }
         }

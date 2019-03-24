@@ -32,6 +32,7 @@ import com.redhat.demo.optaplanner.solver.domain.OptaMachine;
 import com.redhat.demo.optaplanner.solver.domain.OptaMechanic;
 import com.redhat.demo.optaplanner.solver.domain.OptaSolution;
 import com.redhat.demo.optaplanner.solver.domain.OptaVisit;
+import com.redhat.demo.optaplanner.solver.domain.OptaVisitOrMechanic;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,7 @@ public class TravelSolverManager {
         if (bestSolution == null) {
             return;
         }
-        if (bestSolution.getMachineList().size() != mechanics.size()) {
+        if (bestSolution.getMechanicList().size() != mechanics.size()) {
             // The best solution is stale
             return;
         }
@@ -119,7 +120,8 @@ public class TravelSolverManager {
                 futureMachineIndexList.add(next.getMachineIndex());
                 next = next.getNext();
             }
-            mechanic.setFutureMachineIndexes(futureMachineIndexList.stream().mapToInt(Integer::intValue).toArray());
+            int[] futureMachineIndexes = futureMachineIndexList.stream().mapToInt(Integer::intValue).toArray();
+            mechanic.setFutureMachineIndexes(futureMachineIndexes);
         }
     }
 
@@ -169,6 +171,31 @@ public class TravelSolverManager {
             scoreDirector.beforeEntityAdded(mechanic);
             mechanicList.remove(mechanicIndex);
             scoreDirector.afterEntityAdded(mechanic);
+            scoreDirector.triggerVariableListeners();
+        });
+    }
+
+    public void dispatchMechanic(Mechanic mechanic) {
+        solver.addProblemFactChange(scoreDirector -> {
+            OptaSolution solution = scoreDirector.getWorkingSolution();
+            OptaMachine newFocusMachine = solution.getMachineList().get(mechanic.getFocusMachineIndex());
+
+            OptaMechanic optaMechanic = solution.getMechanicList().get(mechanic.getMechanicIndex());
+            scoreDirector.beforeProblemPropertyChanged(optaMechanic);
+            optaMechanic.setFocusMachine(newFocusMachine);
+            scoreDirector.afterProblemPropertyChanged(optaMechanic);
+
+            OptaVisit visit = solution.getVisitList().get(newFocusMachine.getMachineIndex());
+            OptaVisitOrMechanic previous = visit.getPrevious();
+            OptaVisit next = visit.getNext();
+            if (next != null) {
+                scoreDirector.beforeVariableChanged(next, "previous");
+                next.setPrevious(previous);
+                scoreDirector.afterVariableChanged(next, "previous");
+            }
+            scoreDirector.beforeVariableChanged(visit, "previous");
+            visit.setPrevious(null);
+            scoreDirector.afterVariableChanged(visit, "previous");
             scoreDirector.triggerVariableListeners();
         });
     }
