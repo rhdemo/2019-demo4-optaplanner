@@ -1,17 +1,20 @@
 package com.redhat.demo.optaplanner;
 
 public class Mechanic {
+
     private int mechanicIndex;
+    private double speed; // In pixels per millisecond
 
     private int focusMachineIndex;
     private long focusTravelTimeMillis;
     private long focusFixTimeMillis;
-    private double speed;
 
     private int[] futureMachineIndexes;
 
-    public Mechanic(int mechanicIndex, int focusMachineIndex, long focusTravelTimeMillis, long focusFixTimeMillis) {
+    public Mechanic(int mechanicIndex, double speed,
+            int focusMachineIndex, long focusTravelTimeMillis, long focusFixTimeMillis) {
         this.mechanicIndex = mechanicIndex;
+        this.speed = speed;
         this.focusMachineIndex = focusMachineIndex;
         this.focusTravelTimeMillis = focusTravelTimeMillis;
         this.focusFixTimeMillis = focusFixTimeMillis;
@@ -22,8 +25,8 @@ public class Mechanic {
         return mechanicIndex;
     }
 
-    public void setMechanicIndex(int mechanicIndex) {
-        this.mechanicIndex = mechanicIndex;
+    public double getSpeed() {
+        return speed;
     }
 
     public int getFocusMachineIndex() {
@@ -48,14 +51,6 @@ public class Mechanic {
 
     public void setFocusFixTimeMillis(long focusFixTimeMillis) {
         this.focusFixTimeMillis = focusFixTimeMillis;
-    }
-
-    public double getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(double speed) {
-        this.speed = speed;
     }
 
     public int[] getFutureMachineIndexes() {

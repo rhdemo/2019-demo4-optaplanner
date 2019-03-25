@@ -22,17 +22,18 @@ public class OptaMachine {
 
     @PlanningId
     private Integer machineIndex;
-    private long[] toMachineIndexTravelTimeMillis;
+    private double[] machineIndexToTravelDistances;
 
     private double health;
 
-    public OptaMachine(int machineIndex, long[] toMachineIndexTravelTimeMillis) {
+    public OptaMachine(int machineIndex, double[] machineIndexToTravelDistances) {
         this.machineIndex = machineIndex;
-        this.toMachineIndexTravelTimeMillis = toMachineIndexTravelTimeMillis;
+        this.machineIndexToTravelDistances = machineIndexToTravelDistances;
     }
 
-    public long getTravelTimeMillisTo(OptaMachine machine) {
-        return this.toMachineIndexTravelTimeMillis[machine.getMachineIndex()];
+    public long getTravelTimeMillisTo(OptaMachine machine, OptaMechanic mechanic) {
+        double travelTimeMillis = this.machineIndexToTravelDistances[machine.getMachineIndex()] / mechanic.getSpeed();
+        return (long) travelTimeMillis;
     }
 
     @Override
@@ -46,10 +47,6 @@ public class OptaMachine {
 
     public Integer getMachineIndex() {
         return machineIndex;
-    }
-
-    public long[] getToMachineIndexTravelTimeMillis() {
-        return toMachineIndexTravelTimeMillis;
     }
 
     public double getHealth() {

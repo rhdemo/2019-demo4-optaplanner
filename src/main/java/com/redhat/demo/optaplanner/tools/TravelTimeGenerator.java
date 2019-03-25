@@ -18,19 +18,19 @@ package com.redhat.demo.optaplanner.tools;
 
 import java.util.Random;
 
-import com.redhat.demo.optaplanner.AppConstants;
-
 /**
  * Helper class until we have have real road travel times from UX image.
  */
 public class TravelTimeGenerator {
+
+    private static final int MACHINES_LENGTH = 10;
 
     private static final int MAX_X = 800; // Maximum pixels to cross horizontally
     private static final int MAX_Y = 600; // Maximum pixels seconds to cross vertically
 
     public static void main(String[] args) {
         Random random = new Random(37);
-        int[][] machineIndexToXYPairs = new int[AppConstants.MACHINES_LENGTH + 1][2];
+        int[][] machineIndexToXYPairs = new int[MACHINES_LENGTH + 1][2];
         for (int i = 0; i < machineIndexToXYPairs.length; i++) {
             machineIndexToXYPairs[i][0] = random.nextInt(MAX_X);
             machineIndexToXYPairs[i][1] = random.nextInt(MAX_Y);
@@ -51,7 +51,7 @@ public class TravelTimeGenerator {
         }
         System.out.print("machine name, x, y");
         for (int i = 0; i < machineIndexToXYPairs.length; i++) {
-            if (i != AppConstants.MACHINES_LENGTH) {
+            if (i != MACHINES_LENGTH) {
                 System.out.print(", machine-");
                 System.out.print(i + 1);
             } else {
@@ -61,7 +61,7 @@ public class TravelTimeGenerator {
         System.out.println();
 
         for (int i = 0; i < travelDistanceMatrix.length; i++) {
-            if (i != AppConstants.MACHINES_LENGTH) {
+            if (i != MACHINES_LENGTH) {
                 System.out.print("machine-");
                 System.out.print(i + 1);
             } else {
