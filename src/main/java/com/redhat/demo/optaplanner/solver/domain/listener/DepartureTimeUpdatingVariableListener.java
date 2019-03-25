@@ -65,9 +65,6 @@ public class DepartureTimeUpdatingVariableListener implements VariableListener<O
         while (shadowVisit != null && !Objects.equals(shadowVisit.getDepartureTimeMillis(), departureTimeMillis)) {
             scoreDirector.beforeVariableChanged(shadowVisit, "departureTimeMillis");
             shadowVisit.setDepartureTimeMillis(departureTimeMillis);
-            if (shadowVisit.getMechanic() != null) { // TODO put in another method or rename current one to reflect what it does
-                shadowVisit.getMechanic().setFocusMachine(shadowVisit.getMachine());
-            }
             scoreDirector.afterVariableChanged(shadowVisit, "departureTimeMillis");
             shadowVisit = shadowVisit.getNext();
             departureTimeMillis = (departureTimeMillis == null || shadowVisit == null) ? null
