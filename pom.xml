@@ -83,14 +83,13 @@
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>bootstrap</artifactId>
-      <version>3.3.7</version>
+      <version>4.3.1</version>
     </dependency>
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>jquery</artifactId>
-      <version>3.1.0</version>
+      <version>3.3.1</version>
     </dependency>
-
     <dependency>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-client-hotrod</artifactId>
@@ -174,6 +173,14 @@
 
     <profile>
       <id>openshift</id>
+      <activation>
+        <property>
+          <name>openshift</name>
+        </property>
+      </activation>
+      <properties>
+        <spring.profiles.active>prod</spring.profiles.active>
+      </properties>
       <build>
         <plugins>
           <plugin>
