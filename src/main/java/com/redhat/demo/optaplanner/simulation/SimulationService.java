@@ -3,6 +3,7 @@ package com.redhat.demo.optaplanner.simulation;
 import javax.annotation.PostConstruct;
 
 import com.redhat.demo.optaplanner.AppConstants;
+import com.redhat.demo.optaplanner.config.AppConfiguration;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +14,9 @@ public class SimulationService {
 
     @Autowired
     private UpstreamConnector upstreamConnector;
+
+    @Autowired
+    private AppConfiguration configuration;
 
     private boolean isSimulationOn;
 
@@ -41,5 +45,9 @@ public class SimulationService {
 
     public void stopSimulation() {
         isSimulationOn = false;
+    }
+
+    public void damageMachine(int machineIndex) {
+        upstreamConnector.damageMachine(machineIndex, configuration.getManualDamageValue());
     }
 }

@@ -37,6 +37,8 @@ public class AppConfiguration {
     private int[] machineIndexToGridY;
     private double[][] travelDistanceMatrix;
 
+    private double manualDamageValue = 0.30;
+
     @PostConstruct
     public void readTravelDistanceMatrix() {
         List<String> lines;
@@ -118,5 +120,9 @@ public class AppConfiguration {
 
     public double getMechanicSpeed() {
         return mechanicSpeed;
+    }
+
+    public double getManualDamageValue() {
+        return manualDamageValue;
     }
 }
