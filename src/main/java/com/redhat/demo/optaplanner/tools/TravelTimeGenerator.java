@@ -35,7 +35,7 @@ public class TravelTimeGenerator {
             machineIndexToXYPairs[i][0] = random.nextInt(MAX_X);
             machineIndexToXYPairs[i][1] = random.nextInt(MAX_Y);
         }
-        long[][] travelTimeMillisMatrix = new long[AppConstants.MACHINES_LENGTH][AppConstants.MACHINES_LENGTH];
+        double[][] travelDistanceMatrix = new double[AppConstants.MACHINES_LENGTH][AppConstants.MACHINES_LENGTH];
         for (int i = 0; i < AppConstants.MACHINES_LENGTH; i++) {
             int fromX =  machineIndexToXYPairs[i][0];
             int fromY =  machineIndexToXYPairs[i][1];
@@ -46,22 +46,29 @@ public class TravelTimeGenerator {
                 // Euclidean distance (Pythagorean theorem)
                 double xDifference = toX - fromX;
                 double yDifference = toY - fromY;
-                double distance = Math.sqrt((xDifference * xDifference) + (yDifference * yDifference));
-                travelTimeMillisMatrix[i][j] = (long) distance;
+                travelDistanceMatrix[i][j]  = Math.sqrt((xDifference * xDifference) + (yDifference * yDifference));
             }
         }
-        System.out.println("{");
-        for (int i = 0; i < travelTimeMillisMatrix.length; i++) {
-            System.out.print("            {");
-            for (int j = 0; j < travelTimeMillisMatrix[i].length; j++) {
-                if (j != 0) {
-                    System.out.print(", ");
-                }
-                System.out.print(travelTimeMillisMatrix[i][j]);
-            }
-            System.out.println("},");
+        System.out.print("machine name, x, y");
+        for (int i = 0; i < AppConstants.MACHINES_LENGTH; i++) {
+            System.out.print(", machine-");
+            System.out.print(i + 1);
         }
-        System.out.println("}");
+        System.out.println();
+
+        for (int i = 0; i < travelDistanceMatrix.length; i++) {
+            System.out.print("machine-");
+            System.out.print(i + 1);
+            System.out.print(", ");
+            System.out.print(machineIndexToXYPairs[i][0]);
+            System.out.print(", ");
+            System.out.print(machineIndexToXYPairs[i][1]);
+            for (int j = 0; j < travelDistanceMatrix[i].length; j++) {
+                System.out.print(", ");
+                System.out.print(travelDistanceMatrix[i][j]);
+            }
+            System.out.println();
+        }
     }
 
 }
