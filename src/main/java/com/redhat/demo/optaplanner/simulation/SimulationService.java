@@ -3,6 +3,7 @@ package com.redhat.demo.optaplanner.simulation;
 import javax.annotation.PostConstruct;
 
 import com.redhat.demo.optaplanner.AppConstants;
+import com.redhat.demo.optaplanner.config.AppConfiguration;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +25,7 @@ public class SimulationService {
         isSimulationOn = false;
     }
 
-    @Scheduled(fixedDelay = AppConstants.TIME_TICK_MILLIS)
+    @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
     public void damageMachines() {
         if (!isSimulationOn) {
             return;

@@ -16,7 +16,7 @@
 
 package com.redhat.demo.optaplanner.solver.domain;
 
-import com.redhat.demo.optaplanner.solver.domain.listener.DepartureTimeUpdatingVariableListener;
+import com.redhat.demo.optaplanner.solver.domain.listener.FixTimeUpdatingVariableListener;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.AnchorShadowVariable;
@@ -28,8 +28,6 @@ import org.optaplanner.core.api.domain.variable.PlanningVariableReference;
 @PlanningEntity
 public class OptaVisit extends OptaVisitOrMechanic {
 
-    public static final long SERVICE_TIME_MILLIS = 500L;
-
     @PlanningId
     private Integer machineIndex;
     private OptaMachine machine;
@@ -40,10 +38,10 @@ public class OptaVisit extends OptaVisitOrMechanic {
 
     @AnchorShadowVariable(sourceVariableName = "previous")
     private OptaMechanic mechanic;
-    @CustomShadowVariable(variableListenerClass = DepartureTimeUpdatingVariableListener.class,
+    @CustomShadowVariable(variableListenerClass = FixTimeUpdatingVariableListener.class,
             sources = {@PlanningVariableReference(variableName = "previous"),
                     @PlanningVariableReference(variableName = "mechanic")})
-    private Long departureTimeMillis = null; // Always after OptaMechanic.focusDepartureTimeMillis
+    private Long fixTimeMillis = null; // Always after OptaMechanic.focusDepartureTimeMillis
 
     private OptaVisit() {
     }
@@ -100,12 +98,12 @@ public class OptaVisit extends OptaVisitOrMechanic {
     }
 
     @Override
-    public Long getDepartureTimeMillis() {
-        return departureTimeMillis;
+    public Long getFixTimeMillis() {
+        return fixTimeMillis;
     }
 
-    public void setDepartureTimeMillis(Long departureTimeMillis) {
-        this.departureTimeMillis = departureTimeMillis;
+    public void setFixTimeMillis(Long fixTimeMillis) {
+        this.fixTimeMillis = fixTimeMillis;
     }
 
 }

@@ -64,8 +64,10 @@ public class GameServiceImpl implements GameService {
             machines[i] = new Machine(i, x, y, machineIndexToTravelDistances, machineHealths[i]);
         }
         double mechanicSpeed = appConfiguration.getMechanicSpeed();
-        for (int i = 0; i < AppConstants.INIT_MECHANICS_LENGTH; i++) {
-            mechanics.add(new Mechanic(i, mechanicSpeed, i, timeMillis, timeMillis + AppConstants.FIX_TIME_MILLIS));
+        for (int i = 0; i < appConfiguration.getInitialMechanicsSize(); i++) {
+            mechanics.add(new Mechanic(i, mechanicSpeed,
+                    appConfiguration.getFixDurationMillis(), appConfiguration.getThumbUpDurationMillis(),
+                    i, timeMillis));
         }
         solverManager.startSolver(machines, mechanics);
     }
@@ -110,12 +112,12 @@ public class GameServiceImpl implements GameService {
         return machines;
     }
 
-    @Scheduled(fixedDelay = AppConstants.TIME_TICK_MILLIS)
+    @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
     public void tick() {
         if (pauzed) {
             return;
         }
-        timeMillis += AppConstants.TIME_TICK_MILLIS;
+        timeMillis += AppConfiguration.TIME_TICK_MILLIS;
 
         // Update futureMachineIndexes first (it might affect mechanic dispatch events)
         solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
@@ -125,7 +127,7 @@ public class GameServiceImpl implements GameService {
         for (int i = 0; i < machines.length; i++) {
             machines[i].setHealth(machineHealths[i]);
         }
-        if (timeMillis % AppConstants.OPTA_MACHINE_HEALTH_REFRESH_RATE == 0L) {
+        if (timeMillis % AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE == 0L) {
             solverManager.updateMachineHealths(machines);
         }
 
@@ -134,7 +136,7 @@ public class GameServiceImpl implements GameService {
         // Check mechanic fixed or departure events
         for (int i = 0; i < mechanics.size(); i++) {
             Mechanic mechanic = mechanics.get(i);
-            if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - AppConstants.BREATHING_TIME_MILLIS) {
+            if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
                 // TODO If it didn't already happen for this fix case...
                 upstreamConnector.resetMachineHealth(mechanic.getFocusMachineIndex());
             }
@@ -148,8 +150,8 @@ public class GameServiceImpl implements GameService {
                         (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
                                 / mechanic.getSpeed());
 
-                mechanic.setFocusTravelTimeMillis(timeMillis + travelTime);
-                mechanic.setFocusFixTimeMillis(timeMillis + travelTime + AppConstants.FIX_TIME_MILLIS);
+                long focusTravelTimeMillis = timeMillis + travelTime;
+                mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
 
                 solverManager.dispatchMechanic(mechanic);
                 downstreamConnector.dispatchMechanic(mechanic);
@@ -162,17 +164,18 @@ public class GameServiceImpl implements GameService {
     private void handleMechanicAdditionsAndRemovals() {
         int mechanicAddition = mechanicAdditionCount.getAndSet(0);
         if (mechanicAddition > 0) {
-
             for (int i = 0; i < mechanicAddition; i++) {
-                Mechanic addedMechanic = new Mechanic(
+                Mechanic mechanic = new Mechanic(
                         mechanics.size(),
                         appConfiguration.getMechanicSpeed(),
-                        AppConstants.ENTRY_POINT_INDEX,
-                        AppConstants.ENTRY_POINT_MECHANIC_DELAY,
-                        AppConstants.FIX_TIME_MILLIS);
-                mechanics.add(addedMechanic);
-                solverManager.addMechanic(mechanics.size() - 1, addedMechanic.getSpeed());
-                downstreamConnector.mechanicAdded(addedMechanic);
+                        appConfiguration.getFixDurationMillis(), appConfiguration.getThumbUpDurationMillis(),
+                        appConfiguration.getGateMachineIndex(),
+                        timeMillis);
+                mechanics.add(mechanic);
+                solverManager.addMechanic(mechanics.size() - 1, mechanic.getSpeed(),
+                        mechanic.getFixDurationMillis(), mechanic.getThumbUpDurationMillis(),
+                        mechanic.getFocusMachineIndex(), timeMillis);
+                downstreamConnector.mechanicAdded(mechanic);
             }
         } else if (mechanicAddition < 0) {
             final int mechanicRemoval = - mechanicAddition;
