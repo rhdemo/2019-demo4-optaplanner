@@ -9,4 +9,5 @@ public interface DownstreamConnector {
     void mechanicRemoved(Mechanic mechanic);
 
     void updateMachinesHealths(Machine[] machines);
+
 }
