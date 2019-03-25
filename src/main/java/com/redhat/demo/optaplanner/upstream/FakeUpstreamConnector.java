@@ -17,8 +17,11 @@
 package com.redhat.demo.optaplanner.upstream;
 
 import java.util.Arrays;
+import javax.annotation.PostConstruct;
 
 import com.redhat.demo.optaplanner.SpringProfiles;
+import com.redhat.demo.optaplanner.config.AppConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +29,14 @@ import org.springframework.stereotype.Service;
 @Profile(SpringProfiles.DEVELOPMENT)
 public class FakeUpstreamConnector implements UpstreamConnector {
 
+    @Autowired
+    private AppConfiguration appConfiguration;
+
     private double[] machineHealths;
 
-    public FakeUpstreamConnector() {
-        machineHealths = new double[MACHINES_LENGTH];
+    @PostConstruct
+    public void postConstruct() {
+        machineHealths = new double[appConfiguration.getMachinesOnlyLength()];
         Arrays.fill(machineHealths, 0.9);
     }
 

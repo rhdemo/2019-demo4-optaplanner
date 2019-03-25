@@ -55,7 +55,7 @@ public class GameServiceImpl implements GameService {
 
     @PostConstruct
     public void init() {
-        machines = new Machine[AppConstants.MACHINES_LENGTH];
+        machines = new Machine[appConfiguration.getMachinesOnlyLength()];
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
         for (int i = 0; i < machines.length; i++) {
             int x = appConfiguration.getMachineGridX(i);
