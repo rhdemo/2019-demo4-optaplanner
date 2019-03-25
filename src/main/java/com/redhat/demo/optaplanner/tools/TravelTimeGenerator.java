@@ -18,50 +18,65 @@ package com.redhat.demo.optaplanner.tools;
 
 import java.util.Random;
 
-import com.redhat.demo.optaplanner.AppConstants;
-
 /**
  * Helper class until we have have real road travel times from UX image.
  */
 public class TravelTimeGenerator {
 
-    private static final int MAX_X = 3000; // Maximum 3 seconds to cross horizontally
-    private static final int MAX_Y = 3000; // Maximum 3 seconds to cross vertically
+    private static final int MACHINES_LENGTH = 10;
+
+    private static final int MAX_X = 800; // Maximum pixels to cross horizontally
+    private static final int MAX_Y = 600; // Maximum pixels seconds to cross vertically
 
     public static void main(String[] args) {
         Random random = new Random(37);
-        int[][] machineIndexToXYPairs = new int[AppConstants.MACHINES_LENGTH][2];
+        int[][] machineIndexToXYPairs = new int[MACHINES_LENGTH + 1][2];
         for (int i = 0; i < machineIndexToXYPairs.length; i++) {
             machineIndexToXYPairs[i][0] = random.nextInt(MAX_X);
             machineIndexToXYPairs[i][1] = random.nextInt(MAX_Y);
         }
-        long[][] travelTimeMillisMatrix = new long[AppConstants.MACHINES_LENGTH][AppConstants.MACHINES_LENGTH];
-        for (int i = 0; i < AppConstants.MACHINES_LENGTH; i++) {
+        double[][] travelDistanceMatrix = new double[machineIndexToXYPairs.length][machineIndexToXYPairs.length];
+        for (int i = 0; i < machineIndexToXYPairs.length; i++) {
             int fromX =  machineIndexToXYPairs[i][0];
             int fromY =  machineIndexToXYPairs[i][1];
-            for (int j = 0; j < AppConstants.MACHINES_LENGTH; j++) {
+            for (int j = 0; j < machineIndexToXYPairs.length; j++) {
                 int toX =  machineIndexToXYPairs[j][0];
                 int toY =  machineIndexToXYPairs[j][1];
 
                 // Euclidean distance (Pythagorean theorem)
                 double xDifference = toX - fromX;
                 double yDifference = toY - fromY;
-                double distance = Math.sqrt((xDifference * xDifference) + (yDifference * yDifference));
-                travelTimeMillisMatrix[i][j] = (long) distance;
+                travelDistanceMatrix[i][j]  = Math.sqrt((xDifference * xDifference) + (yDifference * yDifference));
             }
         }
-        System.out.println("{");
-        for (int i = 0; i < travelTimeMillisMatrix.length; i++) {
-            System.out.print("            {");
-            for (int j = 0; j < travelTimeMillisMatrix[i].length; j++) {
-                if (j != 0) {
-                    System.out.print(", ");
-                }
-                System.out.print(travelTimeMillisMatrix[i][j]);
+        System.out.print("machine name, x, y");
+        for (int i = 0; i < machineIndexToXYPairs.length; i++) {
+            if (i != MACHINES_LENGTH) {
+                System.out.print(", machine-");
+                System.out.print(i + 1);
+            } else {
+                System.out.print(", gate");
             }
-            System.out.println("},");
         }
-        System.out.println("}");
+        System.out.println();
+
+        for (int i = 0; i < travelDistanceMatrix.length; i++) {
+            if (i != MACHINES_LENGTH) {
+                System.out.print("machine-");
+                System.out.print(i + 1);
+            } else {
+                System.out.print("gate");
+            }
+            System.out.print(", ");
+            System.out.print(machineIndexToXYPairs[i][0]);
+            System.out.print(", ");
+            System.out.print(machineIndexToXYPairs[i][1]);
+            for (int j = 0; j < travelDistanceMatrix[i].length; j++) {
+                System.out.print(", ");
+                System.out.print(travelDistanceMatrix[i][j]);
+            }
+            System.out.println();
+        }
     }
 
 }

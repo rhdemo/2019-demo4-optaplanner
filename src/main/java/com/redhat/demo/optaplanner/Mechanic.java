@@ -1,26 +1,32 @@
 package com.redhat.demo.optaplanner;
 
 public class Mechanic {
+
     private int mechanicIndex;
+    private double speed; // In pixels per millisecond
 
     private int focusMachineIndex;
-    private long focusDepartureTimeMillis;
+    private long focusTravelTimeMillis;
+    private long focusFixTimeMillis;
 
     private int[] futureMachineIndexes;
 
-    public Mechanic(int mechanicIndex, int focusMachineIndex, long focusDepartureTimeMillis) {
+    public Mechanic(int mechanicIndex, double speed,
+            int focusMachineIndex, long focusTravelTimeMillis, long focusFixTimeMillis) {
         this.mechanicIndex = mechanicIndex;
+        this.speed = speed;
         this.focusMachineIndex = focusMachineIndex;
-        this.focusDepartureTimeMillis = focusDepartureTimeMillis;
-        futureMachineIndexes = new int[0];
+        this.focusTravelTimeMillis = focusTravelTimeMillis;
+        this.focusFixTimeMillis = focusFixTimeMillis;
+        this.futureMachineIndexes = new int[0];
     }
 
     public int getMechanicIndex() {
         return mechanicIndex;
     }
 
-    public void setMechanicIndex(int mechanicIndex) {
-        this.mechanicIndex = mechanicIndex;
+    public double getSpeed() {
+        return speed;
     }
 
     public int getFocusMachineIndex() {
@@ -31,12 +37,20 @@ public class Mechanic {
         this.focusMachineIndex = focusMachineIndex;
     }
 
-    public long getFocusDepartureTimeMillis() {
-        return focusDepartureTimeMillis;
+    public long getFocusTravelTimeMillis() {
+        return focusTravelTimeMillis;
     }
 
-    public void setFocusDepartureTimeMillis(long focusDepartureTimeMillis) {
-        this.focusDepartureTimeMillis = focusDepartureTimeMillis;
+    public void setFocusTravelTimeMillis(long focusTravelTimeMillis) {
+        this.focusTravelTimeMillis = focusTravelTimeMillis;
+    }
+
+    public long getFocusFixTimeMillis() {
+        return focusFixTimeMillis;
+    }
+
+    public void setFocusFixTimeMillis(long focusFixTimeMillis) {
+        this.focusFixTimeMillis = focusFixTimeMillis;
     }
 
     public int[] getFutureMachineIndexes() {
@@ -45,6 +59,10 @@ public class Mechanic {
 
     public void setFutureMachineIndexes(int[] futureMachineIndexes) {
         this.futureMachineIndexes = futureMachineIndexes;
+    }
+
+    public long getFocusDepartureTimeMillis() {
+        return focusFixTimeMillis + AppConstants.BREATHING_TIME_MILLIS;
     }
 
     @Override
