@@ -56,4 +56,8 @@ public interface AppConstants {
     long TIME_TICK_MILLIS = 40L;
     long OPTA_MACHINE_HEALTH_REFRESH_RATE = TIME_TICK_MILLIS * 15L;
 
+    // the last "machine" is the entry point to the factory
+    int ENTRY_POINT_INDEX = AppConstants.MACHINES_LENGTH - 1;
+
+    long ENTRY_POINT_MECHANIC_DELAY = 0L;
 }

@@ -99,13 +99,7 @@ function removeMechanic() {
 }
 
 function processResponse(response) {
-   // $("#machines").append("<tr><td>" + response.responseType + "</td></tr>");
-
-    if (response.responseType === ResponseType.GAME_CONFIG) {
-        machines = response.machines;
-        mechanics = response.mechanics;
-        console.log("Game initialized");
-    } else if (response.responseType === ResponseType.ADD_MECHANIC) {
+    if (response.responseType === ResponseType.ADD_MECHANIC) {
         console.log("Adding a mechanic");
         let mechanic = {
             mechanicIndex: response.mechanicIndex

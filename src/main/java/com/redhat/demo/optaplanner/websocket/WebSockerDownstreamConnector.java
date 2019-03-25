@@ -37,7 +37,8 @@ public class WebSockerDownstreamConnector implements DownstreamConnector {
     public void dispatchMechanic(Mechanic mechanic) {
         JsonMechanic jsonMechanic = new JsonMechanic(mechanic.getMechanicIndex(),
                                                      mechanic.getFocusMachineIndex(),
-                                                     mechanic.getFocusDepartureTimeMillis(),
+                                                     mechanic.getFocusTravelTimeMillis(),
+                                                     mechanic.getFocusFixTimeMillis(),
                                                      mechanic.getFutureMachineIndexes());
         DispatchMechanicResponse dispatchMechanicResponse =
                 new DispatchMechanicResponse(jsonMechanic);

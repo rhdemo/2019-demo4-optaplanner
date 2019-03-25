@@ -4,15 +4,18 @@ public class Mechanic {
     private int mechanicIndex;
 
     private int focusMachineIndex;
-    private long focusDepartureTimeMillis;
+    private long focusTravelTimeMillis;
+    private long focusFixTimeMillis;
+    private double speed;
 
     private int[] futureMachineIndexes;
 
-    public Mechanic(int mechanicIndex, int focusMachineIndex, long focusDepartureTimeMillis) {
+    public Mechanic(int mechanicIndex, int focusMachineIndex, long focusTravelTimeMillis, long focusFixTimeMillis) {
         this.mechanicIndex = mechanicIndex;
         this.focusMachineIndex = focusMachineIndex;
-        this.focusDepartureTimeMillis = focusDepartureTimeMillis;
-        futureMachineIndexes = new int[0];
+        this.focusTravelTimeMillis = focusTravelTimeMillis;
+        this.focusFixTimeMillis = focusFixTimeMillis;
+        this.futureMachineIndexes = new int[0];
     }
 
     public int getMechanicIndex() {
@@ -31,12 +34,28 @@ public class Mechanic {
         this.focusMachineIndex = focusMachineIndex;
     }
 
-    public long getFocusDepartureTimeMillis() {
-        return focusDepartureTimeMillis;
+    public long getFocusTravelTimeMillis() {
+        return focusTravelTimeMillis;
     }
 
-    public void setFocusDepartureTimeMillis(long focusDepartureTimeMillis) {
-        this.focusDepartureTimeMillis = focusDepartureTimeMillis;
+    public void setFocusTravelTimeMillis(long focusTravelTimeMillis) {
+        this.focusTravelTimeMillis = focusTravelTimeMillis;
+    }
+
+    public long getFocusFixTimeMillis() {
+        return focusFixTimeMillis;
+    }
+
+    public void setFocusFixTimeMillis(long focusFixTimeMillis) {
+        this.focusFixTimeMillis = focusFixTimeMillis;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
     }
 
     public int[] getFutureMachineIndexes() {
@@ -45,6 +64,10 @@ public class Mechanic {
 
     public void setFutureMachineIndexes(int[] futureMachineIndexes) {
         this.futureMachineIndexes = futureMachineIndexes;
+    }
+
+    public long getFocusDepartureTimeMillis() {
+        return focusFixTimeMillis + AppConstants.BREATHING_TIME_MILLIS;
     }
 
     @Override

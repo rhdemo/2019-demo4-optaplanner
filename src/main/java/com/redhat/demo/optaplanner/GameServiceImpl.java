@@ -34,9 +34,6 @@ public class GameServiceImpl implements GameService {
 
     private static final Logger log = LoggerFactory.getLogger(GameServiceImpl.class);
 
-    // the last "machine" is the entry point to the factory
-    private static final int ENTRY_POINT_INDEX = AppConstants.MACHINES_LENGTH - 1;
-    private static final long ENTRY_POINT_MECHANIC_DELAY = 0L;
     @Autowired
     private UpstreamConnector upstreamConnector;
 
@@ -65,7 +62,7 @@ public class GameServiceImpl implements GameService {
         }
 
         for (int i = 0; i < AppConstants.INIT_MECHANICS_LENGTH; i++) {
-            mechanics.add(new Mechanic(i, i, timeMillis));
+            mechanics.add(new Mechanic(i, i, timeMillis, timeMillis + AppConstants.FIX_TIME_MILLIS));
         }
 
         solverManager.startSolver(machines, mechanics);
@@ -147,7 +144,10 @@ public class GameServiceImpl implements GameService {
                 mechanic.setFocusMachineIndex(newFocusMachineIndex);
                 long travelTime = machines[oldFocusMachineIndex]
                         .getToMachineIndexTravelTimeMillis()[newFocusMachineIndex];
-                mechanic.setFocusDepartureTimeMillis(timeMillis + travelTime + AppConstants.FIX_TIME_MILLIS + AppConstants.BREATHING_TIME_MILLIS);
+
+                mechanic.setFocusTravelTimeMillis(timeMillis + travelTime);
+                mechanic.setFocusFixTimeMillis(timeMillis + travelTime + AppConstants.FIX_TIME_MILLIS);
+
                 solverManager.dispatchMechanic(mechanic);
                 downstreamConnector.dispatchMechanic(mechanic);
             }
@@ -161,9 +161,13 @@ public class GameServiceImpl implements GameService {
         if (mechanicAddition > 0) {
 
             for (int i = 0; i < mechanicAddition; i++) {
-                Mechanic addedMechanic = new Mechanic(mechanics.size(), ENTRY_POINT_INDEX, ENTRY_POINT_MECHANIC_DELAY);
+                Mechanic addedMechanic = new Mechanic(
+                        mechanics.size(),
+                        AppConstants.ENTRY_POINT_INDEX,
+                        AppConstants.ENTRY_POINT_MECHANIC_DELAY,
+                        AppConstants.FIX_TIME_MILLIS);
                 mechanics.add(addedMechanic);
-               // solverManager.addMechanic(mechanics.size() - 1);
+                solverManager.addMechanic(mechanics.size() - 1);
                 downstreamConnector.mechanicAdded(addedMechanic);
             }
         } else if (mechanicAddition < 0) {
