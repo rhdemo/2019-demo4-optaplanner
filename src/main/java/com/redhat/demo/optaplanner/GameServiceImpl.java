@@ -19,8 +19,8 @@ package com.redhat.demo.optaplanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.annotation.PostConstruct;
+
 import com.redhat.demo.optaplanner.solver.TravelSolverManager;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.slf4j.Logger;
@@ -138,9 +138,6 @@ public class GameServiceImpl implements GameService {
             if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - AppConstants.BREATHING_TIME_MILLIS) {
                 // TODO If it didn't already happen for this fix case...
                 upstreamConnector.resetMachineHealth(mechanic.getFocusMachineIndex());
-                // Replace fixed OptaVisit with a new one
-                // TODO add a new visit for the machine instead of resetting to keep the time correct - needs more refactoring due to the way visits are accessed (by machine id)
-                solverManager.resetMachineVisit(mechanic.getFocusMachineIndex());
             }
             if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
                 int oldFocusMachineIndex = mechanic.getFocusMachineIndex();

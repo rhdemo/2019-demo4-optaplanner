@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.infinispan.client.hotrod.configuration.SaslQop;
 
 public class HotRodClientConfiguration {
 
