@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.infinispan.client.hotrod.configuration.SaslQop;
 
 public class HotRodClientConfiguration {
 
@@ -21,15 +20,7 @@ public class HotRodClientConfiguration {
 
         builder.addServer()
                 .host(props.getProperty("infinispan.client.hotrod.endpoint"))
-                .port(Integer.parseInt(props.getProperty("infinispan.client.hotrod.port")))
-                .security().authentication()
-                .enable()
-                .username(props.getProperty("infinispan.client.hotrod.auth_username"))
-                .password(props.getProperty("infinispan.client.hotrod.auth_password"))
-                .realm(props.getProperty("infinispan.client.hotrod.auth_realm"))
-                .serverName(props.getProperty("infinispan.client.hotrod.auth_server_name"))
-                .saslMechanism(props.getProperty("infinispan.client.hotrod.sasl_mechanism"))
-                .saslQop(SaslQop.valueOf(props.getProperty("infinispan.client.hotrod.sasl_properties.javax.security.sasl.qop")));
+                .port(Integer.parseInt(props.getProperty("infinispan.client.hotrod.port")));
         return builder;
     }
 }
