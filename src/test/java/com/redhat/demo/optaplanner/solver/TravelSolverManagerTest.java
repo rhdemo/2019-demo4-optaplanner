@@ -6,6 +6,7 @@ import java.util.List;
 import com.redhat.demo.optaplanner.AppConstants;
 import com.redhat.demo.optaplanner.Machine;
 import com.redhat.demo.optaplanner.Mechanic;
+import com.redhat.demo.optaplanner.config.AppConfiguration;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -23,14 +24,18 @@ public class TravelSolverManagerTest {
 
     @Test
     public void solvingStarted() {
+        AppConfiguration appConfiguration = new AppConfiguration();
+        appConfiguration.readTravelDistanceMatrix();
         Machine[] machines = new Machine[AppConstants.MACHINES_LENGTH];
         for (int i = 0; i < machines.length; i++) {
-            long[] toMachineIndexTravelTimeMillis = AppConstants.TRAVEL_TIME_MILLIS_MATRIX[i];
-            machines[i] = new Machine(i, toMachineIndexTravelTimeMillis, 0.1 * (double)i);
+            int x = appConfiguration.getMachineGridX(i);
+            int y = appConfiguration.getMachineGridY(i);
+            double[] machineIndexToTravelDistances = appConfiguration.getMachineIndexToTravelDistances(i);
+            machines[i] = new Machine(i, x, y, machineIndexToTravelDistances, 0.1 * (double)i);
         }
 
         List<Mechanic> mechanics = new ArrayList<>();
-        Mechanic mechanic = new Mechanic(0,
+        Mechanic mechanic = new Mechanic(0, appConfiguration.getMechanicSpeed(),
                                          AppConstants.ENTRY_POINT_INDEX,
                                          AppConstants.ENTRY_POINT_MECHANIC_DELAY,
                                          AppConstants.FIX_TIME_MILLIS);

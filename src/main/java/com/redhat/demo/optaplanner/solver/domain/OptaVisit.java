@@ -57,7 +57,7 @@ public class OptaVisit extends OptaVisitOrMechanic {
         if (previous == null) {
             return null;
         }
-        return previous.getMachine().getTravelTimeMillisTo(machine);
+        return previous.getMachine().getTravelTimeMillisTo(machine, mechanic);
     }
 
     public long getAttritionMicros() {

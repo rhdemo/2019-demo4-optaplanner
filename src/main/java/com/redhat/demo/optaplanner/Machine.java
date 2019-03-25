@@ -3,15 +3,19 @@ package com.redhat.demo.optaplanner;
 public class Machine {
 
     private int machineIndex;
-    private long[] toMachineIndexTravelTimeMillis;
+    private int x;
+    private int y;
+    private double[] machineIndexToTravelDistances;
     private double health;
 
     public Machine() {
     }
 
-    public Machine(int machineIndex, long[] toMachineIndexTravelTimeMillis, double health) {
+    public Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, double health) {
         this.machineIndex = machineIndex;
-        this.toMachineIndexTravelTimeMillis = toMachineIndexTravelTimeMillis;
+        this.x = x;
+        this.y = y;
+        this.machineIndexToTravelDistances = machineIndexToTravelDistances;
         this.health = health;
     }
 
@@ -19,16 +23,24 @@ public class Machine {
         return machineIndex;
     }
 
-    public void setMachineIndex(int machineIndex) {
-        this.machineIndex = machineIndex;
+    public int getX() {
+        return x;
     }
 
-    public long[] getToMachineIndexTravelTimeMillis() {
-        return toMachineIndexTravelTimeMillis;
+    public void setX(int x) {
+        this.x = x;
     }
 
-    public void setToMachineIndexTravelTimeMillis(long[] toMachineIndexTravelTimeMillis) {
-        this.toMachineIndexTravelTimeMillis = toMachineIndexTravelTimeMillis;
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public double[] getMachineIndexToTravelDistances() {
+        return machineIndexToTravelDistances;
     }
 
     public double getHealth() {

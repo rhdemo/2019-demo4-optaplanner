@@ -69,13 +69,13 @@ public class TravelSolverManager {
     public void startSolver(Machine[] machines, List<Mechanic> mechanics) {
         List<OptaMachine> machineList = Arrays.stream(machines)
                 .map(machine -> new OptaMachine(
-                        machine.getMachineIndex(), machine.getToMachineIndexTravelTimeMillis()))
+                        machine.getMachineIndex(), machine.getMachineIndexToTravelDistances()))
                 .collect(Collectors.toList());
         List<OptaMechanic> mechanicList = mechanics.stream()
                 .map(mechanic -> {
                     OptaMachine focusMachine = machineList.get(mechanic.getFocusMachineIndex());
                     return new OptaMechanic(
-                            mechanic.getMechanicIndex(), focusMachine, mechanic.getFocusDepartureTimeMillis());
+                            mechanic.getMechanicIndex(), mechanic.getSpeed(), focusMachine, mechanic.getFocusDepartureTimeMillis());
                 })
                 .collect(Collectors.toList());
         List<OptaVisit> visitList = machineList.stream()
@@ -145,7 +145,7 @@ public class TravelSolverManager {
     }
 
 
-    public void addMechanic(int mechanicIndex) {
+    public void addMechanic(int mechanicIndex, double speed) {
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
             List<OptaMachine> machines = solution.getMachineList();
@@ -154,7 +154,7 @@ public class TravelSolverManager {
             OptaMachine factoryEntryPoint = machines.get(machines.size() - 1);
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
-            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, factoryEntryPoint, 0L); // TODO the 0L is a bug
+            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, speed, factoryEntryPoint, 0L); // TODO the 0L is a bug
             scoreDirector.beforeEntityAdded(mechanic);
             mechanicList.add(mechanic);
             scoreDirector.afterEntityAdded(mechanic);
