@@ -22,7 +22,7 @@ public class TravelSolverManagerTest {
     }
 
     @Test
-    public void solutionStarted() {
+    public void solvingStarted() {
         Machine[] machines = new Machine[AppConstants.MACHINES_LENGTH];
         for (int i = 0; i < machines.length; i++) {
             long[] toMachineIndexTravelTimeMillis = AppConstants.TRAVEL_TIME_MILLIS_MATRIX[i];
@@ -30,7 +30,11 @@ public class TravelSolverManagerTest {
         }
 
         List<Mechanic> mechanics = new ArrayList<>();
-        mechanics.add(new Mechanic(0, machines.length - 1, 0L));
+        Mechanic mechanic = new Mechanic(0,
+                                         AppConstants.ENTRY_POINT_INDEX,
+                                         AppConstants.ENTRY_POINT_MECHANIC_DELAY,
+                                         AppConstants.FIX_TIME_MILLIS);
+        mechanics.add(mechanic);
 
         travelSolverManager.startSolver(machines, mechanics);
         travelSolverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
