@@ -23,6 +23,8 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     @PlanningId
     private Integer mechanicIndex;
     private double speed;
+    private long fixDurationMillis;
+    private long thumbUpDurationMillis;
 
     // The machine component that the mechanic is currently working on, on-route to or has just finished working on
     private OptaMachine focusMachine;
@@ -32,9 +34,12 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     private OptaMechanic() {
     }
 
-    public OptaMechanic(int mechanicIndex, double speed, OptaMachine focusMachine, long focusDepartureTimeMillis) {
+    public OptaMechanic(int mechanicIndex, double speed, long fixDurationMillis, long thumbUpDurationMillis,
+            OptaMachine focusMachine, long focusDepartureTimeMillis) {
         this.mechanicIndex = mechanicIndex;
         this.speed = speed;
+        this.fixDurationMillis = fixDurationMillis;
+        this.thumbUpDurationMillis = thumbUpDurationMillis;
         this.focusMachine = focusMachine;
         this.focusDepartureTimeMillis = focusDepartureTimeMillis;
     }
@@ -45,8 +50,8 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     }
 
     @Override
-    public Long getDepartureTimeMillis() {
-        return focusDepartureTimeMillis;
+    public Long getFixTimeMillis() {
+        return focusDepartureTimeMillis - thumbUpDurationMillis;
     }
 
     @Override
@@ -64,6 +69,14 @@ public class OptaMechanic extends OptaVisitOrMechanic {
 
     public double getSpeed() {
         return speed;
+    }
+
+    public long getFixDurationMillis() {
+        return fixDurationMillis;
+    }
+
+    public long getThumbUpDurationMillis() {
+        return thumbUpDurationMillis;
     }
 
     public OptaMachine getFocusMachine() {

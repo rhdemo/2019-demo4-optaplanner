@@ -18,12 +18,13 @@ package com.redhat.demo.optaplanner.solver.domain.listener;
 
 import java.util.Objects;
 
+import com.redhat.demo.optaplanner.solver.domain.OptaMechanic;
 import com.redhat.demo.optaplanner.solver.domain.OptaVisit;
 import com.redhat.demo.optaplanner.solver.domain.OptaVisitOrMechanic;
 import org.optaplanner.core.impl.domain.variable.listener.VariableListener;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
-public class DepartureTimeUpdatingVariableListener implements VariableListener<OptaVisit> {
+public class FixTimeUpdatingVariableListener implements VariableListener<OptaVisit> {
 
     @Override
     public void beforeEntityAdded(ScoreDirector scoreDirector, OptaVisit visit) {
@@ -32,7 +33,7 @@ public class DepartureTimeUpdatingVariableListener implements VariableListener<O
 
     @Override
     public void afterEntityAdded(ScoreDirector scoreDirector, OptaVisit visit) {
-        updateDepartureTime(scoreDirector, visit);
+        updateFixTime(scoreDirector, visit);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class DepartureTimeUpdatingVariableListener implements VariableListener<O
 
     @Override
     public void afterVariableChanged(ScoreDirector scoreDirector, OptaVisit visit) {
-        updateDepartureTime(scoreDirector, visit);
+        updateFixTime(scoreDirector, visit);
     }
 
     @Override
@@ -55,20 +56,22 @@ public class DepartureTimeUpdatingVariableListener implements VariableListener<O
         // Do nothing
     }
 
-    private void updateDepartureTime(ScoreDirector scoreDirector, OptaVisit sourceVisit) {
+    private void updateFixTime(ScoreDirector scoreDirector, OptaVisit sourceVisit) {
+        OptaMechanic mechanic = sourceVisit.getMechanic();
         OptaVisitOrMechanic previous = sourceVisit.getPrevious();
-        Long previousDepartureTimeMillis = (previous == null) ? null
-                : previous.getDepartureTimeMillis();
+        Long previousFixTimeMillis = (previous == null) ? null : previous.getFixTimeMillis();
         OptaVisit shadowVisit = sourceVisit;
-        Long departureTimeMillis = (previousDepartureTimeMillis == null) ? null
-                : previousDepartureTimeMillis + shadowVisit.getTravelTimeMillisFromPrevious() + OptaVisit.SERVICE_TIME_MILLIS;
-        while (shadowVisit != null && !Objects.equals(shadowVisit.getDepartureTimeMillis(), departureTimeMillis)) {
-            scoreDirector.beforeVariableChanged(shadowVisit, "departureTimeMillis");
-            shadowVisit.setDepartureTimeMillis(departureTimeMillis);
-            scoreDirector.afterVariableChanged(shadowVisit, "departureTimeMillis");
+        Long fixTimeMillis = (previousFixTimeMillis == null) ? null
+                : previousFixTimeMillis + mechanic.getThumbUpDurationMillis()
+                + shadowVisit.getTravelTimeMillisFromPrevious() + mechanic.getFixDurationMillis();
+        while (shadowVisit != null && !Objects.equals(shadowVisit.getFixTimeMillis(), fixTimeMillis)) {
+            scoreDirector.beforeVariableChanged(shadowVisit, "fixTimeMillis");
+            shadowVisit.setFixTimeMillis(fixTimeMillis);
+            scoreDirector.afterVariableChanged(shadowVisit, "fixTimeMillis");
             shadowVisit = shadowVisit.getNext();
-            departureTimeMillis = (departureTimeMillis == null || shadowVisit == null) ? null
-                    : departureTimeMillis + shadowVisit.getTravelTimeMillisFromPrevious() + OptaVisit.SERVICE_TIME_MILLIS;
+            fixTimeMillis = (fixTimeMillis == null || shadowVisit == null) ? null
+                    : fixTimeMillis + mechanic.getThumbUpDurationMillis()
+                    + shadowVisit.getTravelTimeMillisFromPrevious() + mechanic.getFixDurationMillis();
         }
     }
 

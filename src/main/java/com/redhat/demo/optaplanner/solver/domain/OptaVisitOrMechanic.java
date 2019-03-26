@@ -36,6 +36,6 @@ public abstract class OptaVisitOrMechanic {
 
     public abstract OptaMachine getMachine();
 
-    public abstract Long getDepartureTimeMillis();
+    public abstract Long getFixTimeMillis();
 
 }

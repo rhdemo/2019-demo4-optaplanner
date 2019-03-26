@@ -3,7 +3,6 @@ package com.redhat.demo.optaplanner.solver;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.redhat.demo.optaplanner.AppConstants;
 import com.redhat.demo.optaplanner.Machine;
 import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
@@ -26,7 +25,7 @@ public class TravelSolverManagerTest {
     public void solvingStarted() {
         AppConfiguration appConfiguration = new AppConfiguration();
         appConfiguration.readTravelDistanceMatrix();
-        Machine[] machines = new Machine[AppConstants.MACHINES_LENGTH];
+        Machine[] machines = new Machine[appConfiguration.getMachinesOnlyLength()];
         for (int i = 0; i < machines.length; i++) {
             int x = appConfiguration.getMachineGridX(i);
             int y = appConfiguration.getMachineGridY(i);
@@ -36,9 +35,8 @@ public class TravelSolverManagerTest {
 
         List<Mechanic> mechanics = new ArrayList<>();
         Mechanic mechanic = new Mechanic(0, appConfiguration.getMechanicSpeed(),
-                                         AppConstants.ENTRY_POINT_INDEX,
-                                         AppConstants.ENTRY_POINT_MECHANIC_DELAY,
-                                         AppConstants.FIX_TIME_MILLIS);
+                appConfiguration.getFixDurationMillis(), appConfiguration.getThumbUpDurationMillis(),
+                appConfiguration.getGateMachineIndex(), 0L);
         mechanics.add(mechanic);
 
         travelSolverManager.startSolver(machines, mechanics);
