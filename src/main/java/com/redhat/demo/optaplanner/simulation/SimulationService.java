@@ -2,7 +2,6 @@ package com.redhat.demo.optaplanner.simulation;
 
 import javax.annotation.PostConstruct;
 
-import com.redhat.demo.optaplanner.AppConstants;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.springframework.beans.factory.annotation.Autowired;
