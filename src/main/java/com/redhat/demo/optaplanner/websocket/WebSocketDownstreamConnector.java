@@ -22,7 +22,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WebSockerDownstreamConnector implements DownstreamConnector {
+public class WebSocketDownstreamConnector implements DownstreamConnector {
 
     private static final String WEB_SOCKET_ENDPOINT = "/topic/roster";
 
