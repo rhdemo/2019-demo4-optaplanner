@@ -103,13 +103,8 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public List<Mechanic> getMechanics() {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
-    @Override
-    public Machine[] getMachines() {
-        return machines;
+    public void machineLocations() {
+        downstreamConnector.machineLocations();
     }
 
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)

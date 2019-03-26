@@ -34,4 +34,9 @@ public class OptaPlannerWebSocketController {
     public void removeMechanic() {
         gameService.removeMechanic();
     }
+
+    @MessageMapping("/locations")
+    public void machineLocations() {
+        gameService.machineLocations();
+    }
 }

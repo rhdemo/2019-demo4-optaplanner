@@ -17,16 +17,15 @@
 var stompClient = null;
 var machines = [];
 var mechanics = [];
+var locations = [];
 
-const START_X = 50;
-const START_Y = 50;
-const REFRESH_RATE = 40; // ms
-const ROWS = 5;
-const COMPONENT_SIZE = 50;
+const SHOW_NEXT_VISITS = 3;
+const HEALTH_TEXT_OFFSET = 50;
 const MECHANIC_SIZE = 20;
-const DISTANCE = 100;
+const NEAR_BY_RADIUS = 30;
 
 const ResponseType  = {
+    MACHINE_LOCATIONS : 'MACHINE_LOCATIONS',
     ADD_MECHANIC : 'ADD_MECHANIC',
     REMOVE_MECHANIC : 'REMOVE_MECHANIC',
     DISPATCH_MECHANIC: 'DISPATCH_MECHANIC',
@@ -45,18 +44,20 @@ $(function () {
     $( "#removeMechanic" ).click(function() { removeMechanic(); });
     $( "#start-simulation" ).click(function() { startSimulation() });
     $( "#stop-simulation" ).click(function() { stopSimulation() });
+    $( "#canvas" ).click(function(event) { damageMachine(event) });
 });
 
 function connect() {
     var socket = new SockJS('/roster-websocket');
     stompClient = Stomp.over(socket);
+    stompClient.debug = null;
     stompClient.connect({}, function (frame) {
         setConnected(true);
         console.log('Connected: ' + frame);
         stompClient.subscribe('/topic/roster', function (roster) {
             processResponse(JSON.parse(roster.body));
         });
-        stompClient.send("/app/gameConfig", {});
+        stompClient.send("/app/locations", {});
     });
 }
 
@@ -114,8 +115,50 @@ function stopSimulation() {
     $("#stop-simulation").prop("disabled", true);
 }
 
+function damageMachine(event) {
+    let rect = canvas.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+
+    console.log('clicking on ' + x + ':' + y);
+    let machineIndex = findMachineNearTo(x, y);
+    if (machineIndex != null) {
+        console.log('clicking on machine ' + machineIndex);
+        dealDamage(machineIndex);
+    }
+}
+
+function findMachineNearTo(x, y) {
+    for (let i = 0; i < machines.length; i++) {
+        let position = getPositionOfMachineComponent(i);
+        if (distance(x, y, position.x, position.y) < NEAR_BY_RADIUS) {
+            return i;
+        }
+    }
+}
+
+function distance(x1, y1, x2, y2) {
+    let squareX = Math.pow((x1 - x2), 2);
+    let squareY = Math.pow((y1 - y2), 2);
+    return Math.sqrt(squareX, squareY);
+}
+
+function dealDamage(machineIndex) {
+    $.ajax({
+            'type': 'POST',
+            'url': "/simulation/damage",
+            'contentType': 'application/json',
+            'data': JSON.stringify({ "machineIndex" : machineIndex }),
+            'dataType': 'json',
+            'success': function(data, status, jqXHR) { console.log('sent post damage machine ' + machineIndex) }
+    });
+}
+
 function processResponse(response) {
-    if (response.responseType === ResponseType.ADD_MECHANIC) {
+    if (response.responseType === ResponseType.MACHINE_LOCATIONS) {
+        console.log("Machines locations");
+        locations = response.locations;
+    } else if (response.responseType === ResponseType.ADD_MECHANIC) {
         console.log("Adding a mechanic");
         let mechanic = {
             mechanicIndex: response.mechanicIndex
@@ -145,9 +188,15 @@ function drawGame() {
 
     let canvas = document.getElementById('canvas');
     let ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawMachine(ctx);
-    drawMechanics(ctx);
+
+    let backgroundImage = new Image();
+    backgroundImage.src = "/machines.png";
+
+    backgroundImage.onload = function() {
+        ctx.drawImage(backgroundImage, 0, 0);
+        drawMachine(ctx);
+        drawMechanics(ctx);
+    }
 }
 
 function drawMachine(ctx) {
@@ -168,7 +217,8 @@ function drawMachineComponent(ctx, index) {
     let positionY = position.y;
 
     let machineHealth = machines[index].health * 100;
-    if (machineHealth > 80) { 
+
+    if (machineHealth > 80) {
         ctx.fillStyle = 'rgb(122, 163, 76)'; // green
     } else if (machineHealth > 50) { 
         ctx.fillStyle = 'rgb(242, 214, 36)'; //yellow
@@ -177,22 +227,16 @@ function drawMachineComponent(ctx, index) {
     } else {
         ctx.fillStyle = 'rgb(0, 0, 0)'; // black - the component has been broken
     }
-    ctx.fillRect(positionX, positionY, COMPONENT_SIZE, COMPONENT_SIZE);
 
-    // put a health above the component
-    ctx.fillStyle = 'black';
     ctx.font = "15px Georgia";
     let healthString = Math.round(machineHealth) + ' %';
-    ctx.fillText(healthString, positionX + COMPONENT_SIZE / 2, positionY - 5);
+    ctx.fillText(healthString, positionX + HEALTH_TEXT_OFFSET / 2, positionY - HEALTH_TEXT_OFFSET);
 }
 
 function getPositionOfMachineComponent(machineIndex) {
-    let effectiveDistance = COMPONENT_SIZE + DISTANCE;
-    let positionX = START_X + (machineIndex % ROWS) * effectiveDistance;
-    let positionY = START_Y + Math.floor(machineIndex / ROWS) * effectiveDistance;
     let position = {
-        x: positionX,
-        y: positionY
+        x: locations[machineIndex].x,
+        y: locations[machineIndex].y
     };
 
     return position;
@@ -216,5 +260,43 @@ function drawMechanic(ctx, index) {
     ctx.fill();
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#003300';
+    ctx.setLineDash([]);
+    ctx.stroke();
+
+    drawNextVisits(ctx, index)
+}
+
+function drawNextVisits(ctx, mechanicIndex) {
+    let futureIndexes = mechanics[mechanicIndex].futureMachineIndexes;
+    let previousMachineIndex = futureIndexes[0];
+    let nextMachineIndex;
+    for (i = 1; i < futureIndexes.length; i++) {
+        if (i > SHOW_NEXT_VISITS) { // show only next N visits
+            break;
+        }
+
+        nextMachineIndex = futureIndexes[i];
+        drawPathBetweenTwoMachines(ctx, previousMachineIndex, nextMachineIndex);
+        previousMachineIndex = nextMachineIndex;
+    }
+}
+
+function drawPathBetweenTwoMachines(ctx, machine1, machine2) {
+    let position1 = getPositionOfMachineComponent(machine1);
+    let position2 = getPositionOfMachineComponent(machine2);
+
+    ctx.beginPath();
+    ctx.moveTo(position1.x, position1.y);
+    ctx.lineTo(position2.x, position2.y);
+    ctx.setLineDash([5, 15]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#AA0000';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(position2.x, position2.y, MECHANIC_SIZE/2, 0, 2 * Math.PI, false);
+    ctx.fillStyle = '#AA0000';
+    ctx.setLineDash([]);
+    ctx.fill();
     ctx.stroke();
 }

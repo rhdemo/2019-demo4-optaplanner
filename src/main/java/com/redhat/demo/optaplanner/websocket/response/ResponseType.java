@@ -17,6 +17,7 @@
 package com.redhat.demo.optaplanner.websocket.response;
 
 public enum ResponseType {
+    MACHINE_LOCATIONS,
     ADD_MECHANIC,
     REMOVE_MECHANIC,
     DISPATCH_MECHANIC,
