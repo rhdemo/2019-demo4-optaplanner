@@ -34,9 +34,13 @@ public class TravelSolverManagerTest {
         }
 
         List<Mechanic> mechanics = new ArrayList<>();
-        Mechanic mechanic = new Mechanic(0, appConfiguration.getMechanicSpeed(),
-                appConfiguration.getFixDurationMillis(), appConfiguration.getThumbUpDurationMillis(),
-                appConfiguration.getGateMachineIndex(), 0L);
+        Mechanic mechanic = new Mechanic(0,
+                                         appConfiguration.getMechanicSpeed(),
+                                         appConfiguration.getFixDurationMillis(),
+                                         appConfiguration.getThumbUpDurationMillis(),
+                                         appConfiguration.getGateMachineIndex(),
+                                         appConfiguration.getGateMachineIndex(),
+                                         0L);
         mechanics.add(mechanic);
 
         travelSolverManager.startSolver(machines, mechanics);

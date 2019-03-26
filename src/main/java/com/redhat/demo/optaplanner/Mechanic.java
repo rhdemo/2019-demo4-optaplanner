@@ -6,22 +6,35 @@ public class Mechanic {
     private double speed; // In pixels per millisecond
     private long fixDurationMillis;
     private long thumbUpDurationMillis;
-
+    private int currentMachineIndex;
     private int focusMachineIndex;
     private long focusTravelTimeMillis;
 
     private int[] futureMachineIndexes;
 
-    public Mechanic(int mechanicIndex, double speed,
-            long fixDurationMillis, long thumbUpDurationMillis,
-            int focusMachineIndex, long focusTravelTimeMillis) {
+    public Mechanic(int mechanicIndex,
+                    double speed,
+                    long fixDurationMillis,
+                    long thumbUpDurationMillis,
+                    int currentMachineIndex,
+                    int focusMachineIndex,
+                    long focusTravelTimeMillis) {
         this.mechanicIndex = mechanicIndex;
         this.speed = speed;
         this.fixDurationMillis = fixDurationMillis;
         this.thumbUpDurationMillis = thumbUpDurationMillis;
+        this.currentMachineIndex = currentMachineIndex;
         this.focusMachineIndex = focusMachineIndex;
         this.focusTravelTimeMillis = focusTravelTimeMillis;
         this.futureMachineIndexes = new int[0];
+    }
+
+    public int getCurrentMachineIndex() {
+        return currentMachineIndex;
+    }
+
+    public void setCurrentMachineIndex(int currentMachineIndex) {
+        this.currentMachineIndex = currentMachineIndex;
     }
 
     public int getMechanicIndex() {

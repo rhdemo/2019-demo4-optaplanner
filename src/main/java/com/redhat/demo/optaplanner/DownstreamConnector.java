@@ -2,7 +2,7 @@ package com.redhat.demo.optaplanner;
 
 public interface DownstreamConnector {
 
-    void dispatchMechanic(Mechanic mechanic);
+    void dispatchMechanic(Mechanic mechanic, long currentMillis);
 
     void mechanicAdded(Mechanic mechanic);
 
