@@ -20,9 +20,16 @@ var mechanics = [];
 var locations = [];
 
 const SHOW_NEXT_VISITS = 3;
-const HEALTH_TEXT_OFFSET = 50;
+const HEALTH_TEXT_OFFSET = 20;
 const MECHANIC_SIZE = 20;
+const MACHINE_SIZE = 3;
 const NEAR_BY_RADIUS = 30;
+
+const FIRST_VISIT_STYLE = '#7094db';
+const NEXT_VISIT_STYLE = '#bf8040';
+const BACKGROUND_FOG = '0.6'; //0 = fully saturated image, 1.0 = white background
+
+const DEBUG_ENABLED = true;
 
 const ResponseType  = {
     MACHINE_LOCATIONS : 'MACHINE_LOCATIONS',
@@ -31,6 +38,12 @@ const ResponseType  = {
     DISPATCH_MECHANIC: 'DISPATCH_MECHANIC',
     UPDATE_MACHINE_HEALTHS: 'UPDATE_MACHINE_HEALTHS'
 };
+
+const MechanicState = {
+    TRAVELLING : 1,
+    FIXING: 2,
+    DONE: 3
+}
 
 $(function () {
     $("form").on('submit', function (e) {
@@ -130,7 +143,7 @@ function damageMachine(event) {
 
 function findMachineNearTo(x, y) {
     for (let i = 0; i < machines.length; i++) {
-        let position = getPositionOfMachineComponent(i);
+        let position = getPositionOfMachine(i);
         if (distance(x, y, position.x, position.y) < NEAR_BY_RADIUS) {
             return i;
         }
@@ -174,49 +187,99 @@ function processResponse(response) {
         machines = response.machines;
     } else if (response.responseType === ResponseType.DISPATCH_MECHANIC) {
         let mechanic = response.mechanic
-        mechanics[mechanic.mechanicIndex] = mechanic;
+        handleDispatchMechanic(mechanic);
         console.log("Dispatching a mechanic: " + mechanic.mechanicIndex + " to a machine: " + mechanic.focusMachineIndex);
     } else {
         console.log("Uknown response type: " + response.responseType);
     }
 
-    drawGame();
+    draw(drawGame);
 }
 
-function drawGame() {
-    $( "#mechanicCount" ).value='' + mechanics.length;
+function handleDispatchMechanic(mechanic) {
+    mechanic.state = MechanicState.TRAVELLING;
+    if (mechanics.length <= mechanic.mechanicIndex) {
+        mechanics.push(mechanic);
+    } else {
+        mechanics[mechanic.mechanicIndex] = mechanic;
+    }
+    
+    let travelTime = mechanic.focusTravelTimeMillis;
+    let fixTime = mechanic.focusFixTimeMillis;
+    setTimeout(function() { 
+        mechanics[mechanic.mechanicIndex].state = MechanicState.FIXING;
+        draw(drawGame);
+    }, travelTime);
 
+    setTimeout(function() { 
+        mechanics[mechanic.mechanicIndex].state = MechanicState.DONE;
+        draw(drawGame); 
+    }, travelTime + fixTime);    
+}
+
+/*       -------------       DRAWING THE GAME    -------------------            */
+
+
+function drawGame(ctx) {
     let canvas = document.getElementById('canvas');
-    let ctx = canvas.getContext('2d');
-
     let backgroundImage = new Image();
     backgroundImage.src = "/machines.png";
 
     backgroundImage.onload = function() {
         ctx.drawImage(backgroundImage, 0, 0);
-        drawMachine(ctx);
+        ctx.fillStyle = 'rgba(225, 225, 225, ' + BACKGROUND_FOG + ')';
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+        drawMachines(ctx);
         drawMechanics(ctx);
     }
 }
 
-function drawMachine(ctx) {
-    for (i = 0; i < machines.length; i++) {
-        drawMachineComponent(ctx, i)
+function draw(drawFunction) {
+    let canvas = document.getElementById('canvas');
+    let originalCtx = canvas.getContext('2d');
+    drawFunction(originalCtx);
+}
+
+function drawDoubleBuffered(drawFunction) {
+    let canvas = document.getElementById('canvas');
+    var secondCanvas = document.createElement('canvas');
+    secondCanvas.width = canvas.width;
+    secondCanvas.height = canvas.height;
+    var ctx = secondCanvas.getContext('2d');
+
+    drawFunction(ctx);
+
+    let originalCtx = canvas.getContext('2d');
+    originalCtx.drawImage(secondCanvas, 0, 0);
+}
+
+function drawMachines(ctx) {
+    for (var i = 0; i < machines.length; i++) {
+        drawMachine(ctx, machines[i]);
     }
 }
 
 function drawMechanics(ctx) {
-    for (i = 0; i < mechanics.length; i++) {
-        drawMechanic(ctx, mechanics[i].mechanicIndex)
+    for (var i = 0; i < mechanics.length; i++) {
+        drawMechanic(ctx, mechanics[i]);
     }
 }
 
-function drawMachineComponent(ctx, index) {
-    let position =  getPositionOfMachineComponent(index);
+function drawMachine(ctx, machine) {
+    let position =  getPositionOfMachine(machine.machineIndex);
     let positionX = position.x;
     let positionY = position.y;
 
-    let machineHealth = machines[index].health * 100;
+    let machineHealth = machine.health * 100;
+
+    let textPositionX = positionX + HEALTH_TEXT_OFFSET;
+    let textPositionY = positionY - HEALTH_TEXT_OFFSET;
+    ctx.fillStyle = 'white';
+    let borderSizeX = 43;
+    let borderSizeY = 20;
+    let borderStartX = textPositionX - 3;
+    let borderStartY = textPositionY - 15;
+    ctx.fillRect(borderStartX, borderStartY, borderSizeX, borderSizeY);
 
     if (machineHealth > 80) {
         ctx.fillStyle = 'rgb(122, 163, 76)'; // green
@@ -227,13 +290,26 @@ function drawMachineComponent(ctx, index) {
     } else {
         ctx.fillStyle = 'rgb(0, 0, 0)'; // black - the component has been broken
     }
-
+   
     ctx.font = "15px Georgia";
     let healthString = Math.round(machineHealth) + ' %';
-    ctx.fillText(healthString, positionX + HEALTH_TEXT_OFFSET / 2, positionY - HEALTH_TEXT_OFFSET);
+    ctx.fillText(healthString, textPositionX, textPositionY);
+
+    // draw the spot for the mechanic
+    ctx.beginPath();
+    ctx.arc(positionX, positionY, MACHINE_SIZE, 0, 2 * Math.PI, false);
+    ctx.fillStyle = 'black';
+    ctx.fill();
+    ctx.stroke();
+
+    if (DEBUG_ENABLED) {
+        ctx.fillStyle = 'black';
+        let machineString = 'machine: ' + machine.machineIndex;
+        ctx.fillText(machineString, position.x + 2 * HEALTH_TEXT_OFFSET, position.y - 2 * HEALTH_TEXT_OFFSET);
+    }
 }
 
-function getPositionOfMachineComponent(machineIndex) {
+function getPositionOfMachine(machineIndex) {
     let position = {
         x: locations[machineIndex].x,
         y: locations[machineIndex].y
@@ -242,11 +318,27 @@ function getPositionOfMachineComponent(machineIndex) {
     return position;
 }
 
-function drawMechanic(ctx, index) {
+function drawMechanic(ctx, mechanic) {
+    if (DEBUG_ENABLED) {
+        console.log(
+            'drawing a mechanic ' 
+            + mechanic.mechanicIndex 
+            + ' at current machine ' 
+            + mechanic.currentMachineIndex 
+            + ' and focus machine ' 
+            + mechanic.focusMachineIndex);
+    }
     var positionX, positionY;
-    let machineIndex = mechanics[index].focusMachineIndex;
+    var machineIndex;
+    let mechanicState = mechanic.state;
+    if (mechanicState === MechanicState.TRAVELLING) {
+        machineIndex = mechanic.currentMachineIndex;
+    } else {
+        machineIndex = mechanic.focusMachineIndex;
+    }
+
     if (machineIndex != null) {
-        let position = getPositionOfMachineComponent(machineIndex);
+        let position = getPositionOfMachine(machineIndex);
         positionX = position.x;
         positionY = position.y;
     } else {
@@ -254,49 +346,79 @@ function drawMechanic(ctx, index) {
         positionY = MECHANIC_SIZE;
     }
 
+    let mechanicStyle = getMechanicColorByState(mechanicState);
+
     ctx.beginPath();
     ctx.arc(positionX, positionY, MECHANIC_SIZE, 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'green';
+    ctx.fillStyle = mechanicStyle;
     ctx.fill();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = '#003300';
+    ctx.strokeStyle = mechanicStyle;
     ctx.setLineDash([]);
     ctx.stroke();
 
-    drawNextVisits(ctx, index)
+    drawNextVisits(ctx, mechanic)
 }
 
-function drawNextVisits(ctx, mechanicIndex) {
-    let futureIndexes = mechanics[mechanicIndex].futureMachineIndexes;
-    let previousMachineIndex = futureIndexes[0];
+function getMechanicColorByState(mechanicState) {
+    switch (mechanicState) {
+        case MechanicState.TRAVELLING:
+            return FIRST_VISIT_STYLE;
+        case MechanicState.FIXING:
+            return 'yellow';
+        case MechanicState.DONE:
+            return 'green';
+    }
+}
+
+function drawNextVisits(ctx, mechanic) {
+    let futureIndexes = mechanic.futureMachineIndexes;
+    let previousMachineIndex = mechanic.currentMachineIndex;
     let nextMachineIndex;
-    for (i = 1; i < futureIndexes.length; i++) {
+
+    for (i = 0; i < futureIndexes.length; i++) {
         if (i > SHOW_NEXT_VISITS) { // show only next N visits
             break;
         }
 
         nextMachineIndex = futureIndexes[i];
-        drawPathBetweenTwoMachines(ctx, previousMachineIndex, nextMachineIndex);
+
+        let travellingAndNotLastConnection = mechanic.state === MechanicState.TRAVELLING && i < SHOW_NEXT_VISITS;
+        let notTravellingAndNotFirstConnection = (i > 0 && mechanic.state !== MechanicState.TRAVELLING);
+
+        if (travellingAndNotLastConnection || notTravellingAndNotFirstConnection) {
+            drawPathBetweenTwoMachines(ctx, mechanic, previousMachineIndex, nextMachineIndex, i);
+        }
+
         previousMachineIndex = nextMachineIndex;
     }
 }
 
-function drawPathBetweenTwoMachines(ctx, machine1, machine2) {
-    let position1 = getPositionOfMachineComponent(machine1);
-    let position2 = getPositionOfMachineComponent(machine2);
+function drawPathBetweenTwoMachines(ctx, mechanic, machineIndex1, machineIndex2, index) {
+    if (machineIndex1 == machineIndex2) {
+        return;
+    }
 
+    let position1 = getPositionOfMachine(machineIndex1);
+    let position2 = getPositionOfMachine(machineIndex2);
+
+    let isFirstConnection = machineIndex1 == mechanic.currentMachineIndex;
+    let isTravelling = mechanic.state === MechanicState.TRAVELLING
+
+    let style = isFirstConnection && isTravelling ? FIRST_VISIT_STYLE : NEXT_VISIT_STYLE;
+    
     ctx.beginPath();
     ctx.moveTo(position1.x, position1.y);
     ctx.lineTo(position2.x, position2.y);
-    ctx.setLineDash([5, 15]);
+    ctx.setLineDash([20, 4]);
     ctx.lineWidth = 2;
-    ctx.strokeStyle = '#AA0000';
+    ctx.strokeStyle = style;
     ctx.stroke();
-
+    
     ctx.beginPath();
     ctx.arc(position2.x, position2.y, MECHANIC_SIZE/2, 0, 2 * Math.PI, false);
-    ctx.fillStyle = '#AA0000';
+    ctx.fillStyle = style;
     ctx.setLineDash([]);
     ctx.fill();
-    ctx.stroke();
+    ctx.stroke();  
 }
