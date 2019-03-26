@@ -75,7 +75,9 @@ public class TravelSolverManager {
                 .map(mechanic -> {
                     OptaMachine focusMachine = machineList.get(mechanic.getFocusMachineIndex());
                     return new OptaMechanic(
-                            mechanic.getMechanicIndex(), mechanic.getSpeed(), focusMachine, mechanic.getFocusDepartureTimeMillis());
+                            mechanic.getMechanicIndex(), mechanic.getSpeed(),
+                            mechanic.getFixDurationMillis(), mechanic.getThumbUpDurationMillis(),
+                            focusMachine, mechanic.getFocusDepartureTimeMillis());
                 })
                 .collect(Collectors.toList());
         List<OptaVisit> visitList = machineList.stream()
@@ -145,16 +147,17 @@ public class TravelSolverManager {
     }
 
 
-    public void addMechanic(int mechanicIndex, double speed) {
+    public void addMechanic(int mechanicIndex, double speed, long fixDurationMillis, long thumbUpDurationMillis,
+            int focusMachineIndex, long focusDepartureTimeMillis) {
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
             List<OptaMachine> machines = solution.getMachineList();
 
             // The last machine is the entry point to the factory. A new mechanic is supposed to show up there.
-            OptaMachine factoryEntryPoint = machines.get(machines.size() - 1);
+            OptaMachine gate = machines.get(focusMachineIndex);
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
-            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, speed, factoryEntryPoint, 0L); // TODO the 0L is a bug
+            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, speed, fixDurationMillis, thumbUpDurationMillis, gate, focusDepartureTimeMillis);
             scoreDirector.beforeEntityAdded(mechanic);
             mechanicList.add(mechanic);
             scoreDirector.afterEntityAdded(mechanic);

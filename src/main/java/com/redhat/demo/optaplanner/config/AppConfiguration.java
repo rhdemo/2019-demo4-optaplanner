@@ -30,8 +30,14 @@ import static java.util.stream.Collectors.*;
 @Service
 public class AppConfiguration {
 
+    public static final long TIME_TICK_MILLIS = 40L;
+    public static final long OPTA_MACHINE_HEALTH_REFRESH_RATE = TIME_TICK_MILLIS * 15L;
+
     private int machinesAndGateLength;
+    private int initialMechanicsSize = 2;
     private double mechanicSpeed = 10.0;
+    private long fixDurationMillis = 500L;
+    private long thumbUpDurationMillis = 200L;
 
     private int[] machineIndexToGridX;
     private int[] machineIndexToGridY;
@@ -118,11 +124,24 @@ public class AppConfiguration {
         return travelDistanceMatrix[machineIndex];
     }
 
+    public int getInitialMechanicsSize() {
+        return initialMechanicsSize;
+    }
+
     public double getMechanicSpeed() {
         return mechanicSpeed;
     }
 
+    public long getFixDurationMillis() {
+        return fixDurationMillis;
+    }
+
+    public long getThumbUpDurationMillis() {
+        return thumbUpDurationMillis;
+    }
+  
     public double getManualDamageValue() {
         return manualDamageValue;
     }
+  
 }

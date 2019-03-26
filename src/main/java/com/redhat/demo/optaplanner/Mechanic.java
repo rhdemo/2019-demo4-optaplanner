@@ -4,20 +4,23 @@ public class Mechanic {
 
     private int mechanicIndex;
     private double speed; // In pixels per millisecond
+    private long fixDurationMillis;
+    private long thumbUpDurationMillis;
 
     private int focusMachineIndex;
     private long focusTravelTimeMillis;
-    private long focusFixTimeMillis;
 
     private int[] futureMachineIndexes;
 
     public Mechanic(int mechanicIndex, double speed,
-            int focusMachineIndex, long focusTravelTimeMillis, long focusFixTimeMillis) {
+            long fixDurationMillis, long thumbUpDurationMillis,
+            int focusMachineIndex, long focusTravelTimeMillis) {
         this.mechanicIndex = mechanicIndex;
         this.speed = speed;
+        this.fixDurationMillis = fixDurationMillis;
+        this.thumbUpDurationMillis = thumbUpDurationMillis;
         this.focusMachineIndex = focusMachineIndex;
         this.focusTravelTimeMillis = focusTravelTimeMillis;
-        this.focusFixTimeMillis = focusFixTimeMillis;
         this.futureMachineIndexes = new int[0];
     }
 
@@ -27,6 +30,14 @@ public class Mechanic {
 
     public double getSpeed() {
         return speed;
+    }
+
+    public long getFixDurationMillis() {
+        return fixDurationMillis;
+    }
+
+    public long getThumbUpDurationMillis() {
+        return thumbUpDurationMillis;
     }
 
     public int getFocusMachineIndex() {
@@ -45,14 +56,6 @@ public class Mechanic {
         this.focusTravelTimeMillis = focusTravelTimeMillis;
     }
 
-    public long getFocusFixTimeMillis() {
-        return focusFixTimeMillis;
-    }
-
-    public void setFocusFixTimeMillis(long focusFixTimeMillis) {
-        this.focusFixTimeMillis = focusFixTimeMillis;
-    }
-
     public int[] getFutureMachineIndexes() {
         return futureMachineIndexes;
     }
@@ -61,8 +64,12 @@ public class Mechanic {
         this.futureMachineIndexes = futureMachineIndexes;
     }
 
+    public long getFocusFixTimeMillis() {
+        return focusTravelTimeMillis + fixDurationMillis;
+    }
+
     public long getFocusDepartureTimeMillis() {
-        return focusFixTimeMillis + AppConstants.BREATHING_TIME_MILLIS;
+        return getFocusFixTimeMillis() + thumbUpDurationMillis;
     }
 
     @Override

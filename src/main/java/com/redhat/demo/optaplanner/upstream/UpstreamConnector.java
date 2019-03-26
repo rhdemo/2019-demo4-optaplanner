@@ -16,28 +16,25 @@
 
 package com.redhat.demo.optaplanner.upstream;
 
-import com.redhat.demo.optaplanner.AppConstants;
+import com.redhat.demo.optaplanner.config.AppConfiguration;
 
 // TODO Needs better name?
 public interface UpstreamConnector {
 
-    // TODO remove this and directly use AppConstants.MACHINES_LENGTH
-    int MACHINES_LENGTH = AppConstants.MACHINES_LENGTH;
-
     /**
-     * @return never null, of length {@value MACHINES_LENGTH},
+     * @return never null, of length {@link AppConfiguration#getMachinesOnlyLength()},
      * index is machineIndex, each element between 0.0 (broken) and 1.0 (full health)
      */
     double[] fetchMachineHealths();
 
     /**
-     * @param machineIndex >= 0, <= {@value MACHINES_LENGTH}
+     * @param machineIndex >= 0, <= {@link AppConfiguration#getMachinesOnlyLength()}
      */
     void resetMachineHealth(int machineIndex);
 
     /**
      * For simulation only.
-     * @param machineIndex >= 0, <= {@value MACHINES_LENGTH}
+     * @param machineIndex >= 0, <= {@link AppConfiguration#getMachinesOnlyLength()}
      * @param damage between 0.0 (no damage) and 1.0 (kill it)
      */
     void damageMachine(int machineIndex, double damage);
