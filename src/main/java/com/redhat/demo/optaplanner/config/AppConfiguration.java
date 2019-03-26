@@ -17,15 +17,15 @@
 package com.redhat.demo.optaplanner.config;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
 import javax.annotation.PostConstruct;
 
+import com.google.common.io.Resources;
 import org.springframework.stereotype.Service;
-
-import static java.util.stream.Collectors.*;
 
 @Service
 public class AppConfiguration {
@@ -49,8 +49,10 @@ public class AppConfiguration {
     public void readTravelDistanceMatrix() {
         List<String> lines;
         try {
-            lines = Files.lines(Paths.get(getClass().getResource("/machineTravelDistanceMatrix.csv").toURI())).collect(toList());
-        } catch (IOException | URISyntaxException e) {
+            lines = new ArrayList<>(Arrays.asList(
+                    Resources.toString(getClass().getResource("/machineTravelDistanceMatrix.csv"), Charset.defaultCharset())
+                            .split("\n")));
+        } catch (IOException e) {
             throw new IllegalStateException("Cannot find machineTravelDistanceMatrix.csv.", e);
         }
         String firstLine = lines.remove(0);
@@ -139,9 +141,8 @@ public class AppConfiguration {
     public long getThumbUpDurationMillis() {
         return thumbUpDurationMillis;
     }
-  
+
     public double getManualDamageValue() {
         return manualDamageValue;
     }
-  
 }
