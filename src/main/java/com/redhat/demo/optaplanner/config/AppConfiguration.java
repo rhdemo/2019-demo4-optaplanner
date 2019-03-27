@@ -34,9 +34,9 @@ public class AppConfiguration {
     public static final long OPTA_MACHINE_HEALTH_REFRESH_RATE = TIME_TICK_MILLIS * 15L;
 
     private int machinesAndGateLength;
-    private int initialMechanicsSize = 2;
-    private double mechanicSpeed = 10.0;
-    private long fixDurationMillis = 500L;
+    private int initialMechanicsSize = 1;
+    private double mechanicSpeed = 0.001;
+    private long fixDurationMillis = 2000L;
     private long thumbUpDurationMillis = 200L;
 
     private int[] machineIndexToGridX;

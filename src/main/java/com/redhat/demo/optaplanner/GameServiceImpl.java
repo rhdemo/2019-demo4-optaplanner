@@ -109,9 +109,6 @@ public class GameServiceImpl implements GameService {
 
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
     public void tick() {
-        if (pauzed) {
-            return;
-        }
         timeMillis += AppConfiguration.TIME_TICK_MILLIS;
 
         // Update futureMachineIndexes first (it might affect mechanic dispatch events)
@@ -128,32 +125,37 @@ public class GameServiceImpl implements GameService {
 
         downstreamConnector.updateMachinesHealths(machines);
 
-        // Check mechanic fixed or departure events
-        for (int i = 0; i < mechanics.size(); i++) {
-            Mechanic mechanic = mechanics.get(i);
-            if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
-                // TODO If it didn't already happen for this fix case...
-                upstreamConnector.resetMachineHealth(mechanic.getFocusMachineIndex());
-            }
-            if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
-                final int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
-                int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
-                final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
-                        : futureMachineIndexes[0];
-                mechanic.setFocusMachineIndex(newFocusMachineIndex);
-                long travelTime = (long)
-                        (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
-                                / mechanic.getSpeed());
+        if (isGameRunning()) {
+            // Check mechanic fixed or departure events
+            for (int i = 0; i < mechanics.size(); i++) {
+                Mechanic mechanic = mechanics.get(i);
+                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
+                    // TODO If it didn't already happen for this fix case...
+                    upstreamConnector.resetMachineHealth(mechanic.getFocusMachineIndex());
+                }
+                if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
+                    final int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
+                    int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
+                    final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
+                            : futureMachineIndexes[0];
+                    mechanic.setFocusMachineIndex(newFocusMachineIndex);
+                    long travelTime = (long)
+                            (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
+                                    / mechanic.getSpeed());
 
-                travelTime = 500;
+                    log.debug("Moving a mechanic "
+                                      + mechanic.getMechanicIndex()
+                                      + " from old index "
+                                      + oldFocusMachineIndex
+                                      + " to a new index "
+                                      + newFocusMachineIndex);
+                    mechanic.setCurrentMachineIndex(oldFocusMachineIndex);
+                    long focusTravelTimeMillis = timeMillis + travelTime;
+                    mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
 
-                log.info("Moving a mechanic " + mechanic.getMechanicIndex() + " from old index " + oldFocusMachineIndex + " to a new index " + newFocusMachineIndex);
-                long focusTravelTimeMillis = timeMillis + travelTime; 
-                mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
-                mechanic.setCurrentMachineIndex(oldFocusMachineIndex);
-
-                solverManager.dispatchMechanic(mechanic);
-                downstreamConnector.dispatchMechanic(mechanic, timeMillis);
+                    solverManager.dispatchMechanic(mechanic);
+                    downstreamConnector.dispatchMechanic(mechanic, timeMillis);
+                }
             }
         }
 

@@ -21,8 +21,8 @@ var locations = [];
 
 const SHOW_NEXT_VISITS = 3;
 const HEALTH_TEXT_OFFSET = 20;
-const MECHANIC_SIZE = 20;
-const MACHINE_SIZE = 3;
+const MECHANIC_RADIUS = 20; 
+const MACHINE_SPOT_RADIUS = 3;
 const NEAR_BY_RADIUS = 30;
 
 const FIRST_VISIT_STYLE = '#7094db';
@@ -240,19 +240,6 @@ function draw(drawFunction) {
     drawFunction(originalCtx);
 }
 
-function drawDoubleBuffered(drawFunction) {
-    let canvas = document.getElementById('canvas');
-    var secondCanvas = document.createElement('canvas');
-    secondCanvas.width = canvas.width;
-    secondCanvas.height = canvas.height;
-    var ctx = secondCanvas.getContext('2d');
-
-    drawFunction(ctx);
-
-    let originalCtx = canvas.getContext('2d');
-    originalCtx.drawImage(secondCanvas, 0, 0);
-}
-
 function drawMachines(ctx) {
     for (var i = 0; i < machines.length; i++) {
         drawMachine(ctx, machines[i]);
@@ -297,7 +284,7 @@ function drawMachine(ctx, machine) {
 
     // draw the spot for the mechanic
     ctx.beginPath();
-    ctx.arc(positionX, positionY, MACHINE_SIZE, 0, 2 * Math.PI, false);
+    ctx.arc(positionX, positionY, MACHINE_SPOT_RADIUS, 0, 2 * Math.PI, false);
     ctx.fillStyle = 'black';
     ctx.fill();
     ctx.stroke();
@@ -342,14 +329,14 @@ function drawMechanic(ctx, mechanic) {
         positionX = position.x;
         positionY = position.y;
     } else {
-        positionX = MECHANIC_SIZE;
-        positionY = MECHANIC_SIZE;
+        positionX = MECHANIC_RADIUS;
+        positionY = MECHANIC_RADIUS;
     }
 
     let mechanicStyle = getMechanicColorByState(mechanicState);
 
     ctx.beginPath();
-    ctx.arc(positionX, positionY, MECHANIC_SIZE, 0, 2 * Math.PI, false);
+    ctx.arc(positionX, positionY, MECHANIC_RADIUS, 0, 2 * Math.PI, false);
     ctx.fillStyle = mechanicStyle;
     ctx.fill();
     ctx.lineWidth = 2;
@@ -416,7 +403,7 @@ function drawPathBetweenTwoMachines(ctx, mechanic, machineIndex1, machineIndex2,
     ctx.stroke();
     
     ctx.beginPath();
-    ctx.arc(position2.x, position2.y, MECHANIC_SIZE/2, 0, 2 * Math.PI, false);
+    ctx.arc(position2.x, position2.y, MECHANIC_RADIUS/2, 0, 2 * Math.PI, false);
     ctx.fillStyle = style;
     ctx.setLineDash([]);
     ctx.fill();
