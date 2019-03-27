@@ -17,13 +17,13 @@
 package com.redhat.demo.optaplanner.config;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +50,7 @@ public class AppConfiguration {
         List<String> lines;
         try {
             lines = new ArrayList<>(Arrays.asList(
-                    Resources.toString(getClass().getResource("/machineTravelDistanceMatrix.csv"), Charset.defaultCharset())
+                    Resources.toString(getClass().getResource("/machineTravelDistanceMatrix.csv"), Charsets.UTF_8)
                             .split("\n")));
         } catch (IOException e) {
             throw new IllegalStateException("Cannot find machineTravelDistanceMatrix.csv.", e);
