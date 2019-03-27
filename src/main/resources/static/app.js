@@ -311,7 +311,7 @@ function drawMechanic(ctx, mechanic) {
             'drawing a mechanic ' 
             + mechanic.mechanicIndex 
             + ' at current machine ' 
-            + mechanic.currentMachineIndex 
+            + mechanic.originalMachineIndex
             + ' and focus machine ' 
             + mechanic.focusMachineIndex);
     }
@@ -319,7 +319,7 @@ function drawMechanic(ctx, mechanic) {
     var machineIndex;
     let mechanicState = mechanic.state;
     if (mechanicState === MechanicState.TRAVELLING) {
-        machineIndex = mechanic.currentMachineIndex;
+        machineIndex = mechanic.originalMachineIndex;
     } else {
         machineIndex = mechanic.focusMachineIndex;
     }
@@ -360,7 +360,7 @@ function getMechanicColorByState(mechanicState) {
 
 function drawNextVisits(ctx, mechanic) {
     let futureIndexes = mechanic.futureMachineIndexes;
-    let previousMachineIndex = mechanic.currentMachineIndex;
+    let previousMachineIndex = mechanic.originalMachineIndex;
     let nextMachineIndex;
 
     for (i = 0; i < futureIndexes.length; i++) {
@@ -389,7 +389,7 @@ function drawPathBetweenTwoMachines(ctx, mechanic, machineIndex1, machineIndex2,
     let position1 = getPositionOfMachine(machineIndex1);
     let position2 = getPositionOfMachine(machineIndex2);
 
-    let isFirstConnection = machineIndex1 == mechanic.currentMachineIndex;
+    let isFirstConnection = machineIndex1 == mechanic.originalMachineIndex;
     let isTravelling = mechanic.state === MechanicState.TRAVELLING
 
     let style = isFirstConnection && isTravelling ? FIRST_VISIT_STYLE : NEXT_VISIT_STYLE;

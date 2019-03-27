@@ -149,7 +149,7 @@ public class GameServiceImpl implements GameService {
                                       + oldFocusMachineIndex
                                       + " to a new index "
                                       + newFocusMachineIndex);
-                    mechanic.setCurrentMachineIndex(oldFocusMachineIndex);
+                    mechanic.setOriginalMachineIndex(oldFocusMachineIndex);
                     long focusTravelTimeMillis = timeMillis + travelTime;
                     mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
 
