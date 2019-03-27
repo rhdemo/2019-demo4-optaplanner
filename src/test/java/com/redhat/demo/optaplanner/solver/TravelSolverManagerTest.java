@@ -25,7 +25,7 @@ public class TravelSolverManagerTest {
     public void solvingStarted() {
         AppConfiguration appConfiguration = new AppConfiguration();
         appConfiguration.readTravelDistanceMatrix();
-        Machine[] machines = new Machine[appConfiguration.getMachinesOnlyLength() + 1];
+        Machine[] machines = new Machine[appConfiguration.getMachinesAndGateLength()];
         for (int i = 0; i < machines.length; i++) {
             int x = appConfiguration.getMachineGridX(i);
             int y = appConfiguration.getMachineGridY(i);
