@@ -21,14 +21,16 @@ import org.optaplanner.core.api.domain.lookup.PlanningId;
 public class OptaMachine {
 
     @PlanningId
-    private Integer machineIndex;
-    private double[] machineIndexToTravelDistances;
+    private final Integer machineIndex;
+    private final double[] machineIndexToTravelDistances;
+    private final boolean gate;
 
     private double health;
 
-    public OptaMachine(int machineIndex, double[] machineIndexToTravelDistances) {
+    public OptaMachine(int machineIndex, double[] machineIndexToTravelDistances, boolean gate) {
         this.machineIndex = machineIndex;
         this.machineIndexToTravelDistances = machineIndexToTravelDistances;
+        this.gate = gate;
     }
 
     public long getTravelTimeMillisTo(OptaMachine machine, OptaMechanic mechanic) {
@@ -47,6 +49,10 @@ public class OptaMachine {
 
     public Integer getMachineIndex() {
         return machineIndex;
+    }
+
+    public boolean isGate() {
+        return gate;
     }
 
     public double getHealth() {

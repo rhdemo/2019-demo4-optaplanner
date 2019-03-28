@@ -3,6 +3,7 @@ package com.redhat.demo.optaplanner.websocket;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,10 +57,9 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
 
     @Override
     public void updateMachinesHealths(Machine[] machines) {
-        JsonMachine[] jsonMachines = new JsonMachine[machines.length];
-        for (int i = 0; i < jsonMachines.length; i++) {
-            jsonMachines[i] = convertMachineToJson(machines[i]);
-        }
+        JsonMachine[] jsonMachines = Arrays.stream(machines)
+                .filter(machine -> !machine.isGate())
+                .map(this::convertMachineToJson).toArray(JsonMachine[]::new);
         UpdateMachineHealthResponse updateMachineHealthResponse = new UpdateMachineHealthResponse(jsonMachines);
         this.template.convertAndSend(WEB_SOCKET_ENDPOINT, updateMachineHealthResponse);
     }

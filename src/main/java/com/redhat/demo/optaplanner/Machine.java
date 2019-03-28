@@ -6,16 +6,30 @@ public class Machine {
     private int x;
     private int y;
     private double[] machineIndexToTravelDistances;
+
+    private boolean gate;
     private double health;
 
     public Machine() {
     }
 
+    public Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, boolean gate) {
+        this(machineIndex, x, y, machineIndexToTravelDistances, gate, Double.NaN);
+        if (!gate) {
+            throw new IllegalArgumentException("The parameter gate must be true.");
+        }
+    }
+
     public Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, double health) {
+        this(machineIndex, x, y, machineIndexToTravelDistances, false, health);
+    }
+
+    private Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, boolean gate, double health) {
         this.machineIndex = machineIndex;
         this.x = x;
         this.y = y;
         this.machineIndexToTravelDistances = machineIndexToTravelDistances;
+        this.gate = gate;
         this.health = health;
     }
 
@@ -41,6 +55,10 @@ public class Machine {
 
     public double[] getMachineIndexToTravelDistances() {
         return machineIndexToTravelDistances;
+    }
+
+    public boolean isGate() {
+        return gate;
     }
 
     public double getHealth() {

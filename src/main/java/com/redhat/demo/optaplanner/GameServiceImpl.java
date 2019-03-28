@@ -55,13 +55,17 @@ public class GameServiceImpl implements GameService {
 
     @PostConstruct
     public void init() {
-        machines = new Machine[appConfiguration.getMachinesOnlyLength()];
+        machines = new Machine[appConfiguration.getMachinesAndGateLength()];
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
         for (int i = 0; i < machines.length; i++) {
             int x = appConfiguration.getMachineGridX(i);
             int y = appConfiguration.getMachineGridY(i);
             double[] machineIndexToTravelDistances = appConfiguration.getMachineIndexToTravelDistances(i);
-            machines[i] = new Machine(i, x, y, machineIndexToTravelDistances, machineHealths[i]);
+            if (i == appConfiguration.getGateMachineIndex()) {
+                machines[i] = new Machine(i, x, y, machineIndexToTravelDistances, true);
+            } else {
+                machines[i] = new Machine(i, x, y, machineIndexToTravelDistances, machineHealths[i]);
+            }
         }
         double mechanicSpeed = appConfiguration.getMechanicSpeed();
         for (int i = 0; i < appConfiguration.getInitialMechanicsSize(); i++) {
@@ -116,7 +120,7 @@ public class GameServiceImpl implements GameService {
 
         // Update machine healths
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
-        for (int i = 0; i < machines.length; i++) {
+        for (int i = 0; i < machineHealths.length; i++) {
             machines[i].setHealth(machineHealths[i]);
         }
         if (timeMillis % AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE == 0L) {
@@ -131,7 +135,10 @@ public class GameServiceImpl implements GameService {
                 Mechanic mechanic = mechanics.get(i);
                 if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
                     // TODO If it didn't already happen for this fix case...
-                    upstreamConnector.resetMachineHealth(mechanic.getFocusMachineIndex());
+                    int focusMachineIndex = mechanic.getFocusMachineIndex();
+                    if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
+                        upstreamConnector.resetMachineHealth(focusMachineIndex);
+                    }
                 }
                 if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
                     final int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
