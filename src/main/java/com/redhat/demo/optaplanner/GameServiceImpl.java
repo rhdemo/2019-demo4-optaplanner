@@ -51,7 +51,7 @@ public class GameServiceImpl implements GameService {
     private List<Mechanic> mechanics = new ArrayList<>();
     private Machine[] machines;
 
-    private boolean pauzed = false;
+    private boolean dispatchPaused = false;
 
     @PostConstruct
     public void init() {
@@ -77,17 +77,13 @@ public class GameServiceImpl implements GameService {
     }
 
     public void pauseGame() {
-        log.info("Pauze game");
-        this.pauzed = true;
+        log.info("Pauze dispatches");
+        this.dispatchPaused = true;
     }
 
     public void resumeGame() {
-        log.info("Resume game");
-        this.pauzed = false;
-    }
-
-    public boolean isGameRunning() {
-        return !pauzed;
+        log.info("Resume dispatches");
+        this.dispatchPaused = false;
     }
 
     /**
@@ -129,7 +125,7 @@ public class GameServiceImpl implements GameService {
 
         downstreamConnector.updateMachinesHealths(machines);
 
-        if (isGameRunning()) {
+        if (!dispatchPaused) {
             // Check mechanic fixed or departure events
             for (int i = 0; i < mechanics.size(); i++) {
                 Mechanic mechanic = mechanics.get(i);
