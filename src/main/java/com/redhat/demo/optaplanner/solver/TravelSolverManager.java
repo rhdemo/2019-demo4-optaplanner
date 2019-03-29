@@ -69,7 +69,7 @@ public class TravelSolverManager {
     public void startSolver(Machine[] machines, List<Mechanic> mechanics) {
         List<OptaMachine> machineList = Arrays.stream(machines)
                 .map(machine -> new OptaMachine(
-                        machine.getMachineIndex(), machine.getMachineIndexToTravelDistances()))
+                        machine.getMachineIndex(), machine.getMachineIndexToTravelDistances(), machine.isGate()))
                 .collect(Collectors.toList());
         List<OptaMechanic> mechanicList = mechanics.stream()
                 .map(mechanic -> {
@@ -81,6 +81,7 @@ public class TravelSolverManager {
                 })
                 .collect(Collectors.toList());
         List<OptaVisit> visitList = machineList.stream()
+                .filter(machine -> !machine.isGate())
                 .map(machine -> new OptaVisit(machine.getMachineIndex(), machine))
                 .collect(Collectors.toList());
         OptaSolution solution = new OptaSolution(machineList, mechanicList, visitList);
@@ -128,6 +129,10 @@ public class TravelSolverManager {
     }
 
     public void updateMachineHealths(Machine[] machines) {
+        // Avoid race condition by extracting the heaths (Double is immutable, Machine is not)
+        Double[] healths = Arrays.stream(machines)
+                .filter(machine -> !machine.isGate())
+                .map(Machine::getHealth).toArray(Double[]::new);
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution workingSolution = scoreDirector.getWorkingSolution();
             // A SolutionCloner doesn't clone problem fact lists, shallow clone to ensure changes are only applied to the workingSolution
@@ -136,10 +141,10 @@ public class TravelSolverManager {
             // Ideally we should clone the actual OptaMachine instances and rewire OptaMechanic and OptaVisits accordingly
             // to avoid corrupting previous best solutions, but we ignore their health anyway, so no problem.
 
-            for (Machine machine : machines) {
-                OptaMachine workingMachine = workingSolution.getMachineList().get(machine.getMachineIndex());
+            for (int i = 0; i < healths.length; i++) {
+                OptaMachine workingMachine = workingSolution.getMachineList().get(i);
                 scoreDirector.beforeProblemPropertyChanged(workingMachine);
-                workingMachine.setHealth(machine.getHealth());
+                workingMachine.setHealth(healths[i]);
                 scoreDirector.afterProblemPropertyChanged(workingMachine);
             }
             scoreDirector.triggerVariableListeners();
@@ -189,18 +194,20 @@ public class TravelSolverManager {
             optaMechanic.setFocusDepartureTimeMillis(mechanic.getFocusDepartureTimeMillis());
             scoreDirector.afterProblemPropertyChanged(optaMechanic);
 
-            OptaVisit visit = solution.getVisitList().get(newFocusMachine.getMachineIndex());
-            OptaVisitOrMechanic previous = visit.getPrevious();
-            OptaVisit next = visit.getNext();
-            if (next != null) {
-                scoreDirector.beforeVariableChanged(next, "previous");
-                next.setPrevious(previous);
-                scoreDirector.afterVariableChanged(next, "previous");
+            if (!newFocusMachine.isGate()) {
+                OptaVisit visit = solution.getVisitList().get(newFocusMachine.getMachineIndex());
+                OptaVisitOrMechanic previous = visit.getPrevious();
+                OptaVisit next = visit.getNext();
+                if (next != null) {
+                    scoreDirector.beforeVariableChanged(next, "previous");
+                    next.setPrevious(previous);
+                    scoreDirector.afterVariableChanged(next, "previous");
+                }
+                scoreDirector.beforeVariableChanged(visit, "previous");
+                visit.setPrevious(null);
+                scoreDirector.afterVariableChanged(visit, "previous");
+                scoreDirector.triggerVariableListeners();
             }
-            scoreDirector.beforeVariableChanged(visit, "previous");
-            visit.setPrevious(null);
-            scoreDirector.afterVariableChanged(visit, "previous");
-            scoreDirector.triggerVariableListeners();
         });
     }
 }
