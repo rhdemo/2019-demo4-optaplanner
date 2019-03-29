@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml" />
+  <logger name="org.drools" level="error" />
+  <logger name="org.optaplanner" level="info" />
+  <logger name="com.redhat" level="debug" />
+</configuration>

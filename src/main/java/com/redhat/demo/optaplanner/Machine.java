@@ -2,6 +2,21 @@ package com.redhat.demo.optaplanner;
 
 public class Machine {
 
+    public static Machine createMachine(int machineIndex,
+                                        int x,
+                                        int y,
+                                        double[] machineIndexToTravelDistances,
+                                        double health) {
+        return new Machine(machineIndex, x, y, machineIndexToTravelDistances, health);
+    }
+
+    public static Machine createGate(int machineIndex,
+                                     int x,
+                                     int y,
+                                     double[] machineIndexToTravelDistances) {
+        return new Machine(machineIndex, x, y, machineIndexToTravelDistances);
+    }
+
     private int machineIndex;
     private int x;
     private int y;
@@ -10,17 +25,11 @@ public class Machine {
     private boolean gate;
     private double health;
 
-    public Machine() {
+    private Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances) {
+        this(machineIndex, x, y, machineIndexToTravelDistances, true, Double.NaN);
     }
 
-    public Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, boolean gate) {
-        this(machineIndex, x, y, machineIndexToTravelDistances, gate, Double.NaN);
-        if (!gate) {
-            throw new IllegalArgumentException("The parameter gate must be true.");
-        }
-    }
-
-    public Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, double health) {
+    private Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, double health) {
         this(machineIndex, x, y, machineIndexToTravelDistances, false, health);
     }
 
@@ -66,7 +75,7 @@ public class Machine {
     }
 
     public void setHealth(double health) {
-        this.health = health;
+        this.health = Math.max(0.0, health);
     }
 
     @Override
