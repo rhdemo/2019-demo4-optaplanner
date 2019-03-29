@@ -42,7 +42,8 @@ const ResponseType  = {
 const MechanicState = {
     TRAVELLING : 1,
     FIXING: 2,
-    DONE: 3
+    DONE: 3,
+    REMOVED: 4
 }
 
 $(function () {
@@ -173,15 +174,11 @@ function processResponse(response) {
         locations = response.locations;
     } else if (response.responseType === ResponseType.ADD_MECHANIC) {
         console.log("Adding a mechanic");
-        let mechanic = {
-            mechanicIndex: response.mechanicIndex
-        };
-        mechanics.push(mechanic);
     } else if (response.responseType === ResponseType.REMOVE_MECHANIC) {
         let mechanicIndex = response.mechanicIndex;
         if (mechanicIndex >= 0) {
             console.log("Removing a mechanic index: " + mechanicIndex)
-            mechanics.splice(mechanicIndex, 1);
+            mechanics[mechanicIndex].state = MechanicState.REMOVED;
         }
     } else if (response.responseType === ResponseType.UPDATE_MACHINE_HEALTHS) {
         machines = response.machines;
@@ -206,15 +203,23 @@ function handleDispatchMechanic(mechanic) {
     
     let travelTime = mechanic.focusTravelTimeMillis;
     let fixTime = mechanic.focusFixTimeMillis;
-    setTimeout(function() { 
-        mechanics[mechanic.mechanicIndex].state = MechanicState.FIXING;
+    setTimeout(function() {
+        removeOrUpdateState(mechanic.mechanicIndex, MechanicState.FIXING);
         draw(drawGame);
     }, travelTime);
 
-    setTimeout(function() { 
-        mechanics[mechanic.mechanicIndex].state = MechanicState.DONE;
+    setTimeout(function() {
+        removeOrUpdateState(mechanic.mechanicIndex, MechanicState.DONE);
         draw(drawGame); 
     }, travelTime + fixTime);    
+}
+
+function removeOrUpdateState(mechanicIndex, state) {
+    if (mechanics[mechanicIndex].state === MechanicState.REMOVED) {
+        mechanics.splice(mechanicIndex, 1);
+    } else {
+        mechanics[mechanicIndex].state = state;
+    }
 }
 
 /*       -------------       DRAWING THE GAME    -------------------            */
