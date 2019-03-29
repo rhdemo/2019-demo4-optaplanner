@@ -35,10 +35,15 @@ import com.redhat.demo.optaplanner.solver.domain.OptaVisit;
 import com.redhat.demo.optaplanner.solver.domain.OptaVisitOrMechanic;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
+import org.optaplanner.core.api.solver.event.SolverEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TravelSolverManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TravelSolverManager.class);
 
     private static final String SOLVER_CONFIG = "com/redhat/demo/optaplanner/solver/travelingMechanicSolverConfig.xml";
 
@@ -59,6 +64,13 @@ public class TravelSolverManager {
         solver.addEventListener(bestSolutionEvent -> {
             bestSolutionReference.set(bestSolutionEvent.getNewBestSolution());
         });
+    }
+
+    /**
+     * For testing purposes
+     */
+    protected void registerEventListener(SolverEventListener<OptaSolution> listener) {
+        solver.addEventListener(listener);
     }
 
     @PreDestroy
@@ -125,6 +137,10 @@ public class TravelSolverManager {
             }
             int[] futureMachineIndexes = futureMachineIndexList.stream().mapToInt(Integer::intValue).toArray();
             mechanic.setFutureMachineIndexes(futureMachineIndexes);
+            LOGGER.debug("Future machine indexes updated for a mechanic "
+                                       + mechanic.getMechanicIndex()
+                                       + " with the first one being a machine: "
+                                       + (futureMachineIndexes.length == 0 ? "empty" : futureMachineIndexes[0]));
         }
     }
 
@@ -151,21 +167,24 @@ public class TravelSolverManager {
         });
     }
 
-
-    public void addMechanic(int mechanicIndex, double speed, long fixDurationMillis, long thumbUpDurationMillis,
-            int focusMachineIndex, long focusDepartureTimeMillis) {
+    public void addMechanic(Mechanic mechanic) {
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
             List<OptaMachine> machines = solution.getMachineList();
 
             // The last machine is the entry point to the factory. A new mechanic is supposed to show up there.
-            OptaMachine gate = machines.get(focusMachineIndex);
+            OptaMachine gate = machines.get(mechanic.getFocusMachineIndex());
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
-            OptaMechanic mechanic = new OptaMechanic(mechanicIndex, speed, fixDurationMillis, thumbUpDurationMillis, gate, focusDepartureTimeMillis);
-            scoreDirector.beforeEntityAdded(mechanic);
-            mechanicList.add(mechanic);
-            scoreDirector.afterEntityAdded(mechanic);
+            OptaMechanic optaMechanic = new OptaMechanic(mechanic.getMechanicIndex(),
+                                                         mechanic.getSpeed(),
+                                                         mechanic.getFixDurationMillis(),
+                                                         mechanic.getThumbUpDurationMillis(),
+                                                         gate,
+                                                         mechanic.getFocusDepartureTimeMillis());
+            scoreDirector.beforeEntityAdded(optaMechanic);
+            mechanicList.add(optaMechanic);
+            scoreDirector.afterEntityAdded(optaMechanic);
             scoreDirector.triggerVariableListeners();
         });
     }

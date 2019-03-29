@@ -62,9 +62,9 @@ public class GameServiceImpl implements GameService {
             int y = appConfiguration.getMachineGridY(i);
             double[] machineIndexToTravelDistances = appConfiguration.getMachineIndexToTravelDistances(i);
             if (i == appConfiguration.getGateMachineIndex()) {
-                machines[i] = new Machine(i, x, y, machineIndexToTravelDistances, true);
+                machines[i] = Machine.createGate(i, x, y, machineIndexToTravelDistances);
             } else {
-                machines[i] = new Machine(i, x, y, machineIndexToTravelDistances, machineHealths[i]);
+                machines[i] = Machine.createMachine(i, x, y, machineIndexToTravelDistances, machineHealths[i]);
             }
         }
         double mechanicSpeed = appConfiguration.getMechanicSpeed();
@@ -177,15 +177,15 @@ public class GameServiceImpl implements GameService {
                         appConfiguration.getGateMachineIndex(),
                         timeMillis);
                 mechanics.add(mechanic);
-                solverManager.addMechanic(mechanics.size() - 1, mechanic.getSpeed(),
-                        mechanic.getFixDurationMillis(), mechanic.getThumbUpDurationMillis(),
-                        mechanic.getFocusMachineIndex(), timeMillis);
+                solverManager.addMechanic(mechanic);
                 downstreamConnector.mechanicAdded(mechanic);
             }
         } else if (mechanicAddition < 0) {
             final int mechanicRemoval = - mechanicAddition;
-            final int boundary = Math.min(mechanicRemoval, mechanics.size());
-            for (int i = 0; i < boundary; i++) {
+            final int mechanicsSize = mechanics.size();
+            final int boundary = Math.min(mechanicRemoval, mechanicsSize);
+
+            for (int i = mechanicsSize - 1; mechanicsSize - i <= boundary; i--) {
                 Mechanic removedMechanic = mechanics.remove(i);
                 solverManager.removeMechanic(removedMechanic.getMechanicIndex());
                 downstreamConnector.mechanicRemoved(removedMechanic);
