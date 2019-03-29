@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.annotation.PostConstruct;
 
 import com.google.common.base.Charsets;
@@ -35,7 +34,7 @@ public class AppConfiguration {
 
     private int machinesAndGateLength;
     private int initialMechanicsSize = 1;
-    private double mechanicSpeed = 0.001;
+    private double mechanicSpeed = 0.1;
     private long fixDurationMillis = 2000L;
     private long thumbUpDurationMillis = 200L;
 
