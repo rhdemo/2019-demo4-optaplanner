@@ -16,6 +16,7 @@
 
 package com.redhat.demo.optaplanner.upstream;
 
+import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
 
 // TODO Needs better name?
@@ -31,6 +32,12 @@ public interface UpstreamConnector {
      * @param machineIndex >= 0, <= {@link AppConfiguration#getMachinesOnlyLength()}
      */
     void resetMachineHealth(int machineIndex);
+
+    /**
+     *
+     * @param mechanic
+     */
+    void dispatchMechanic(Mechanic mechanic);
 
     /**
      * For simulation only.

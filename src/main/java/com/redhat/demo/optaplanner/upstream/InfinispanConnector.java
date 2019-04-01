@@ -4,10 +4,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
+import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
+import com.redhat.demo.optaplanner.websocket.response.DispatchMechanicResponse;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.configuration.Configuration;
@@ -22,11 +29,14 @@ import org.springframework.stereotype.Service;
 public class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
+    private static final String DISPATCH_MECHANIC_EVENTS_CACHE_NAME = "DispatchEvents";
     @Autowired
     private AppConfiguration appConfiguration;
 
     private StrongCounter[] counters;
     private Map<StrongCounter, Integer> counterIndices;
+    private RemoteCache<String, String> dispatchMechanicEventsCache;
+    private ObjectMapper objectMapper;
 
     @PostConstruct
     public void postConstruct() {
@@ -40,7 +50,8 @@ public class InfinispanConnector implements UpstreamConnector {
             counters[i] = currentCounter;
             counterIndices.put(currentCounter, i);
         }
-
+        dispatchMechanicEventsCache = remoteCacheManager.getCache(DISPATCH_MECHANIC_EVENTS_CACHE_NAME);
+        objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -64,6 +75,24 @@ public class InfinispanConnector implements UpstreamConnector {
     @Override
     public void resetMachineHealth(int machineIndex) {
         counters[machineIndex].reset();
+    }
+
+    @Override
+    public void dispatchMechanic(Mechanic mechanic) {
+        JsonMechanic jsonMechanic = new JsonMechanic(mechanic.getMechanicIndex(),
+                mechanic.getOriginalMachineIndex(),
+                mechanic.getFocusMachineIndex(),
+                mechanic.getFocusTravelTimeMillis(),
+                mechanic.getFocusFixTimeMillis(),
+                mechanic.getFutureMachineIndexes()
+        );
+        DispatchMechanicResponse dispatchMechanicResponse = new DispatchMechanicResponse(jsonMechanic);
+        try {
+            String jsonEvent = objectMapper.writeValueAsString(dispatchMechanicResponse);
+            dispatchMechanicEventsCache.put(String.valueOf(jsonMechanic.getMechanicIndex()), jsonEvent);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

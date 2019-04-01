@@ -19,6 +19,7 @@ package com.redhat.demo.optaplanner.upstream;
 import java.util.Arrays;
 import javax.annotation.PostConstruct;
 
+import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,10 @@ public class FakeUpstreamConnector implements UpstreamConnector {
     @Override
     public synchronized void resetMachineHealth(int machineIndex) {
         machineHealths[machineIndex] = 1.0;
+    }
+
+    @Override
+    public void dispatchMechanic(Mechanic mechanic) {
     }
 
     @Override
