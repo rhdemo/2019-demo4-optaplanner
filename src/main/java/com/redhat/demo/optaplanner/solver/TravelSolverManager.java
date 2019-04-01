@@ -210,14 +210,18 @@ public class TravelSolverManager {
     }
 
     public void dispatchMechanic(Mechanic mechanic) {
+        final int focusMachineIndex = mechanic.getFocusMachineIndex();
+        final int mechanicIndex = mechanic.getMechanicIndex();
+        final long focusDepartureTimeMillis = mechanic.getFocusDepartureTimeMillis();
+
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
-            OptaMachine newFocusMachine = solution.getMachineList().get(mechanic.getFocusMachineIndex());
+            OptaMachine newFocusMachine = solution.getMachineList().get(focusMachineIndex);
 
-            OptaMechanic optaMechanic = solution.getMechanicList().get(mechanic.getMechanicIndex());
+            OptaMechanic optaMechanic = solution.getMechanicList().get(mechanicIndex);
             scoreDirector.beforeProblemPropertyChanged(optaMechanic);
             optaMechanic.setFocusMachine(newFocusMachine);
-            optaMechanic.setFocusDepartureTimeMillis(mechanic.getFocusDepartureTimeMillis());
+            optaMechanic.setFocusDepartureTimeMillis(focusDepartureTimeMillis);
             scoreDirector.afterProblemPropertyChanged(optaMechanic);
 
             if (!newFocusMachine.isGate()) {
