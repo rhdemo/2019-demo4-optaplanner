@@ -34,6 +34,7 @@ public class Machine {
     }
 
     private Machine(int machineIndex, int x, int y, double[] machineIndexToTravelDistances, boolean gate, double health) {
+        checkHealth(health);
         this.machineIndex = machineIndex;
         this.x = x;
         this.y = y;
@@ -75,7 +76,8 @@ public class Machine {
     }
 
     public void setHealth(double health) {
-        this.health = Math.max(0.0, health);
+        checkHealth(health);
+        this.health = health;
     }
 
     @Override
@@ -93,5 +95,11 @@ public class Machine {
     @Override
     public int hashCode() {
         return machineIndex;
+    }
+
+    private void checkHealth(double health) {
+        if (health < 0.0) {
+            throw new IllegalArgumentException("Machine health cannot be negative.");
+        }
     }
 }
