@@ -168,20 +168,27 @@ public class TravelSolverManager {
     }
 
     public void addMechanic(Mechanic mechanic) {
+        final int mechanicIndex = mechanic.getMechanicIndex();
+        final int focusMachineIndex = mechanic.getFocusMachineIndex();
+        final double speed = mechanic.getSpeed();
+        final long fixDurationMillis = mechanic.getFixDurationMillis();
+        final long thumbUpdurationMillis = mechanic.getThumbUpDurationMillis();
+        final long focusDepartureTimeMillis = mechanic.getFocusDepartureTimeMillis();
+
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
             List<OptaMachine> machines = solution.getMachineList();
 
             // The last machine is the entry point to the factory. A new mechanic is supposed to show up there.
-            OptaMachine gate = machines.get(mechanic.getFocusMachineIndex());
+            OptaMachine gate = machines.get(focusMachineIndex);
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
-            OptaMechanic optaMechanic = new OptaMechanic(mechanic.getMechanicIndex(),
-                                                         mechanic.getSpeed(),
-                                                         mechanic.getFixDurationMillis(),
-                                                         mechanic.getThumbUpDurationMillis(),
+            OptaMechanic optaMechanic = new OptaMechanic(mechanicIndex,
+                                                         speed,
+                                                         fixDurationMillis,
+                                                         thumbUpdurationMillis,
                                                          gate,
-                                                         mechanic.getFocusDepartureTimeMillis());
+                                                         focusDepartureTimeMillis);
             scoreDirector.beforeEntityAdded(optaMechanic);
             mechanicList.add(optaMechanic);
             scoreDirector.afterEntityAdded(optaMechanic);
