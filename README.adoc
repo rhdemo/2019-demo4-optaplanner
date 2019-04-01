@@ -4,8 +4,19 @@
 
 `mvn spring-boot:run`
 
-To run with the Infinispan connector, use:
-`mvn spring-boot:run -Dprod`
+To run with the Infinispan connector:
+
+1. Run infinispan server (make sure counters and DispatchEvents caches are added to the config file):
+
+    $INFINISPAN_HOME/bin/standalone.sh -c CONFIG_FILE.xml
+
+2. Change hotrod endpoint in `hotrod-client.properties`:
+
+    infinispan.client.hotrod.endpoint=localhost
+
+3. Run the application:
+
+    `mvn spring-boot:run -Dprod`
 
 == Build & run on OpenShift
 
@@ -13,40 +24,19 @@ To run with the Infinispan connector, use:
 
     oc login -u USERNAME -p PASSWORD OPENSHIFT_URL
 
-2. Either use an existing project or create a new one by executing:
+2. Make sure datagrid service is running, if not deploy it:
+
+    git clone git@github.com:rhdemo/2019-demo4-cluster-setup.git
+    ./2019-demo4-cluster-setup/datagrid/deploy.sh
+
+3. Either use an existing project or create a new one by executing:
 
     oc new-project NAME
 
 3. Deploy the application to the project
 
-    mvn fabric8:deploy
+    mvn clean package -Popenshift
 
 4. Find out a URL the service was exposed on
 
     oc get route
-
-To undeploy the application from OpenShift, simply run:
-
-    mvn fabric8:undeploy
-
-    
-== To run on a local OpenShift cluster with Infinispan/datagrid:
-
-1. Clone datagird setup from demo repository:
-
-    git clone git@github.com:rhdemo/2019-demo4-cluster-setup.git
-
-2. Login to OpenShift cluster (by default this will login to the local cluster at https://127.0.0.1:8443):
-
-    oc login
-
-3. Build datagrid app:
-
-    ./2019-demo4-cluster-setup/datagrid/deploy.sh
-
-4. Deploy/Undeploy optaplanner app following 3/4 from previous section.
-
-
-5. Expose optaplanner-demo service to access the UI:
-
-    oc expose service optaplanner-demo
