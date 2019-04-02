@@ -189,6 +189,7 @@ public class GameServiceImpl implements GameService {
             for (int i = mechanicsSize - 1; mechanicsSize - i <= boundary; i--) {
                 Mechanic removedMechanic = mechanics.remove(i);
                 solverManager.removeMechanic(removedMechanic.getMechanicIndex());
+                upstreamConnector.mechanicRemoved(removedMechanic);
                 downstreamConnector.mechanicRemoved(removedMechanic);
             }
         }

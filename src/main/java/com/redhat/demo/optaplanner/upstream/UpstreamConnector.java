@@ -40,6 +40,12 @@ public interface UpstreamConnector {
     void dispatchMechanic(Mechanic mechanic);
 
     /**
+     * Remove mechanic meta-data from infinispan, such as in DispatchEvents
+     * @param mechanic
+     */
+    void mechanicRemoved(Mechanic mechanic);
+
+    /**
      * For simulation only.
      * @param machineIndex >= 0, <= {@link AppConfiguration#getMachinesOnlyLength()}
      * @param damage between 0.0 (no damage) and 1.0 (kill it)

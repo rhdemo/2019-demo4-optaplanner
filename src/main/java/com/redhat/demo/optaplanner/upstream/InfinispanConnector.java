@@ -96,6 +96,11 @@ public class InfinispanConnector implements UpstreamConnector {
     }
 
     @Override
+    public void mechanicRemoved(Mechanic mechanic) {
+        dispatchMechanicEventsCache.remove(String.valueOf(mechanic.getMechanicIndex()));
+    }
+
+    @Override
     public void damageMachine(int machineIndex, double damage) {
         long damageLong = (long) (damage * FULL_HEALTH);
         counters[machineIndex].addAndGet(-damageLong);

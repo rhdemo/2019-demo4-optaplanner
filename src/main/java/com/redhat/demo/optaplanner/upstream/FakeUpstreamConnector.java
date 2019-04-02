@@ -56,6 +56,10 @@ public class FakeUpstreamConnector implements UpstreamConnector {
     }
 
     @Override
+    public void mechanicRemoved(Mechanic mechanic) {
+    }
+
+    @Override
     public synchronized void damageMachine(int machineIndex, double damage) {
         machineHealths[machineIndex] = Math.max(0.0, machineHealths[machineIndex] - damage);
     }
