@@ -36,9 +36,16 @@ public interface UpstreamConnector {
     /**
      * Update mechanic meta-data
      * @param mechanic never null
-     * @param currentTimeMillis
+     * @param currentTimeMillis never null
      */
     void dispatchMechanic(Mechanic mechanic, long currentTimeMillis);
+
+    /**
+     * Add mechanic meta-data
+     * @param mechanic never null
+     * @param currentTimeMillis never null
+     */
+    void mechanicAdded(Mechanic mechanic, long currentTimeMillis);
 
     /**
      * Remove mechanic meta-data, such as in DispatchEvents

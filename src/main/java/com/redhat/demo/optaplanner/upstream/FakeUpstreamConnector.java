@@ -56,6 +56,10 @@ public class FakeUpstreamConnector implements UpstreamConnector {
     }
 
     @Override
+    public void mechanicAdded(Mechanic mechanic, long currentTimeMillis) {
+    }
+
+    @Override
     public void mechanicRemoved(Mechanic mechanic) {
     }
 

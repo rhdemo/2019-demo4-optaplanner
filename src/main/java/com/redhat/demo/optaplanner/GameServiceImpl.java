@@ -179,7 +179,8 @@ public class GameServiceImpl implements GameService {
                         timeMillis);
                 mechanics.add(mechanic);
                 solverManager.addMechanic(mechanic);
-                downstreamConnector.mechanicAdded(mechanic);
+                upstreamConnector.mechanicAdded(mechanic, timeMillis);
+                downstreamConnector.mechanicAdded(mechanic, timeMillis);
             }
         } else if (mechanicAddition < 0) {
             final int mechanicRemoval = - mechanicAddition;

@@ -13,6 +13,7 @@ import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
 import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
+import com.redhat.demo.optaplanner.websocket.response.AddMechanicResponse;
 import com.redhat.demo.optaplanner.websocket.response.DispatchMechanicResponse;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -82,8 +83,20 @@ public class InfinispanConnector implements UpstreamConnector {
         JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentTimeMillis);
         DispatchMechanicResponse dispatchMechanicResponse = new DispatchMechanicResponse(jsonMechanic);
         try {
-            String jsonEvent = objectMapper.writeValueAsString(dispatchMechanicResponse);
-            dispatchMechanicEventsCache.put(String.valueOf(jsonMechanic.getMechanicIndex()), jsonEvent);
+            String jsonDispatchMechanicResponse = objectMapper.writeValueAsString(dispatchMechanicResponse);
+            dispatchMechanicEventsCache.put(String.valueOf(jsonMechanic.getMechanicIndex()), jsonDispatchMechanicResponse);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Could not format mechanic (" + mechanic.getMechanicIndex() + ") as json.", e);
+        }
+    }
+
+    @Override
+    public void mechanicAdded(Mechanic mechanic, long currentTimeMillis) {
+        JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentTimeMillis);
+        AddMechanicResponse addMechanicResponse = new AddMechanicResponse(jsonMechanic);
+        try {
+            String jsonAddMechanicResponse = objectMapper.writeValueAsString(addMechanicResponse);
+            dispatchMechanicEventsCache.put(String.valueOf(mechanic.getMechanicIndex()), jsonAddMechanicResponse);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Could not format mechanic (" + mechanic.getMechanicIndex() + ") as json.", e);
         }

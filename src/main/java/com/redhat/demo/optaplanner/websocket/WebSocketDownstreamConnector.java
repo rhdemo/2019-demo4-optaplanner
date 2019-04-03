@@ -31,8 +31,8 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
     private SimpMessagingTemplate template;
 
     @Override
-    public void mechanicAdded(Mechanic mechanic) {
-        AddMechanicResponse addMechanicResponse = new AddMechanicResponse(mechanic.getMechanicIndex());
+    public void mechanicAdded(Mechanic mechanic, long currentMillis) {
+        AddMechanicResponse addMechanicResponse = new AddMechanicResponse(new JsonMechanic(mechanic, currentMillis));
         this.template.convertAndSend(WEB_SOCKET_ENDPOINT, addMechanicResponse);
     }
 

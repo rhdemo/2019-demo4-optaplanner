@@ -31,6 +31,15 @@ public class JsonMechanic {
     public JsonMechanic() {
     }
 
+    public JsonMechanic(Mechanic mechanic, long currentMillis) {
+        this(mechanic.getMechanicIndex(),
+                mechanic.getOriginalMachineIndex(),
+                mechanic.getFocusMachineIndex(),
+                mechanic.getFocusTravelTimeMillis() - currentMillis,
+                mechanic.getFixDurationMillis(),
+                mechanic.getFutureMachineIndexes());
+    }
+
     public JsonMechanic(int mechanicIndex,
                         int originalMachineIndex,
                         int focusMachineIndex,
@@ -43,15 +52,6 @@ public class JsonMechanic {
         this.focusTravelTimeMillis = focusTravelTimeMillis;
         this.focusFixTimeMillis = focusFixTimeMillis;
         this.futureMachineIndexes = futureMachineIndexes;
-    }
-
-    public JsonMechanic(Mechanic mechanic, long currentMillis) {
-        this(mechanic.getMechanicIndex(),
-                mechanic.getOriginalMachineIndex(),
-                mechanic.getFocusMachineIndex(),
-                mechanic.getFocusTravelTimeMillis() - currentMillis,
-                mechanic.getFixDurationMillis(),
-                mechanic.getFutureMachineIndexes());
     }
 
     public int getMechanicIndex() {
