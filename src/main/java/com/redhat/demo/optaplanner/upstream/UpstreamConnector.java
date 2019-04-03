@@ -34,14 +34,15 @@ public interface UpstreamConnector {
     void resetMachineHealth(int machineIndex);
 
     /**
-     *
-     * @param mechanic
+     * Update mechanic meta-data
+     * @param mechanic never null
+     * @param currentTimeMillis
      */
-    void dispatchMechanic(Mechanic mechanic);
+    void dispatchMechanic(Mechanic mechanic, long currentTimeMillis);
 
     /**
-     * Remove mechanic meta-data from infinispan, such as in DispatchEvents
-     * @param mechanic
+     * Remove mechanic meta-data, such as in DispatchEvents
+     * @param mechanic never null
      */
     void mechanicRemoved(Mechanic mechanic);
 

@@ -157,7 +157,7 @@ public class GameServiceImpl implements GameService {
                     mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
 
                     solverManager.dispatchMechanic(mechanic);
-                    upstreamConnector.dispatchMechanic(mechanic);
+                    upstreamConnector.dispatchMechanic(mechanic, timeMillis);
                     downstreamConnector.dispatchMechanic(mechanic, timeMillis);
                 }
             }

@@ -44,12 +44,7 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
 
     @Override
     public void dispatchMechanic(Mechanic mechanic, long currentMillis) {
-        JsonMechanic jsonMechanic = new JsonMechanic(mechanic.getMechanicIndex(),
-                                                     mechanic.getOriginalMachineIndex(),
-                                                     mechanic.getFocusMachineIndex(),
-                                                     mechanic.getFocusTravelTimeMillis() - currentMillis,
-                                                     mechanic.getFixDurationMillis(),
-                                                     mechanic.getFutureMachineIndexes());
+        JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentMillis);
         DispatchMechanicResponse dispatchMechanicResponse =
                 new DispatchMechanicResponse(jsonMechanic);
         this.template.convertAndSend(WEB_SOCKET_ENDPOINT, dispatchMechanicResponse);

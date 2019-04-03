@@ -78,20 +78,14 @@ public class InfinispanConnector implements UpstreamConnector {
     }
 
     @Override
-    public void dispatchMechanic(Mechanic mechanic) {
-        JsonMechanic jsonMechanic = new JsonMechanic(mechanic.getMechanicIndex(),
-                mechanic.getOriginalMachineIndex(),
-                mechanic.getFocusMachineIndex(),
-                mechanic.getFocusTravelTimeMillis(),
-                mechanic.getFocusFixTimeMillis(),
-                mechanic.getFutureMachineIndexes()
-        );
+    public void dispatchMechanic(Mechanic mechanic, long currentTimeMillis) {
+        JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentTimeMillis);
         DispatchMechanicResponse dispatchMechanicResponse = new DispatchMechanicResponse(jsonMechanic);
         try {
             String jsonEvent = objectMapper.writeValueAsString(dispatchMechanicResponse);
             dispatchMechanicEventsCache.put(String.valueOf(jsonMechanic.getMechanicIndex()), jsonEvent);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("Could not format mechanic (" + mechanic.getMechanicIndex() + ") as json.", e);
         }
     }
 

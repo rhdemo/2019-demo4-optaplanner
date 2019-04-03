@@ -16,6 +16,8 @@
 
 package com.redhat.demo.optaplanner.websocket.domain;
 
+import com.redhat.demo.optaplanner.Mechanic;
+
 public class JsonMechanic {
 
     private int mechanicIndex;
@@ -41,6 +43,15 @@ public class JsonMechanic {
         this.focusTravelTimeMillis = focusTravelTimeMillis;
         this.focusFixTimeMillis = focusFixTimeMillis;
         this.futureMachineIndexes = futureMachineIndexes;
+    }
+
+    public JsonMechanic(Mechanic mechanic, long currentMillis) {
+        this(mechanic.getMechanicIndex(),
+                mechanic.getOriginalMachineIndex(),
+                mechanic.getFocusMachineIndex(),
+                mechanic.getFocusTravelTimeMillis() - currentMillis,
+                mechanic.getFixDurationMillis(),
+                mechanic.getFutureMachineIndexes());
     }
 
     public int getMechanicIndex() {

@@ -52,7 +52,7 @@ public class FakeUpstreamConnector implements UpstreamConnector {
     }
 
     @Override
-    public void dispatchMechanic(Mechanic mechanic) {
+    public void dispatchMechanic(Mechanic mechanic, long currentTimeMillis) {
     }
 
     @Override
