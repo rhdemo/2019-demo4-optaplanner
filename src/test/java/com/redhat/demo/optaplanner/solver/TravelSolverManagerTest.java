@@ -2,21 +2,15 @@ package com.redhat.demo.optaplanner.solver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 import com.redhat.demo.optaplanner.Machine;
 import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
-import com.redhat.demo.optaplanner.solver.domain.OptaSolution;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.optaplanner.core.api.solver.event.BestSolutionChangedEvent;
-import org.optaplanner.core.api.solver.event.SolverEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,6 +19,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class TravelSolverManagerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelSolverManagerTest.class);
+    // TODO Don't do this, use OptaConditions <jiraURL>
+    private static final long SLEEP_TIME = 500;
 
     private TravelSolverManager travelSolverManager;
 
@@ -39,15 +35,12 @@ public class TravelSolverManagerTest {
         travelSolverManager.initSolver();
     }
 
-    @Test(timeout = 10000L)
-    public void solvingWithAddingAndRemovingMechanic() {
+    @Test(timeout = 10_000L)
+    public void solvingWithAddingAndRemovingMechanic() throws InterruptedException {
         Machine[] machines = prepareMachines(1.0);
         List<Mechanic> mechanics = new ArrayList<>();
         Mechanic mechanicA = prepareMechanic(0);
         mechanics.add(mechanicA);
-
-        ResettableAwaitingListener newSolutionAvailable = new ResettableAwaitingListener();
-        travelSolverManager.registerEventListener(newSolutionAvailable);
 
         travelSolverManager.startSolver(machines, mechanics);
 
@@ -57,10 +50,9 @@ public class TravelSolverManagerTest {
         travelSolverManager.updateMachineHealths(machines);
 
         LOGGER.debug("Check that mechanicA is going to fix the machineA.");
-        newSolutionAvailable.await();
+        Thread.sleep(SLEEP_TIME);
         travelSolverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
         Assertions.assertThat(mechanicA.getFutureMachineIndexes()).startsWith(indexMachineA);
-        newSolutionAvailable.reset();
 
         LOGGER.debug("Damage a machineB.");
         final int indexMachineB = 5;
@@ -75,32 +67,33 @@ public class TravelSolverManagerTest {
         LOGGER.debug("Check that mechanicB is going to fix either the machineA or machineB.");
         mechanicA.setFutureMachineIndexes(null);
         mechanicB.setFutureMachineIndexes(null);
-        newSolutionAvailable.await();
+        Thread.sleep(SLEEP_TIME);
         travelSolverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
-
         assertAnyMechanicIsFixingMachine(mechanics, indexMachineA);
         assertAnyMechanicIsFixingMachine(mechanics, indexMachineB);
-        newSolutionAvailable.reset();
 
         LOGGER.debug("Remove the mechanicB.");
         mechanicB.setFutureMachineIndexes(null);
+        mechanics.remove(mechanicB);
         travelSolverManager.removeMechanic(mechanicB.getMechanicIndex());
 
         LOGGER.debug("The mechanicA should be fixing the broken machines.");
-        newSolutionAvailable.await();
+        Thread.sleep(SLEEP_TIME);
         mechanicA.setFutureMachineIndexes(null);
         travelSolverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
         Assertions.assertThat(mechanicA.getFutureMachineIndexes()).containsAnyOf(indexMachineA, indexMachineB);
-        newSolutionAvailable.reset();
 
-        LOGGER.debug("Remove the mechanicA too.");
-        mechanicA.setFutureMachineIndexes(null);
-        travelSolverManager.removeMechanic(mechanicA.getMechanicIndex());
-
-        LOGGER.debug("No machines should be visited by any mechanic.");
-        newSolutionAvailable.await();
-        travelSolverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
-        Assertions.assertThat(mechanicB.getFutureMachineIndexes()).isEmpty();
+        // TODO Having no mechanics is not supported by OptaPlanner, see https://issues.jboss.org/browse/PLANNER-776
+//        LOGGER.debug("Remove the mechanicA too.");
+//        mechanicA.setFutureMachineIndexes(null);
+//        mechanics.remove(mechanicA);
+//        travelSolverManager.removeMechanic(mechanicA.getMechanicIndex());
+//
+//        LOGGER.debug("No machines should be visited by any mechanic.");
+//        Thread.sleep(SLEEP_TIME);
+//        travelSolverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+//        Assertions.assertThat(mechanicB.getFutureMachineIndexes()).isEmpty();
+//        Thread.sleep(SLEEP_TIME * 5);
     }
 
     private void assertAnyMechanicIsFixingMachine(List<Mechanic> mechanics, int machineIndex) {
@@ -156,31 +149,4 @@ public class TravelSolverManagerTest {
         travelSolverManager.preDestroy();
     }
 
-    private static class ResettableAwaitingListener implements SolverEventListener<OptaSolution> {
-
-        private CyclicBarrier barrier = new CyclicBarrier(2);
-
-        void reset() {
-            this.barrier.reset();
-        }
-
-        void await() {
-            try {
-                this.barrier.await();
-            } catch (BrokenBarrierException | InterruptedException ex) {
-                return;
-            }
-        }
-
-        @Override
-        public void bestSolutionChanged(BestSolutionChangedEvent<OptaSolution> bestSolutionEvent) {
-
-            if (bestSolutionEvent.getNewBestSolution().getMechanicList()
-                    .stream()
-                    // We are interested only in solutions where each mechanic already has a list of visits.
-                    .allMatch(optaMechanic -> optaMechanic.getNext() != null)) {
-                await();
-            }
-        }
-    }
 }
