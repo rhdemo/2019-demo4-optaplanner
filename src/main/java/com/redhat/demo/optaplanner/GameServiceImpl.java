@@ -77,12 +77,12 @@ public class GameServiceImpl implements GameService {
     }
 
     public void pauseGame() {
-        log.info("Pauze dispatches");
+        log.info("Pauze dispatched");
         this.dispatchPaused = true;
     }
 
     public void resumeGame() {
-        log.info("Resume dispatches");
+        log.info("Resume dispatched");
         this.dispatchPaused = false;
     }
 
