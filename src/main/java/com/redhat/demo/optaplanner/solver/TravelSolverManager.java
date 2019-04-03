@@ -202,9 +202,19 @@ public class TravelSolverManager {
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
             OptaMechanic mechanic = mechanicList.get(mechanicIndex);
-            scoreDirector.beforeEntityAdded(mechanic);
+
+            OptaVisit visit = mechanic.getNext();
+            while (visit != null) {
+                scoreDirector.beforeVariableChanged(visit, "previous");
+                visit.setPrevious(null);
+                scoreDirector.afterVariableChanged(visit, "previous");
+                visit = visit.getNext();
+            }
+
+            scoreDirector.beforeEntityRemoved(mechanic);
             mechanicList.remove(mechanicIndex);
-            scoreDirector.afterEntityAdded(mechanic);
+            scoreDirector.afterEntityRemoved(mechanic);
+
             scoreDirector.triggerVariableListeners();
         });
     }
