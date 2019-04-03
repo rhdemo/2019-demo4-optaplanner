@@ -10,5 +10,5 @@ public interface DownstreamConnector {
 
     void updateMachinesHealths(Machine[] machines);
 
-    void machineLocations();
+    void sendMachineLocations(Machine[] machines);
 }

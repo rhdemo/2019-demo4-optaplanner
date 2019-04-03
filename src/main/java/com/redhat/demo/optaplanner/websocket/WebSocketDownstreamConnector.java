@@ -65,21 +65,12 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
     }
 
     @Override
-    public void machineLocations() {
-        List<JsonLocation> locationList;
-        try (BufferedReader bufferedReader =
-                     new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/locations")))) {
-            locationList = bufferedReader.lines().map(line -> {
-                String [] numbers = line.split(",");
-                int x = Integer.parseInt(numbers[0]);
-                int y = Integer.parseInt(numbers[1]);
-                return new JsonLocation(x, y);
-            }).collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot read machine locations.");
-        }
+    public void sendMachineLocations(Machine[] machines) {
+        JsonLocation [] locations = Arrays.stream(machines)
+                .map(machine -> new JsonLocation(machine.getX(), machine.getY()))
+                .toArray(JsonLocation[]::new);
 
-        MachineLocationResponse machineLocations = new MachineLocationResponse(locationList.toArray(new JsonLocation[0]));
+        MachineLocationResponse machineLocations = new MachineLocationResponse(locations);
         this.template.convertAndSend(WEB_SOCKET_ENDPOINT, machineLocations);
     }
 

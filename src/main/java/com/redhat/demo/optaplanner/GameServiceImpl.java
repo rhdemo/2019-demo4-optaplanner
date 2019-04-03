@@ -104,7 +104,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void machineLocations() {
-        downstreamConnector.machineLocations();
+        downstreamConnector.sendMachineLocations(machines);
     }
 
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
