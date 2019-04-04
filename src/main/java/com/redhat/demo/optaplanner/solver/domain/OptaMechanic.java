@@ -32,6 +32,7 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     // When the OptaMechanic will finish with working on focusMachine
     private Long focusDepartureTimeMillis;
 
+    @SuppressWarnings("unused")
     private OptaMechanic() {
     }
 
