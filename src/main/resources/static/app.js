@@ -63,6 +63,7 @@ $(function () {
     $( "#start-simulation" ).click(function() { startSimulation() });
     $( "#stop-simulation" ).click(function() { stopSimulation() });
     $( "#canvas" ).click(function(event) { damageMachine(event) });
+    $( "#canvas" ).contextmenu(function(event) { healMachine(event) });
 });
 
 function connect() {
@@ -142,8 +143,22 @@ function damageMachine(event) {
     console.log('clicking on ' + x + ':' + y);
     let machineIndex = findMachineNearTo(x, y);
     if (machineIndex != null) {
-        console.log('clicking on machine ' + machineIndex);
+        console.log('damaging a machine ' + machineIndex);
         dealDamage(machineIndex);
+    }
+}
+
+function healMachine(event) {
+    event.preventDefault();
+    let rect = canvas.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+
+    console.log('right clicking on ' + x + ':' + y);
+    let machineIndex = findMachineNearTo(x, y);
+    if (machineIndex != null) {
+        console.log('healing a machine ' + machineIndex);
+        heal(machineIndex);
     }
 }
 
@@ -171,6 +186,17 @@ function dealDamage(machineIndex) {
             'dataType': 'json',
             'success': function(data, status, jqXHR) { console.log('sent post damage machine ' + machineIndex) }
     });
+}
+
+function heal(machineIndex) {
+    $.ajax({
+            'type': 'POST',
+            'url': "/simulation/heal",
+            'contentType': 'application/json',
+            'data': JSON.stringify({ "machineIndex" : machineIndex }),
+            'dataType': 'json',
+            'success': function(data, status, jqXHR) { console.log('sent post heal machine ' + machineIndex) }
+     });
 }
 
 function processResponse(response) {

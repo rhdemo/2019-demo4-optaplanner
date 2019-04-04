@@ -51,4 +51,8 @@ public class SimulationService {
     public void damageMachine(int machineIndex) {
         upstreamConnector.damageMachine(machineIndex, configuration.getManualDamageValue());
     }
+
+    public void healMachine(int machineIndex) {
+        upstreamConnector.resetMachineHealth(machineIndex);
+    }
 }

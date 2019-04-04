@@ -1,6 +1,6 @@
 package com.redhat.demo.optaplanner.simulation;
 
-public class DamageMachine {
+public class DamageOrHealMachine {
 
     private int machineIndex;
 
