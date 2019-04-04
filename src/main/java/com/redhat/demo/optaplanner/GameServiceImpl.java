@@ -187,6 +187,10 @@ public class GameServiceImpl implements GameService {
             final int mechanicsSize = mechanics.size();
             final int boundary = Math.min(mechanicRemoval, mechanicsSize);
 
+            if (mechanicsSize == 1) { // the last mechanic cannot disappear
+                return;
+            }
+
             for (int i = mechanicsSize - 1; mechanicsSize - i <= boundary; i--) {
                 Mechanic removedMechanic = mechanics.remove(i);
                 solverManager.removeMechanic(removedMechanic.getMechanicIndex());
