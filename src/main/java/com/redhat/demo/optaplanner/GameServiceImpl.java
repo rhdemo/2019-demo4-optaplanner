@@ -67,11 +67,9 @@ public class GameServiceImpl implements GameService {
                 machines[i] = Machine.createMachine(i, x, y, machineIndexToTravelDistances, machineHealths[i]);
             }
         }
-        double mechanicSpeed = appConfiguration.getMechanicSpeed();
+
         for (int i = 0; i < appConfiguration.getInitialMechanicsSize(); i++) {
-            mechanics.add(new Mechanic(i, mechanicSpeed,
-                    appConfiguration.getFixDurationMillis(), appConfiguration.getThumbUpDurationMillis(),
-                    appConfiguration.getGateMachineIndex(), i, timeMillis));
+            mechanics.add(createMechanic());
         }
         solverManager.startSolver(machines, mechanics);
     }
@@ -146,7 +144,7 @@ public class GameServiceImpl implements GameService {
                             (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
                                     / mechanic.getSpeed());
 
-                    log.debug("Moving a mechanic "
+                    log.debug("Dispatching a mechanic "
                                       + mechanic.getMechanicIndex()
                                       + " from old index "
                                       + oldFocusMachineIndex
@@ -170,13 +168,7 @@ public class GameServiceImpl implements GameService {
         int mechanicAddition = mechanicAdditionCount.getAndSet(0);
         if (mechanicAddition > 0) {
             for (int i = 0; i < mechanicAddition; i++) {
-                Mechanic mechanic = new Mechanic(
-                        mechanics.size(),
-                        appConfiguration.getMechanicSpeed(),
-                        appConfiguration.getFixDurationMillis(), appConfiguration.getThumbUpDurationMillis(),
-                        appConfiguration.getGateMachineIndex(),
-                        appConfiguration.getGateMachineIndex(),
-                        timeMillis);
+                Mechanic mechanic = createMechanic();
                 mechanics.add(mechanic);
                 solverManager.addMechanic(mechanic);
                 upstreamConnector.mechanicAdded(mechanic, timeMillis);
@@ -198,5 +190,15 @@ public class GameServiceImpl implements GameService {
                 downstreamConnector.mechanicRemoved(removedMechanic);
             }
         }
+    }
+
+    private Mechanic createMechanic() {
+        return new Mechanic(
+                mechanics.size(),
+                appConfiguration.getMechanicSpeed(),
+                appConfiguration.getFixDurationMillis(), appConfiguration.getThumbUpDurationMillis(),
+                appConfiguration.getGateMachineIndex(),
+                appConfiguration.getGateMachineIndex(),
+                timeMillis);
     }
 }
