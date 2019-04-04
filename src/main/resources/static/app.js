@@ -48,7 +48,7 @@ const MechanicState = {
     FIXING: 2,
     DONE: 3,
     REMOVED: 4
-}
+};
 
 $(function () {
     $("form").on('submit', function (e) {
@@ -232,8 +232,8 @@ function handleDispatchMechanic(mechanic) {
         mechanics[mechanic.mechanicIndex] = mechanic;
     }
     
-    let travelTime = mechanic.focusTravelTimeMillis;
-    let fixTime = mechanic.focusFixTimeMillis;
+    let travelTime = mechanic.focusTravelDurationMillis;
+    let fixTime = mechanic.focusFixDurationMillis;
     setTimeout(function() {
         removeOrUpdateState(mechanic.mechanicIndex, MechanicState.FIXING);
         draw(drawGame);
