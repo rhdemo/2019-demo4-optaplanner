@@ -25,6 +25,7 @@ public class OptaMachine {
     private final double[] machineIndexToTravelDistances;
     private final boolean gate;
 
+    private boolean focused;
     private double health;
 
     public OptaMachine(int machineIndex, double[] machineIndexToTravelDistances, boolean gate) {
@@ -53,6 +54,14 @@ public class OptaMachine {
 
     public boolean isGate() {
         return gate;
+    }
+
+    public boolean isFocused() {
+        return focused;
+    }
+
+    public void setFocused(boolean focused) {
+        this.focused = focused;
     }
 
     public double getHealth() {

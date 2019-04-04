@@ -32,7 +32,7 @@ public class OptaVisit extends OptaVisitOrMechanic {
     private Integer machineIndex;
     private OptaMachine machine;
 
-    @PlanningVariable(valueRangeProviderRefs = {"mechanicRange", "visitRange"},
+    @PlanningVariable(valueRangeProviderRefs = {"mechanicRange", "dummyMechanicRange", "visitRange"},
             graphType = PlanningVariableGraphType.CHAINED)
     private OptaVisitOrMechanic previous;
 
@@ -49,6 +49,14 @@ public class OptaVisit extends OptaVisitOrMechanic {
     public OptaVisit(int machineIndex, OptaMachine machine) {
         this.machineIndex = machineIndex;
         this.machine = machine;
+    }
+
+    public boolean isMachineFocused() {
+        return machine.isFocused();
+    }
+
+    public boolean isMechanicDummy() {
+        return mechanic != null && mechanic.isDummy();
     }
 
     public Long getTravelTimeMillisFromPrevious() {

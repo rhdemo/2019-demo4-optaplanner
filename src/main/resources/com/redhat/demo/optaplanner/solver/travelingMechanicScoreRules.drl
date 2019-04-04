@@ -16,23 +16,41 @@
 
 package com.redhat.demo.optaplanner.solver;
 
-import org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScoreHolder;
+import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScoreHolder;
 
 import com.redhat.demo.optaplanner.solver.domain.OptaMachine;
 import com.redhat.demo.optaplanner.solver.domain.OptaMechanic;
 import com.redhat.demo.optaplanner.solver.domain.OptaVisit;
 
-global HardSoftLongScoreHolder scoreHolder;
+global HardMediumSoftLongScoreHolder scoreHolder;
 
 // ############################################################################
 // Hard constraints
 // ############################################################################
 
+rule "Assign focus visits to the dummy"
+    when
+        $visit : OptaVisit(previous != null, isMachineFocused(), !isMechanicDummy())
+    then
+        scoreHolder.addHardConstraintMatch(kcontext, -100);
+end
+
+rule "Assign non-focus visits to non-dummies"
+    when
+        $visit : OptaVisit(previous != null, !isMachineFocused(), isMechanicDummy())
+    then
+        scoreHolder.addHardConstraintMatch(kcontext, -1);
+end
+
+// ############################################################################
+// Medium constraints
+// ############################################################################
+
 rule "Attrition"
     when
-        $visit : OptaVisit(previous != null, $timeMillis : fixTimeMillis, $attritionMicros : getAttritionMicros())
+        $visit : OptaVisit(previous != null, !isMechanicDummy(), $timeMillis : fixTimeMillis, $attritionMicros : getAttritionMicros())
     then
-        scoreHolder.addHardConstraintMatch(kcontext, - $timeMillis * $attritionMicros);
+        scoreHolder.addMediumConstraintMatch(kcontext, - $timeMillis * $attritionMicros);
 end
 
 // ############################################################################
@@ -41,7 +59,7 @@ end
 
 rule "TravelTimeMillis"
     when
-        $visit : OptaVisit(previous != null, $timeMillis : fixTimeMillis)
+        $visit : OptaVisit(previous != null, !isMechanicDummy(), $timeMillis : fixTimeMillis)
     then
         scoreHolder.addSoftConstraintMatch(kcontext, - $timeMillis);
 end

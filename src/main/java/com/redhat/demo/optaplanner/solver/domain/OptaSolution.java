@@ -23,7 +23,7 @@ import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.domain.solution.drools.ProblemFactCollectionProperty;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
-import org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 
 @PlanningSolution
 public class OptaSolution {
@@ -34,20 +34,24 @@ public class OptaSolution {
     @ProblemFactCollectionProperty
     @ValueRangeProvider(id = "mechanicRange")
     private List<OptaMechanic> mechanicList;
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider(id = "dummyMechanicRange")
+    private OptaMechanic[] dummyMechanics;
 
     @PlanningEntityCollectionProperty
     @ValueRangeProvider(id = "visitRange")
     private List<OptaVisit> visitList;
 
     @PlanningScore
-    private HardSoftLongScore score;
+    private HardMediumSoftLongScore score;
 
     public OptaSolution() {
     }
 
-    public OptaSolution(List<OptaMachine> machineList, List<OptaMechanic> mechanicList, List<OptaVisit> visitList) {
+    public OptaSolution(List<OptaMachine> machineList, List<OptaMechanic> mechanicList, OptaMechanic dummyMechanic, List<OptaVisit> visitList) {
         this.machineList = machineList;
         this.mechanicList = mechanicList;
+        this.dummyMechanics = new OptaMechanic[] {dummyMechanic};
         this.visitList = visitList;
     }
 
@@ -71,6 +75,14 @@ public class OptaSolution {
         this.mechanicList = mechanicList;
     }
 
+    public OptaMechanic getDummyMechanic() {
+        return dummyMechanics[0];
+    }
+
+    public void setDummyMechanic(OptaMechanic dummyMechanic) {
+        this.dummyMechanics[0] = dummyMechanic;
+    }
+
     public List<OptaVisit> getVisitList() {
         return visitList;
     }
@@ -79,11 +91,11 @@ public class OptaSolution {
         this.visitList = visitList;
     }
 
-    public HardSoftLongScore getScore() {
+    public HardMediumSoftLongScore getScore() {
         return score;
     }
 
-    public void setScore(HardSoftLongScore score) {
+    public void setScore(HardMediumSoftLongScore score) {
         this.score = score;
     }
 

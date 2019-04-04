@@ -35,7 +35,6 @@ import com.redhat.demo.optaplanner.solver.domain.OptaVisit;
 import com.redhat.demo.optaplanner.solver.domain.OptaVisitOrMechanic;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
-import org.optaplanner.core.api.solver.event.SolverEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -66,13 +65,6 @@ public class TravelSolverManager {
         });
     }
 
-    /**
-     * For testing purposes
-     */
-    protected void registerEventListener(SolverEventListener<OptaSolution> listener) {
-        solver.addEventListener(listener);
-    }
-
     @PreDestroy
     protected void preDestroy() {
         executorService.shutdownNow();
@@ -92,11 +84,12 @@ public class TravelSolverManager {
                             focusMachine, mechanic.getFocusDepartureTimeMillis());
                 })
                 .collect(Collectors.toList());
+        OptaMechanic dummyMechanic = OptaMechanic.createDummy();
         List<OptaVisit> visitList = machineList.stream()
                 .filter(machine -> !machine.isGate())
                 .map(machine -> new OptaVisit(machine.getMachineIndex(), machine))
                 .collect(Collectors.toList());
-        OptaSolution solution = new OptaSolution(machineList, mechanicList, visitList);
+        OptaSolution solution = new OptaSolution(machineList, mechanicList, dummyMechanic, visitList);
 
         executorService.submit(() -> {
             try {
@@ -107,14 +100,21 @@ public class TravelSolverManager {
         });
     }
 
-    public void fetchAndUpdateFutureMachineIndexes(List<Mechanic> mechanics) {
+    /**
+     * @param mechanics never null
+     * @return true if updated
+     */
+    public boolean fetchAndUpdateFutureMachineIndexes(List<Mechanic> mechanics) {
         OptaSolution bestSolution = bestSolutionReference.getAndSet(null);
         if (bestSolution == null) {
-            return;
+            return false;
+        }
+        if (!bestSolution.getScore().isFeasible()) {
+            return false;
         }
         if (bestSolution.getMechanicList().size() != mechanics.size()) {
             // The best solution is stale
-            return;
+            return false;
         }
         for (int i = 0; i < mechanics.size(); i++) {
             Mechanic mechanic = mechanics.get(i);
@@ -122,7 +122,7 @@ public class TravelSolverManager {
             if (optaMechanic.getFocusMachine().getMachineIndex() != mechanic.getFocusMachineIndex()
                 || optaMechanic.getFocusDepartureTimeMillis() != mechanic.getFocusDepartureTimeMillis()) {
                 // The best solution is stale
-                return;
+                return false;
             }
         }
         // The best solution isn't stale (except maybe for machine healths, but that's ok)
@@ -142,6 +142,7 @@ public class TravelSolverManager {
                                        + " with the first one being a machine: "
                                        + (futureMachineIndexes.length == 0 ? "empty" : futureMachineIndexes[0]));
         }
+        return true;
     }
 
     public void updateMachineHealths(Machine[] machines) {
@@ -229,10 +230,21 @@ public class TravelSolverManager {
             OptaMachine newFocusMachine = solution.getMachineList().get(focusMachineIndex);
 
             OptaMechanic optaMechanic = solution.getMechanicList().get(mechanicIndex);
+            OptaMachine oldFocusMachine = optaMechanic.getFocusMachine();
+            scoreDirector.beforeProblemPropertyChanged(oldFocusMachine);
+            oldFocusMachine.setFocused(false);
+            scoreDirector.afterProblemPropertyChanged(oldFocusMachine);
+
             scoreDirector.beforeProblemPropertyChanged(optaMechanic);
             optaMechanic.setFocusMachine(newFocusMachine);
             optaMechanic.setFocusDepartureTimeMillis(focusDepartureTimeMillis);
             scoreDirector.afterProblemPropertyChanged(optaMechanic);
+
+            if (!newFocusMachine.isGate()) {
+                scoreDirector.beforeProblemPropertyChanged(newFocusMachine);
+                newFocusMachine.setFocused(true);
+                scoreDirector.afterProblemPropertyChanged(newFocusMachine);
+            }
 
             if (!newFocusMachine.isGate()) {
                 OptaVisit visit = solution.getVisitList().get(newFocusMachine.getMachineIndex());
