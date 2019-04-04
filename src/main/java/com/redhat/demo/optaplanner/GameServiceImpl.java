@@ -112,7 +112,7 @@ public class GameServiceImpl implements GameService {
         timeMillis += AppConfiguration.TIME_TICK_MILLIS;
 
         // Update futureMachineIndexes first (it might affect mechanic dispatch events)
-        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+        boolean futureIndexedUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
 
         // Update machine healths
         double[] machineHealths = upstreamConnector.fetchMachineHealths();

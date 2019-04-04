@@ -22,6 +22,7 @@ public class OptaMechanic extends OptaVisitOrMechanic {
 
     @PlanningId
     private Integer mechanicIndex;
+    private boolean dummy;
     private double speed;
     private long fixDurationMillis;
     private long thumbUpDurationMillis;
@@ -29,14 +30,21 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     // The machine component that the mechanic is currently working on, on-route to or has just finished working on
     private OptaMachine focusMachine;
     // When the OptaMechanic will finish with working on focusMachine
-    private long focusDepartureTimeMillis;
+    private Long focusDepartureTimeMillis;
 
     private OptaMechanic() {
     }
 
+    public static OptaMechanic createDummy() {
+        OptaMechanic mechanic = new OptaMechanic(Integer.MIN_VALUE, Double.NaN, 0L, 0L, null, null);
+        mechanic.dummy = true;
+        return mechanic;
+    }
+
     public OptaMechanic(int mechanicIndex, double speed, long fixDurationMillis, long thumbUpDurationMillis,
-            OptaMachine focusMachine, long focusDepartureTimeMillis) {
+            OptaMachine focusMachine, Long focusDepartureTimeMillis) {
         this.mechanicIndex = mechanicIndex;
+        dummy = false;
         this.speed = speed;
         this.fixDurationMillis = fixDurationMillis;
         this.thumbUpDurationMillis = thumbUpDurationMillis;
@@ -51,7 +59,7 @@ public class OptaMechanic extends OptaVisitOrMechanic {
 
     @Override
     public Long getFixTimeMillis() {
-        return focusDepartureTimeMillis - thumbUpDurationMillis;
+        return focusDepartureTimeMillis == null ? null : focusDepartureTimeMillis - thumbUpDurationMillis;
     }
 
     @Override
@@ -65,6 +73,10 @@ public class OptaMechanic extends OptaVisitOrMechanic {
 
     public Integer getMechanicIndex() {
         return mechanicIndex;
+    }
+
+    public boolean isDummy() {
+        return dummy;
     }
 
     public double getSpeed() {
