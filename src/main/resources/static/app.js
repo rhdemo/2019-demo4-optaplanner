@@ -19,6 +19,10 @@ var machines = [];
 var mechanics = [];
 var locations = [];
 
+const USE_WEBSOCKET = false;
+
+const sendToServer = USE_WEBSOCKET ? sendViaWebSocket : postAndForget;
+
 const SHOW_NEXT_VISITS = 3;
 const HEALTH_TEXT_OFFSET = 20;
 const MECHANIC_RADIUS = 20; 
@@ -71,8 +75,16 @@ function connect() {
         stompClient.subscribe('/topic/roster', function (roster) {
             processResponse(JSON.parse(roster.body));
         });
-        stompClient.send("/app/locations", {});
+        sendToServer("/app/locations");
     });
+}
+
+function sendViaWebSocket(endpoint) {
+    stompClient.send(endpoint, {});
+}
+
+function postAndForget(endpoint) {
+    $.post(endpoint, {}, function(data, status, jqXHR) { console.log('sent post to ' + endpoint) });
 }
 
 function disconnect() {
@@ -89,23 +101,23 @@ function setConnected(connected) {
 }
 
 function pauze() {
-    stompClient.send("/app/pauze", {});
+    sendToServer("/app/pauze");
     $("#pauze").prop("disabled", true);
     $("#unpauze").prop("disabled", false);
 }
 
 function unpauze() {
-    stompClient.send("/app/unpauze", {});
+    sendToServer("/app/unpauze");
     $("#pauze").prop("disabled", false);
     $("#unpauze").prop("disabled", true);
 }
 
 function addMechanic() {
-    stompClient.send("/app/addMechanic", {});
+    sendToServer("/app/addMechanic");
 }
 
 function removeMechanic() {
-    stompClient.send("/app/removeMechanic", {});
+    sendToServer("/app/removeMechanic");
 }
 
 function startSimulation() {
