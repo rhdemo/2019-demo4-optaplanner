@@ -43,6 +43,7 @@ public class OptaVisit extends OptaVisitOrMechanic {
                     @PlanningVariableReference(variableName = "mechanic")})
     private Long fixTimeMillis = null; // Always after OptaMechanic.focusDepartureTimeMillis
 
+    @SuppressWarnings("unused")
     private OptaVisit() {
     }
 

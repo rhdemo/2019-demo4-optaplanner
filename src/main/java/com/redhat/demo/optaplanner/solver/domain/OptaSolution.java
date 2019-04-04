@@ -45,7 +45,8 @@ public class OptaSolution {
     @PlanningScore
     private HardMediumSoftLongScore score;
 
-    public OptaSolution() {
+    @SuppressWarnings("unused")
+    private OptaSolution() {
     }
 
     public OptaSolution(List<OptaMachine> machineList, List<OptaMechanic> mechanicList, OptaMechanic dummyMechanic, List<OptaVisit> visitList) {
