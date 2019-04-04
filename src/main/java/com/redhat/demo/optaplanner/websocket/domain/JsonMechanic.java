@@ -16,31 +16,28 @@
 
 package com.redhat.demo.optaplanner.websocket.domain;
 
+import com.redhat.demo.optaplanner.Mechanic;
+
 public class JsonMechanic {
 
     private int mechanicIndex;
     private int originalMachineIndex;
     private int focusMachineIndex;
-    private long focusTravelTimeMillis;
-    private long focusFixTimeMillis;
+    private long focusTravelDurationMillis;
+    private long focusFixDurationMillis;
 
     private int[] futureMachineIndexes;
 
     public JsonMechanic() {
     }
 
-    public JsonMechanic(int mechanicIndex,
-                        int originalMachineIndex,
-                        int focusMachineIndex,
-                        long focusTravelTimeMillis,
-                        long focusFixTimeMillis,
-                        int[] futureMachineIndexes) {
-        this.mechanicIndex = mechanicIndex;
-        this.originalMachineIndex = originalMachineIndex;
-        this.focusMachineIndex = focusMachineIndex;
-        this.focusTravelTimeMillis = focusTravelTimeMillis;
-        this.focusFixTimeMillis = focusFixTimeMillis;
-        this.futureMachineIndexes = futureMachineIndexes;
+    public JsonMechanic(Mechanic mechanic, long currentMillis) {
+        this.mechanicIndex = mechanic.getMechanicIndex();
+        this.originalMachineIndex = mechanic.getOriginalMachineIndex();
+        this.focusMachineIndex = mechanic.getFocusMachineIndex();
+        this.focusTravelDurationMillis = mechanic.getFocusTravelTimeMillis() - currentMillis;
+        this.focusFixDurationMillis = mechanic.getFixDurationMillis();
+        this.futureMachineIndexes = mechanic.getFutureMachineIndexes();
     }
 
     public int getMechanicIndex() {
@@ -55,16 +52,16 @@ public class JsonMechanic {
         return focusMachineIndex;
     }
 
-    public long getFocusTravelTimeMillis() {
-        return focusTravelTimeMillis;
+    public long getFocusTravelDurationMillis() {
+        return focusTravelDurationMillis;
     }
 
     public int[] getFutureMachineIndexes() {
         return futureMachineIndexes;
     }
 
-    public long getFocusFixTimeMillis() {
-        return focusFixTimeMillis;
+    public long getFocusFixDurationMillis() {
+        return focusFixDurationMillis;
     }
 
     @Override

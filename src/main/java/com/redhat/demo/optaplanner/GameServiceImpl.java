@@ -157,6 +157,7 @@ public class GameServiceImpl implements GameService {
                     mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
 
                     solverManager.dispatchMechanic(mechanic);
+                    upstreamConnector.dispatchMechanic(mechanic, timeMillis);
                     downstreamConnector.dispatchMechanic(mechanic, timeMillis);
                 }
             }
@@ -178,7 +179,8 @@ public class GameServiceImpl implements GameService {
                         timeMillis);
                 mechanics.add(mechanic);
                 solverManager.addMechanic(mechanic);
-                downstreamConnector.mechanicAdded(mechanic);
+                upstreamConnector.mechanicAdded(mechanic, timeMillis);
+                downstreamConnector.mechanicAdded(mechanic, timeMillis);
             }
         } else if (mechanicAddition < 0) {
             final int mechanicRemoval = - mechanicAddition;
@@ -188,6 +190,7 @@ public class GameServiceImpl implements GameService {
             for (int i = mechanicsSize - 1; mechanicsSize - i <= boundary; i--) {
                 Mechanic removedMechanic = mechanics.remove(i);
                 solverManager.removeMechanic(removedMechanic.getMechanicIndex());
+                upstreamConnector.mechanicRemoved(removedMechanic);
                 downstreamConnector.mechanicRemoved(removedMechanic);
             }
         }

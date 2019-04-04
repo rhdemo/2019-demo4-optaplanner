@@ -16,6 +16,7 @@
 
 package com.redhat.demo.optaplanner.upstream;
 
+import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
 
 // TODO Needs better name?
@@ -31,6 +32,26 @@ public interface UpstreamConnector {
      * @param machineIndex >= 0, <= {@link AppConfiguration#getMachinesOnlyLength()}
      */
     void resetMachineHealth(int machineIndex);
+
+    /**
+     * Update mechanic meta-data
+     * @param mechanic never null
+     * @param currentTimeMillis never null
+     */
+    void dispatchMechanic(Mechanic mechanic, long currentTimeMillis);
+
+    /**
+     * Add mechanic meta-data
+     * @param mechanic never null
+     * @param currentTimeMillis never null
+     */
+    void mechanicAdded(Mechanic mechanic, long currentTimeMillis);
+
+    /**
+     * Remove mechanic meta-data, such as in DispatchEvents
+     * @param mechanic never null
+     */
+    void mechanicRemoved(Mechanic mechanic);
 
     /**
      * For simulation only.

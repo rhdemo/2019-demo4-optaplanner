@@ -4,7 +4,7 @@ public interface DownstreamConnector {
 
     void dispatchMechanic(Mechanic mechanic, long currentMillis);
 
-    void mechanicAdded(Mechanic mechanic);
+    void mechanicAdded(Mechanic mechanic, long currentMillis);
 
     void mechanicRemoved(Mechanic mechanic);
 

@@ -4,10 +4,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
+import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
+import com.redhat.demo.optaplanner.websocket.response.AddMechanicResponse;
+import com.redhat.demo.optaplanner.websocket.response.DispatchMechanicResponse;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.configuration.Configuration;
@@ -22,11 +30,14 @@ import org.springframework.stereotype.Service;
 public class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
+    private static final String DISPATCH_MECHANIC_EVENTS_CACHE_NAME = "DispatchEvents";
     @Autowired
     private AppConfiguration appConfiguration;
 
     private StrongCounter[] counters;
     private Map<StrongCounter, Integer> counterIndices;
+    private RemoteCache<String, String> dispatchMechanicEventsCache;
+    private ObjectMapper objectMapper;
 
     @PostConstruct
     public void postConstruct() {
@@ -40,7 +51,8 @@ public class InfinispanConnector implements UpstreamConnector {
             counters[i] = currentCounter;
             counterIndices.put(currentCounter, i);
         }
-
+        dispatchMechanicEventsCache = remoteCacheManager.getCache(DISPATCH_MECHANIC_EVENTS_CACHE_NAME);
+        objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -64,6 +76,35 @@ public class InfinispanConnector implements UpstreamConnector {
     @Override
     public void resetMachineHealth(int machineIndex) {
         counters[machineIndex].reset();
+    }
+
+    @Override
+    public void dispatchMechanic(Mechanic mechanic, long currentTimeMillis) {
+        JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentTimeMillis);
+        DispatchMechanicResponse dispatchMechanicResponse = new DispatchMechanicResponse(jsonMechanic);
+        try {
+            String jsonDispatchMechanicResponse = objectMapper.writeValueAsString(dispatchMechanicResponse);
+            dispatchMechanicEventsCache.put(String.valueOf(jsonMechanic.getMechanicIndex()), jsonDispatchMechanicResponse);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Could not format mechanic (" + mechanic.getMechanicIndex() + ") as json.", e);
+        }
+    }
+
+    @Override
+    public void mechanicAdded(Mechanic mechanic, long currentTimeMillis) {
+        JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentTimeMillis);
+        AddMechanicResponse addMechanicResponse = new AddMechanicResponse(jsonMechanic);
+        try {
+            String jsonAddMechanicResponse = objectMapper.writeValueAsString(addMechanicResponse);
+            dispatchMechanicEventsCache.put(String.valueOf(mechanic.getMechanicIndex()), jsonAddMechanicResponse);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Could not format mechanic (" + mechanic.getMechanicIndex() + ") as json.", e);
+        }
+    }
+
+    @Override
+    public void mechanicRemoved(Mechanic mechanic) {
+        dispatchMechanicEventsCache.remove(String.valueOf(mechanic.getMechanicIndex()));
     }
 
     @Override

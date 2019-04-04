@@ -3,7 +3,9 @@ package com.redhat.demo.optaplanner.upstream;
 import java.io.IOException;
 import java.util.Properties;
 
+import com.google.common.base.Charsets;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.commons.marshall.StringMarshaller;
 
 public class HotRodClientConfiguration {
 
@@ -20,7 +22,8 @@ public class HotRodClientConfiguration {
 
         builder.addServer()
                 .host(props.getProperty("infinispan.client.hotrod.endpoint"))
-                .port(Integer.parseInt(props.getProperty("infinispan.client.hotrod.port")));
+                .port(Integer.parseInt(props.getProperty("infinispan.client.hotrod.port")))
+                .marshaller(new StringMarshaller(Charsets.UTF_8));
         return builder;
     }
 }

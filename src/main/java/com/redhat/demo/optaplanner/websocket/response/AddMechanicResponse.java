@@ -16,24 +16,26 @@
 
 package com.redhat.demo.optaplanner.websocket.response;
 
+import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
+
 public class AddMechanicResponse extends AbstractResponse {
 
-    private int mechanicIndex;
+    private JsonMechanic mechanic;
 
     public AddMechanicResponse() {
         super(ResponseType.ADD_MECHANIC);
     }
 
-    public AddMechanicResponse(int mechanicIndex) {
+    public AddMechanicResponse(JsonMechanic mechanic) {
         super(ResponseType.ADD_MECHANIC);
-        this.mechanicIndex = mechanicIndex;
+        this.mechanic = mechanic;
     }
 
-    public int getMechanicIndex() {
-        return mechanicIndex;
+    public JsonMechanic getMechanic() {
+        return mechanic;
     }
 
-    public void setMechanicIndex(int mechanicIndex) {
-        this.mechanicIndex = mechanicIndex;
+    public void setMechanic(JsonMechanic mechanic) {
+        this.mechanic = mechanic;
     }
 }
