@@ -174,7 +174,7 @@ function findMachineNearTo(x, y) {
 function distance(x1, y1, x2, y2) {
     let squareX = Math.pow((x1 - x2), 2);
     let squareY = Math.pow((y1 - y2), 2);
-    return Math.sqrt(squareX, squareY);
+    return Math.sqrt(squareX + squareY);
 }
 
 function dealDamage(machineIndex) {
