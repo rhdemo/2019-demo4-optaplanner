@@ -51,7 +51,7 @@ public class GameServiceImpl implements GameService {
     private List<Mechanic> mechanics = new ArrayList<>();
     private Machine[] machines;
 
-    private boolean dispatchPaused = false;
+    private boolean dispatchPaused = true;
 
     @PostConstruct
     public void init() {

@@ -24,9 +24,9 @@
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="/app.js"></script>
 </head>
-<body>
+<body onload="connect()">
 <div id="main-content" class="container">
-    <div class="row">
+    <div class="row" style="visibility: hidden"><!-- This control is commented out -->
         <div class="col-md-12">
             <form class="form-inline">
                 <div class="form-group">
@@ -43,8 +43,8 @@
             <form class="form-inline">
                 <div class="form-group">
                     <label for="unpauze">Mechanic dispatching:</label>
-                    <button id="pauze" class="btn btn-default" type="submit">Pauze</button>
-                    <button id="unpauze" class="btn btn-default" type="submit" disabled="disabled">Unpauze</button>
+                    <button id="pauze" class="btn btn-default" type="submit" disabled="disabled">Pauze</button>
+                    <button id="unpauze" class="btn btn-default" type="submit">Unpauze</button>
                 </div>
             </form>
         </div>
