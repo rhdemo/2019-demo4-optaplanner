@@ -40,16 +40,17 @@ public class SimulationController {
     @PostMapping (value = "/damage")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void damageMachine(@RequestBody DamageOrHealMachine machine) {
-        log.info("Damaging a machine " + machine.getMachineIndex());
-        simulationService.damageMachine(machine.getMachineIndex());
+    public void damageMachine(@RequestBody DamageMachine damageMachine) {
+        String damageAmountString = String.format("%.2f", damageMachine.getAmount());
+        log.info("Damaging a machine " + damageMachine.getMachineIndex() + " by amount of " + damageAmountString);
+        simulationService.damageMachine(damageMachine.getMachineIndex(), damageMachine.getAmount());
     }
 
     @PostMapping (value = "/heal")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void healMachine(@RequestBody DamageOrHealMachine machine) {
-        log.info("Healing a machine " + machine.getMachineIndex());
-        simulationService.healMachine(machine.getMachineIndex());
+    public void healMachine(@RequestBody HealMachine healMachine) {
+        log.info("Healing a machine " + healMachine.getMachineIndex());
+        simulationService.healMachine(healMachine.getMachineIndex());
     }
 }
