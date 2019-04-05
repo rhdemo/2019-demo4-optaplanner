@@ -37,7 +37,7 @@ const BACKGROUND_FOG = '0.6'; //0 = fully saturated image, 1.0 = white backgroun
 const DEBUG_ENABLED = true;
 
 const ResponseType  = {
-    MACHINE_LOCATIONS : 'MACHINE_LOCATIONS',
+    CONNECT : 'CONNECT',
     ADD_MECHANIC : 'ADD_MECHANIC',
     REMOVE_MECHANIC : 'REMOVE_MECHANIC',
     DISPATCH_MECHANIC: 'DISPATCH_MECHANIC',
@@ -77,7 +77,7 @@ function connect() {
         stompClient.subscribe('/topic/roster', function (roster) {
             processResponse(JSON.parse(roster.body));
         });
-        sendToServer("/app/locations");
+        sendToServer("/app/connect");
     });
 }
 
@@ -201,9 +201,10 @@ function heal(machineIndex) {
 }
 
 function processResponse(response) {
-    if (response.responseType === ResponseType.MACHINE_LOCATIONS) {
-        console.log("Machines locations");
+    if (response.responseType === ResponseType.CONNECT) {
+        console.log("Connected to a server");
         locations = response.locations;
+        mechanics = response.mechanics;
     } else if (response.responseType === ResponseType.ADD_MECHANIC) {
         console.log("Adding a mechanic");
     } else if (response.responseType === ResponseType.REMOVE_MECHANIC) {

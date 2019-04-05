@@ -9,5 +9,5 @@ public interface GameService {
 
      void removeMechanic();
 
-     void machineLocations();
+     void initializeDownstream();
 }
