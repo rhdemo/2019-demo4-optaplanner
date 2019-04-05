@@ -69,7 +69,9 @@ public class GameServiceImpl implements GameService {
         }
 
         for (int i = 0; i < appConfiguration.getInitialMechanicsSize(); i++) {
-            mechanics.add(createMechanic());
+            Mechanic mechanic = createMechanic();
+            mechanics.add(mechanic);
+            upstreamConnector.mechanicAdded(mechanic, timeMillis);
         }
         solverManager.startSolver(machines, mechanics);
     }
