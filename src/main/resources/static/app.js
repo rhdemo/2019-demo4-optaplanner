@@ -23,6 +23,7 @@ const USE_WEBSOCKET = false;
 
 const sendToServer = USE_WEBSOCKET ? sendViaWebSocket : postAndForget;
 
+const DAMAGE_AMOUNT = 0.3;
 const SHOW_NEXT_VISITS = 3;
 const HEALTH_TEXT_OFFSET = 20;
 const MECHANIC_RADIUS = 20; 
@@ -182,7 +183,7 @@ function dealDamage(machineIndex) {
             'type': 'POST',
             'url': "/simulation/damage",
             'contentType': 'application/json',
-            'data': JSON.stringify({ "machineIndex" : machineIndex }),
+            'data': JSON.stringify({ "machineIndex" : machineIndex, "amount" : DAMAGE_AMOUNT }),
             'dataType': 'json',
             'success': function(data, status, jqXHR) { console.log('sent post damage machine ' + machineIndex) }
     });
