@@ -17,6 +17,7 @@
 package com.redhat.demo.optaplanner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
@@ -112,7 +113,12 @@ public class GameServiceImpl implements GameService {
         timeMillis += AppConfiguration.TIME_TICK_MILLIS;
 
         // Update futureMachineIndexes first (it might affect mechanic dispatch events)
-        boolean futureIndexedUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+        // TODO: possibly could return a list of mechanic Ids for which the future visits changed
+        boolean futureIndexesUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+
+        if (futureIndexesUpdated) {
+            sendFutureVisits();
+        }
 
         // Update machine healths
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
@@ -203,4 +209,16 @@ public class GameServiceImpl implements GameService {
                 appConfiguration.getGateMachineIndex(),
                 timeMillis);
     }
+
+    private void sendFutureVisits() {
+        int futureVisitsLength = appConfiguration.getFutureVisitsLenght();
+        mechanics.forEach(mechanic -> {
+            int [] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
+                    mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
+
+            downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+            upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+        });
+    }
+
 }

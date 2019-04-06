@@ -68,4 +68,7 @@ public class FakeUpstreamConnector implements UpstreamConnector {
         machineHealths[machineIndex] = Math.max(0.0, machineHealths[machineIndex] - damage);
     }
 
+    @Override
+    public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
+    }
 }

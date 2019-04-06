@@ -26,8 +26,6 @@ public class JsonMechanic {
     private long focusTravelDurationMillis;
     private long focusFixDurationMillis;
 
-    private int[] futureMachineIndexes;
-
     public JsonMechanic() {
     }
 
@@ -37,7 +35,6 @@ public class JsonMechanic {
         this.focusMachineIndex = mechanic.getFocusMachineIndex();
         this.focusTravelDurationMillis = mechanic.getFocusTravelTimeMillis() - currentMillis;
         this.focusFixDurationMillis = mechanic.getFixDurationMillis();
-        this.futureMachineIndexes = mechanic.getFutureMachineIndexes();
     }
 
     public int getMechanicIndex() {
@@ -54,10 +51,6 @@ public class JsonMechanic {
 
     public long getFocusTravelDurationMillis() {
         return focusTravelDurationMillis;
-    }
-
-    public int[] getFutureMachineIndexes() {
-        return futureMachineIndexes;
     }
 
     public long getFocusFixDurationMillis() {

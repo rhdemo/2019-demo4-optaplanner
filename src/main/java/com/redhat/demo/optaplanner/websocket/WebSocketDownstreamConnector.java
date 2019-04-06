@@ -69,6 +69,13 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
         this.template.convertAndSend(WEB_SOCKET_ENDPOINT, connectResponse);
     }
 
+    @Override
+    public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
+        FutureVisitsResponse futureVisitsResponse =
+                new FutureVisitsResponse(mechanicIndex, futureMachineIndexes);
+        this.template.convertAndSend(WEB_SOCKET_ENDPOINT, futureVisitsResponse);
+    }
+
     private JsonMachine convertMachineToJson(Machine machine) {
         return new JsonMachine(machine.getMachineIndex(), machine.getHealth());
     }

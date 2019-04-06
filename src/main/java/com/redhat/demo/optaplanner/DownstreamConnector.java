@@ -13,4 +13,6 @@ public interface DownstreamConnector {
     void updateMachinesHealths(Machine[] machines);
 
     void connect(Machine[] machines, List<Mechanic> mechanics, long currentMillis);
+
+    void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes);
 }

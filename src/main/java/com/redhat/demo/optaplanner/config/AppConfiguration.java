@@ -44,6 +44,8 @@ public class AppConfiguration {
 
     private double manualDamageValue = 0.30;
 
+    private int futureVisitsLenght = 3;
+
     @PostConstruct
     public void readTravelDistanceMatrix() {
         List<String> lines;
@@ -143,5 +145,9 @@ public class AppConfiguration {
 
     public double getManualDamageValue() {
         return manualDamageValue;
+    }
+
+    public int getFutureVisitsLenght() {
+        return futureVisitsLenght;
     }
 }

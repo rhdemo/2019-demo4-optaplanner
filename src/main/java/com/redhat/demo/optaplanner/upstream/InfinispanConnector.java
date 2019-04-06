@@ -112,4 +112,9 @@ public class InfinispanConnector implements UpstreamConnector {
         long damageLong = (long) (damage * FULL_HEALTH);
         counters[machineIndex].addAndGet(-damageLong);
     }
+
+    @Override
+    public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
 }
