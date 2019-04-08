@@ -47,7 +47,7 @@ public class InfinispanConnector implements UpstreamConnector {
         RemoteCacheManager remoteCacheManager = new RemoteCacheManager(configuration);
         CounterManager counterManager = RemoteCounterManagerFactory.asCounterManager(remoteCacheManager);
         for (int i = 0; i < counters.length; i++) {
-            StrongCounter currentCounter = counterManager.getStrongCounter(String.format("machine-%d", i + 1));
+            StrongCounter currentCounter = counterManager.getStrongCounter(String.format("machine-%d", i));
             counters[i] = currentCounter;
             counterIndices.put(currentCounter, i);
         }
