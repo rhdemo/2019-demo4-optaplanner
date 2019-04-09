@@ -103,13 +103,13 @@ function setConnected(connected) {
 }
 
 function pauze() {
-    sendToServer("/app/pauze");
+    sendToServer("/app/pauzeDispatch");
     $("#pauze").prop("disabled", true);
     $("#unpauze").prop("disabled", false);
 }
 
 function unpauze() {
-    sendToServer("/app/unpauze");
+    sendToServer("/app/unpauzeDispatch");
     $("#pauze").prop("disabled", false);
     $("#unpauze").prop("disabled", true);
 }
