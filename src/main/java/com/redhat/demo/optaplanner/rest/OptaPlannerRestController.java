@@ -49,4 +49,9 @@ public class OptaPlannerRestController {
         gameService.initializeDownstream();
     }
 
+    @PostMapping("/reset")
+    @ResponseStatus(HttpStatus.OK)
+    public void reset() {
+        gameService.reset();
+    }
 }

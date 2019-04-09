@@ -56,8 +56,7 @@ $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
     });
-    $( "#connect" ).click(function() { connect(); });
-    $( "#disconnect" ).click(function() { disconnect(); });
+    $( "#reset" ).click(function() { reset(); });
     $( "#pauze" ).click(function() { pauze(); });
     $( "#unpauze" ).click(function() { unpauze(); });
     $( "#addMechanic" ).click(function() { addMechanic(); });
@@ -80,6 +79,10 @@ function connect() {
         });
         sendToServer("/app/connect");
     });
+}
+
+function reset() {
+    sendToServer("/app/reset");
 }
 
 function sendViaWebSocket(endpoint) {

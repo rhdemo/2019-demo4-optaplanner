@@ -10,4 +10,6 @@ public interface GameService {
      void removeMechanic();
 
      void initializeDownstream();
+
+     void reset();
 }

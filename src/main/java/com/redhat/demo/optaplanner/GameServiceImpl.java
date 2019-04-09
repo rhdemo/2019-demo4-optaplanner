@@ -108,6 +108,11 @@ public class GameServiceImpl implements GameService {
         downstreamConnector.connect(machines, mechanics, timeMillis);
     }
 
+    @Override
+    public void reset() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
     public void tick() {
         timeMillis += AppConfiguration.TIME_TICK_MILLIS;
