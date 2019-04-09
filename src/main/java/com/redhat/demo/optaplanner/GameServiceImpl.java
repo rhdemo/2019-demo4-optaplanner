@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 
 import com.redhat.demo.optaplanner.config.AppConfiguration;
+import com.redhat.demo.optaplanner.simulation.SimulationService;
 import com.redhat.demo.optaplanner.solver.TravelSolverManager;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.slf4j.Logger;
@@ -44,6 +45,8 @@ public class GameServiceImpl implements GameService {
     private DownstreamConnector downstreamConnector;
     @Autowired
     private TravelSolverManager solverManager;
+    @Autowired
+    private SimulationService simulationService;
 
     private AtomicInteger mechanicAdditionCount = new AtomicInteger(0);
 
@@ -52,10 +55,16 @@ public class GameServiceImpl implements GameService {
     private List<Mechanic> mechanics = new ArrayList<>();
     private Machine[] machines;
 
-    private boolean dispatchPaused = true;
+    private boolean dispatchPaused;
 
     @PostConstruct
-    public void init() {
+    public void beanInit() {
+        initializeGame();
+    }
+
+    private void initializeGame() {
+        dispatchPaused = true;
+        mechanics.clear();
         machines = new Machine[appConfiguration.getMachinesAndGateLength()];
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
         for (int i = 0; i < machines.length; i++) {
@@ -110,7 +119,17 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void reset() {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        simulationService.init();
+        solverManager.stopSolver();
+        healAllMachines();
+        initializeGame();
+        initializeDownstream();
+    }
+
+    private void healAllMachines() {
+        for (int i = 0; i < appConfiguration.getMachinesOnlyLength(); i++) {
+            upstreamConnector.resetMachineHealth(machines[i].getMachineIndex());
+        }
     }
 
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
