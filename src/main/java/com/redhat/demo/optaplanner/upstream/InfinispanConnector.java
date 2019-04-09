@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
-import com.redhat.demo.optaplanner.websocket.FutureVisitsResponse;
+import com.redhat.demo.optaplanner.websocket.response.FutureVisitsResponse;
 import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
 import com.redhat.demo.optaplanner.websocket.response.AddMechanicResponse;
 import com.redhat.demo.optaplanner.websocket.response.DispatchMechanicResponse;

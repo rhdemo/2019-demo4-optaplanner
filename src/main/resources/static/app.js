@@ -42,7 +42,7 @@ const ResponseType  = {
     REMOVE_MECHANIC : 'REMOVE_MECHANIC',
     DISPATCH_MECHANIC: 'DISPATCH_MECHANIC',
     UPDATE_MACHINE_HEALTHS: 'UPDATE_MACHINE_HEALTHS',
-    FUTURE_VISITS : "FUTURE_VISITS"
+    UPDATE_FUTURE_VISITS : "UPDATE_FUTURE_VISITS"
 };
 
 const MechanicState = {
@@ -221,7 +221,7 @@ function processResponse(response) {
         let mechanic = response.mechanic;
         handleDispatchMechanic(mechanic);
         console.log("Dispatching a mechanic: " + mechanic.mechanicIndex + " to a machine: " + mechanic.focusMachineIndex);
-    } else if (response.responseType === ResponseType.FUTURE_VISITS) {
+    } else if (response.responseType === ResponseType.UPDATE_FUTURE_VISITS) {
         console.log("Future visits for a mechanic: " + response.mechanicIndex + " received");
         let mechanic = mechanics[response.mechanicIndex];
         if (mechanic != null && mechanic.state !== MechanicState.REMOVED) {

@@ -1,4 +1,4 @@
-package com.redhat.demo.optaplanner.websocket;
+package com.redhat.demo.optaplanner.websocket.response;
 
 import com.redhat.demo.optaplanner.websocket.response.AbstractResponse;
 import com.redhat.demo.optaplanner.websocket.response.ResponseType;
@@ -9,7 +9,7 @@ public class FutureVisitsResponse extends AbstractResponse {
     private int[] futureMachineIndexes;
 
     public FutureVisitsResponse(int mechanicIndex, int[] futureMachineIndexes) {
-        super(ResponseType.FUTURE_VISITS);
+        super(ResponseType.UPDATE_FUTURE_VISITS);
         this.mechanicIndex = mechanicIndex;
         this.futureMachineIndexes = futureMachineIndexes;
     }
