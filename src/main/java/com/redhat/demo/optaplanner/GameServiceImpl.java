@@ -211,7 +211,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private void sendFutureVisits() {
-        int futureVisitsLength = appConfiguration.getFutureVisitsLenght();
+        int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
         mechanics.forEach(mechanic -> {
             int [] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
                     mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
