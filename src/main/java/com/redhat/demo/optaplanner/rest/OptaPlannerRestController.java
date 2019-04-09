@@ -43,10 +43,10 @@ public class OptaPlannerRestController {
         gameService.removeMechanic();
     }
 
-    @PostMapping("/locations")
+    @PostMapping("/connect")
     @ResponseStatus(HttpStatus.OK)
     public void machineLocations() {
-        gameService.machineLocations();
+        gameService.initializeDownstream();
     }
 
 }

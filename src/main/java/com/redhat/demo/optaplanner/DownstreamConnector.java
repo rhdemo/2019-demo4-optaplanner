@@ -1,5 +1,7 @@
 package com.redhat.demo.optaplanner;
 
+import java.util.List;
+
 public interface DownstreamConnector {
 
     void dispatchMechanic(Mechanic mechanic, long currentMillis);
@@ -10,5 +12,7 @@ public interface DownstreamConnector {
 
     void updateMachinesHealths(Machine[] machines);
 
-    void sendMachineLocations(Machine[] machines);
+    void connect(Machine[] machines, List<Mechanic> mechanics, long currentMillis);
+
+    void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes);
 }

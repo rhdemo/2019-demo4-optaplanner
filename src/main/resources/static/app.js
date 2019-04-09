@@ -23,7 +23,7 @@ const USE_WEBSOCKET = false;
 
 const sendToServer = USE_WEBSOCKET ? sendViaWebSocket : postAndForget;
 
-const DAMAGE_AMOUNT = 0.3;
+const DAMAGE_AMOUNT = 0.2;
 const SHOW_NEXT_VISITS = 3;
 const HEALTH_TEXT_OFFSET = 20;
 const MECHANIC_RADIUS = 20; 
@@ -37,11 +37,12 @@ const BACKGROUND_FOG = '0.6'; //0 = fully saturated image, 1.0 = white backgroun
 const DEBUG_ENABLED = true;
 
 const ResponseType  = {
-    MACHINE_LOCATIONS : 'MACHINE_LOCATIONS',
+    CONNECT : 'CONNECT',
     ADD_MECHANIC : 'ADD_MECHANIC',
     REMOVE_MECHANIC : 'REMOVE_MECHANIC',
     DISPATCH_MECHANIC: 'DISPATCH_MECHANIC',
-    UPDATE_MACHINE_HEALTHS: 'UPDATE_MACHINE_HEALTHS'
+    UPDATE_MACHINE_HEALTHS: 'UPDATE_MACHINE_HEALTHS',
+    UPDATE_FUTURE_VISITS : "UPDATE_FUTURE_VISITS"
 };
 
 const MechanicState = {
@@ -77,7 +78,7 @@ function connect() {
         stompClient.subscribe('/topic/roster', function (roster) {
             processResponse(JSON.parse(roster.body));
         });
-        sendToServer("/app/locations");
+        sendToServer("/app/connect");
     });
 }
 
@@ -201,23 +202,32 @@ function heal(machineIndex) {
 }
 
 function processResponse(response) {
-    if (response.responseType === ResponseType.MACHINE_LOCATIONS) {
-        console.log("Machines locations");
+    if (response.responseType === ResponseType.CONNECT) {
+        console.log("Connected to a server");
         locations = response.locations;
+        mechanics = response.mechanics;
     } else if (response.responseType === ResponseType.ADD_MECHANIC) {
+        mechanics.push(response.mechanic);
         console.log("Adding a mechanic");
     } else if (response.responseType === ResponseType.REMOVE_MECHANIC) {
         let mechanicIndex = response.mechanicIndex;
         if (mechanicIndex >= 0) {
-            console.log("Removing a mechanic index: " + mechanicIndex)
-            mechanics[mechanicIndex].state = MechanicState.REMOVED;
+            console.log("Removing a mechanic index: " + mechanicIndex);
+            mechanics.splice(mechanicIndex, 1);
         }
     } else if (response.responseType === ResponseType.UPDATE_MACHINE_HEALTHS) {
         machines = response.machines;
     } else if (response.responseType === ResponseType.DISPATCH_MECHANIC) {
-        let mechanic = response.mechanic
+        let mechanic = response.mechanic;
         handleDispatchMechanic(mechanic);
         console.log("Dispatching a mechanic: " + mechanic.mechanicIndex + " to a machine: " + mechanic.focusMachineIndex);
+    } else if (response.responseType === ResponseType.UPDATE_FUTURE_VISITS) {
+        console.log("Future visits for a mechanic: " + response.mechanicIndex + " received");
+        let mechanic = mechanics[response.mechanicIndex];
+        if (mechanic != null && mechanic.state !== MechanicState.REMOVED) {
+            mechanic.futureMachineIndexes = response.futureMachineIndexes;
+            console.log("Future visits for a mechanic: " + response.mechanicIndex + " successfully applied");
+        }
     } else {
         console.log("Uknown response type: " + response.responseType);
     }
@@ -236,21 +246,19 @@ function handleDispatchMechanic(mechanic) {
     let travelTime = mechanic.focusTravelDurationMillis;
     let fixTime = mechanic.focusFixDurationMillis;
     setTimeout(function() {
-        removeOrUpdateState(mechanic.mechanicIndex, MechanicState.FIXING);
+        updateMechanicState(mechanic, MechanicState.FIXING);
         draw(drawGame);
     }, travelTime);
 
     setTimeout(function() {
-        removeOrUpdateState(mechanic.mechanicIndex, MechanicState.DONE);
+        updateMechanicState(mechanic, MechanicState.DONE);
         draw(drawGame); 
     }, travelTime + fixTime);    
 }
 
-function removeOrUpdateState(mechanicIndex, state) {
-    if (mechanics[mechanicIndex].state === MechanicState.REMOVED) {
-        mechanics.splice(mechanicIndex, 1);
-    } else {
-        mechanics[mechanicIndex].state = state;
+function updateMechanicState(mechanic, state) {
+    if (mechanic != null) { // in case the mechanic was already removed
+        mechanic.state = state;
     }
 }
 
@@ -287,6 +295,8 @@ function drawMechanics(ctx) {
     for (var i = 0; i < mechanics.length; i++) {
         drawMechanic(ctx, mechanics[i]);
     }
+
+    $( "#mechanicCount" ).val('' + mechanics.length);
 }
 
 function drawMachine(ctx, machine) {
@@ -396,10 +406,14 @@ function getMechanicColorByState(mechanicState) {
 }
 
 function drawNextVisits(ctx, mechanic) {
+    let isTravelling = mechanic.state === MechanicState.TRAVELLING;
     let futureIndexes = mechanic.futureMachineIndexes;
-    let previousMachineIndex = mechanic.originalMachineIndex;
+    let previousMachineIndex = isTravelling ? mechanic.originalMachineIndex : mechanic.focusMachineIndex;
     let nextMachineIndex;
 
+    if (futureIndexes == null) {
+        return;
+    }
     for (i = 0; i < futureIndexes.length; i++) {
         if (i > SHOW_NEXT_VISITS) { // show only next N visits
             break;
@@ -407,10 +421,8 @@ function drawNextVisits(ctx, mechanic) {
 
         nextMachineIndex = futureIndexes[i];
 
-        let travellingAndNotLastConnection = mechanic.state === MechanicState.TRAVELLING && i < SHOW_NEXT_VISITS;
-        let notTravellingAndNotFirstConnection = (i > 0 && mechanic.state !== MechanicState.TRAVELLING);
-
-        if (travellingAndNotLastConnection || notTravellingAndNotFirstConnection) {
+        let travellingAndNotLastConnection = isTravelling && i < SHOW_NEXT_VISITS;
+        if (travellingAndNotLastConnection || !isTravelling) {
             drawPathBetweenTwoMachines(ctx, mechanic, previousMachineIndex, nextMachineIndex, i);
         }
 

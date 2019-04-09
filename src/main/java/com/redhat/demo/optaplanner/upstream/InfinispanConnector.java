@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
+import com.redhat.demo.optaplanner.websocket.response.FutureVisitsResponse;
 import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
 import com.redhat.demo.optaplanner.websocket.response.AddMechanicResponse;
 import com.redhat.demo.optaplanner.websocket.response.DispatchMechanicResponse;
@@ -31,6 +32,7 @@ public class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
     private static final String DISPATCH_MECHANIC_EVENTS_CACHE_NAME = "DispatchEvents";
+
     @Autowired
     private AppConfiguration appConfiguration;
 
@@ -111,5 +113,16 @@ public class InfinispanConnector implements UpstreamConnector {
     public void damageMachine(int machineIndex, double damage) {
         long damageLong = (long) (damage * FULL_HEALTH);
         counters[machineIndex].addAndGet(-damageLong);
+    }
+
+    @Override
+    public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
+        FutureVisitsResponse futureVisitsResponse = new FutureVisitsResponse(mechanicIndex, futureMachineIndexes);
+        try {
+            String jsonFutureVisitsResponse = objectMapper.writeValueAsString(futureVisitsResponse);
+            dispatchMechanicEventsCache.put(String.format("%d-futureIndexes", mechanicIndex), jsonFutureVisitsResponse);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Could not format futureVisitsResponse of mechanic (" + mechanicIndex + ") as json.", e);
+        }
     }
 }
