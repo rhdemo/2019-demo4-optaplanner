@@ -40,3 +40,42 @@ To run with the Infinispan connector:
 4. Find out a URL the service was exposed on
 
     oc get route
+
+== Infinispan relevant data
+
+Below are examples on key/value pairs in Infinispan caches that are relevant to OptaPlanner.
+
+=== Cache `DispatchMechanic`
+
+```
+MECHANIC_ID: {
+    responseType: "DISPATCH_MECHANIC" or "ADD_MECHANIC",
+    mechanic: {
+        "mechanicIndex": 0,
+        “originalMachineIndex”: 0,
+        "focusMachineIndex": 0,
+        "focusTravelDurationMillis": 1000,
+        "focusFixDurationMillis": 2000
+    }
+}
+```
+
+```
+MECHANIC_ID-futureIndexes: {
+    responseType: "UPDATE_FUTURE_VISITS",
+    mechanicIndex: 0,
+    futureMachineIndexes: [
+        0,
+        1,
+        ...
+    ]
+}
+```
+
+=== Cache `default`
+```
+OptaPlannerConfig: {
+    dispatchActive: true/false,
+    simulationActive: true/false
+}
+```
