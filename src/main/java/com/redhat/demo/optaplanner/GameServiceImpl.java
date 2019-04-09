@@ -89,11 +89,13 @@ public class GameServiceImpl implements GameService {
     public void pauseGame() {
         log.info("Pauze dispatched");
         this.dispatchPaused = true;
+        upstreamConnector.setDispatchStatus(!dispatchPaused);
     }
 
     public void resumeGame() {
         log.info("Resume dispatched");
         this.dispatchPaused = false;
+        upstreamConnector.setDispatchStatus(!dispatchPaused);
     }
 
     /**

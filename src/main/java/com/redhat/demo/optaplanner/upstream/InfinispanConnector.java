@@ -1,5 +1,6 @@
 package com.redhat.demo.optaplanner.upstream;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
+import com.redhat.demo.optaplanner.upstream.utils.OptaPlannerConfig;
 import com.redhat.demo.optaplanner.websocket.response.FutureVisitsResponse;
 import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
 import com.redhat.demo.optaplanner.websocket.response.AddMechanicResponse;
@@ -32,6 +34,8 @@ public class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
     private static final String DISPATCH_MECHANIC_EVENTS_CACHE_NAME = "DispatchEvents";
+    private static final String DEFAULT_CACHE_NAME = "default";
+    public static final String OPTA_PLANNER_CONFIG_KEY_NAME = "OptaPlannerConfig";
 
     @Autowired
     private AppConfiguration appConfiguration;
@@ -39,6 +43,7 @@ public class InfinispanConnector implements UpstreamConnector {
     private StrongCounter[] counters;
     private Map<StrongCounter, Integer> counterIndices;
     private RemoteCache<String, String> dispatchMechanicEventsCache;
+    private RemoteCache<String, String> defaultCache;
     private ObjectMapper objectMapper;
 
     @PostConstruct
@@ -54,7 +59,11 @@ public class InfinispanConnector implements UpstreamConnector {
             counterIndices.put(currentCounter, i);
         }
         dispatchMechanicEventsCache = remoteCacheManager.getCache(DISPATCH_MECHANIC_EVENTS_CACHE_NAME);
+        defaultCache = remoteCacheManager.getCache(DEFAULT_CACHE_NAME);
         objectMapper = new ObjectMapper();
+
+        OptaPlannerConfig defaultConfig = new OptaPlannerConfig(false, false);
+        defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(defaultConfig));
     }
 
     @Override
@@ -84,24 +93,14 @@ public class InfinispanConnector implements UpstreamConnector {
     public void dispatchMechanic(Mechanic mechanic, long currentTimeMillis) {
         JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentTimeMillis);
         DispatchMechanicResponse dispatchMechanicResponse = new DispatchMechanicResponse(jsonMechanic);
-        try {
-            String jsonDispatchMechanicResponse = objectMapper.writeValueAsString(dispatchMechanicResponse);
-            dispatchMechanicEventsCache.put(String.valueOf(jsonMechanic.getMechanicIndex()), jsonDispatchMechanicResponse);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Could not format mechanic (" + mechanic.getMechanicIndex() + ") as json.", e);
-        }
+        dispatchMechanicEventsCache.put(String.valueOf(jsonMechanic.getMechanicIndex()), convertToJsonString(dispatchMechanicResponse));
     }
 
     @Override
     public void mechanicAdded(Mechanic mechanic, long currentTimeMillis) {
         JsonMechanic jsonMechanic = new JsonMechanic(mechanic, currentTimeMillis);
         AddMechanicResponse addMechanicResponse = new AddMechanicResponse(jsonMechanic);
-        try {
-            String jsonAddMechanicResponse = objectMapper.writeValueAsString(addMechanicResponse);
-            dispatchMechanicEventsCache.put(String.valueOf(mechanic.getMechanicIndex()), jsonAddMechanicResponse);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Could not format mechanic (" + mechanic.getMechanicIndex() + ") as json.", e);
-        }
+        dispatchMechanicEventsCache.put(String.valueOf(mechanic.getMechanicIndex()), convertToJsonString(addMechanicResponse));
     }
 
     @Override
@@ -118,11 +117,36 @@ public class InfinispanConnector implements UpstreamConnector {
     @Override
     public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
         FutureVisitsResponse futureVisitsResponse = new FutureVisitsResponse(mechanicIndex, futureMachineIndexes);
+        dispatchMechanicEventsCache.put(String.format("%d-futureIndexes", mechanicIndex), convertToJsonString(futureVisitsResponse));
+    }
+
+    @Override
+    public void setDispatchStatus(boolean isDispatchActive) {
+        OptaPlannerConfig config = convertFromJsonString(defaultCache.get(OPTA_PLANNER_CONFIG_KEY_NAME), OptaPlannerConfig.class);
+        config.setDispatchActive(isDispatchActive);
+        defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
+    }
+
+    @Override
+    public void setSimulationStatus(boolean isSimulationActive) {
+        OptaPlannerConfig config = convertFromJsonString(defaultCache.get(OPTA_PLANNER_CONFIG_KEY_NAME), OptaPlannerConfig.class);
+        config.setSimulationActive(isSimulationActive);
+        defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
+    }
+
+    private String convertToJsonString(Object object) {
         try {
-            String jsonFutureVisitsResponse = objectMapper.writeValueAsString(futureVisitsResponse);
-            dispatchMechanicEventsCache.put(String.format("%d-futureIndexes", mechanicIndex), jsonFutureVisitsResponse);
+            return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Could not format futureVisitsResponse of mechanic (" + mechanicIndex + ") as json.", e);
+            throw new IllegalArgumentException("Could not format " + object.getClass().getName() + " as json.", e);
+        }
+    }
+
+    private <T> T convertFromJsonString(String json, Class<T> tClass) {
+        try {
+            return objectMapper.readValue(json, tClass);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Could not convert " + json + "to " + tClass.getName());
         }
     }
 }
