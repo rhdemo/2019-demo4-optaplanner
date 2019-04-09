@@ -70,6 +70,10 @@ public class TravelSolverManager {
         executorService.shutdownNow();
     }
 
+    public void stopSolver() {
+        solver.terminateEarly();
+    }
+
     public void startSolver(Machine[] machines, List<Mechanic> mechanics) {
         List<OptaMachine> machineList = Arrays.stream(machines)
                 .map(machine -> new OptaMachine(

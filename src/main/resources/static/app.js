@@ -72,7 +72,6 @@ function connect() {
     stompClient = Stomp.over(socket);
     stompClient.debug = null;
     stompClient.connect({}, function (frame) {
-        setConnected(true);
         console.log('Connected: ' + frame);
         stompClient.subscribe('/topic/roster', function (roster) {
             processResponse(JSON.parse(roster.body));
@@ -83,6 +82,9 @@ function connect() {
 
 function reset() {
     sendToServer("/app/reset");
+    mechanics = [];
+    showPauzed(true);
+    showSimulation(false);
 }
 
 function sendViaWebSocket(endpoint) {
@@ -97,25 +99,22 @@ function disconnect() {
     if (stompClient !== null) {
         stompClient.disconnect();
     }
-    setConnected(false);
     console.log("Disconnected");
-}
-
-function setConnected(connected) {
-    $("#connect").prop("disabled", connected);
-    $("#disconnect").prop("disabled", !connected);
 }
 
 function pauze() {
     sendToServer("/app/pauze");
-    $("#pauze").prop("disabled", true);
-    $("#unpauze").prop("disabled", false);
+    showPauzed(true);
+}
+
+function showPauzed(pauzed) {
+    $("#pauze").prop("disabled", pauzed);
+    $("#unpauze").prop("disabled", !pauzed);
 }
 
 function unpauze() {
     sendToServer("/app/unpauze");
-    $("#pauze").prop("disabled", false);
-    $("#unpauze").prop("disabled", true);
+    showPauzed(false);
 }
 
 function addMechanic() {
@@ -129,15 +128,18 @@ function removeMechanic() {
 function startSimulation() {
     console.log('starting simulation');
     $.post('/simulation/start', {}, function(data, status, jqXHR) { console.log('sent post start simulation') });
-    $("#start-simulation").prop("disabled", true);
-    $("#stop-simulation").prop("disabled", false);
+    showSimulation(true);
 }
 
 function stopSimulation() {
     console.log('stopping simulation');
     $.post('/simulation/stop', {}, function(data, status, jqXHR) { console.log('sent post stop simulation') });
-    $("#start-simulation").prop("disabled", false);
-    $("#stop-simulation").prop("disabled", true);
+    showSimulation(false);
+}
+
+function showSimulation(enabled) {
+    $("#start-simulation").prop("disabled", enabled);
+    $("#stop-simulation").prop("disabled", !enabled);
 }
 
 function damageMachine(event) {
