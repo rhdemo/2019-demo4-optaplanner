@@ -79,3 +79,17 @@ OptaPlannerConfig: {
     simulationActive: true/false
 }
 ```
+
+== Building an image and pushing it to a docker registry
+
+First make sure docker daemon is running, if not type `sudo systemctl start docker` or add another environment variable
+`-Ddocker.host=DOCKER_DAEMON_URL`.
+
+    mvn clean package -Prelease fabric8:build fabric8:push \
+        -Ddocker.username=... -Ddocker.password=...
+
+Where username and passowrd are those of your quay.io account.
+
+This command will build an image `optaplanner-demo:latest` and tag it temporarily as
+`quay.io/redhatdemo/optaplanner-demo:latest` then push it to quay.io registry. Therefore, remove any images
+with the same tag before executing the command above.
