@@ -139,15 +139,58 @@ public class GameServiceImpl implements GameService {
     public void tick() {
         timeMillis += AppConfiguration.TIME_TICK_MILLIS;
 
-        // Update futureMachineIndexes first (it might affect mechanic dispatch events)
-        // TODO: possibly could return a list of mechanic Ids for which the future visits changed
-        boolean futureIndexesUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+        updateMachineHealth();
 
-        if (futureIndexesUpdated) {
-            sendFutureVisits();
+        if (isAnyMachineDamaged()) {
+            boolean futureIndexesUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+
+            if (futureIndexesUpdated) {
+                sendFutureVisits();
+            }
+
+            if (!dispatchPaused) {
+                // Check mechanic fixed or departure events
+                for (int i = 0; i < mechanics.size(); i++) {
+                    Mechanic mechanic = mechanics.get(i);
+                    if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
+                        // TODO If it didn't already happen for this fix case...
+                        int focusMachineIndex = mechanic.getFocusMachineIndex();
+                        if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
+                            upstreamConnector.resetMachineHealth(focusMachineIndex);
+                        }
+                    }
+                    if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
+                        final int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
+                        int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
+                        final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
+                                : futureMachineIndexes[0];
+                        mechanic.setFocusMachineIndex(newFocusMachineIndex);
+                        long travelTime = (long)
+                                (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
+                                        / mechanic.getSpeed());
+
+                        log.debug("Dispatching a mechanic "
+                                + mechanic.getMechanicIndex()
+                                + " from old index "
+                                + oldFocusMachineIndex
+                                + " to a new index "
+                                + newFocusMachineIndex);
+                        mechanic.setOriginalMachineIndex(oldFocusMachineIndex);
+                        long focusTravelTimeMillis = timeMillis + travelTime;
+                        mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
+
+                        solverManager.dispatchMechanic(mechanic);
+                        upstreamConnector.dispatchMechanic(mechanic, timeMillis);
+                        downstreamConnector.dispatchMechanic(mechanic, timeMillis);
+                    }
+                }
+            }
         }
 
-        // Update machine healths
+        handleMechanicAdditionsAndRemovals();
+    }
+
+    private void updateMachineHealth() {
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
         for (int i = 0; i < machineHealths.length; i++) {
             machines[i].setHealth(machineHealths[i]);
@@ -157,46 +200,10 @@ public class GameServiceImpl implements GameService {
         }
 
         downstreamConnector.updateMachinesHealths(machines);
+    }
 
-        if (!dispatchPaused) {
-            // Check mechanic fixed or departure events
-            for (int i = 0; i < mechanics.size(); i++) {
-                Mechanic mechanic = mechanics.get(i);
-                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
-                    // TODO If it didn't already happen for this fix case...
-                    int focusMachineIndex = mechanic.getFocusMachineIndex();
-                    if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
-                        upstreamConnector.resetMachineHealth(focusMachineIndex);
-                    }
-                }
-                if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
-                    final int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
-                    int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
-                    final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
-                            : futureMachineIndexes[0];
-                    mechanic.setFocusMachineIndex(newFocusMachineIndex);
-                    long travelTime = (long)
-                            (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
-                                    / mechanic.getSpeed());
-
-                    log.debug("Dispatching a mechanic "
-                                      + mechanic.getMechanicIndex()
-                                      + " from old index "
-                                      + oldFocusMachineIndex
-                                      + " to a new index "
-                                      + newFocusMachineIndex);
-                    mechanic.setOriginalMachineIndex(oldFocusMachineIndex);
-                    long focusTravelTimeMillis = timeMillis + travelTime;
-                    mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
-
-                    solverManager.dispatchMechanic(mechanic);
-                    upstreamConnector.dispatchMechanic(mechanic, timeMillis);
-                    downstreamConnector.dispatchMechanic(mechanic, timeMillis);
-                }
-            }
-        }
-
-        handleMechanicAdditionsAndRemovals();
+    private boolean isAnyMachineDamaged() {
+        return Arrays.stream(machines).anyMatch(machine -> machine.isDamaged());
     }
 
     private void handleMechanicAdditionsAndRemovals() {
