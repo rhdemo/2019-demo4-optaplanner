@@ -100,7 +100,7 @@ public class GameServiceImpl implements GameService {
     }
 
     /**
-     *  To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
+     * To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
      */
     @Override
     public void addMechanic() {
@@ -108,7 +108,7 @@ public class GameServiceImpl implements GameService {
     }
 
     /**
-     *  To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
+     * To avoid a race condition on JsonMechanic[] mechanics, we forward it to the @Schedule thread
      */
     @Override
     public void removeMechanic() {
@@ -141,14 +141,18 @@ public class GameServiceImpl implements GameService {
 
         updateMachineHealth();
 
-        final boolean isAnyMachineDamaged = isAnyMachineDamaged();
-        if (isAnyMachineDamaged) {
-            boolean futureIndexesUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
-
-            if (futureIndexesUpdated) {
-                sendFutureVisits();
+        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics).stream().forEach(mechanic -> {
+            if (isAnyFutureMachineDamaged(mechanic)) {
+                sendFutureVisits(mechanic);
             }
-        }
+        });
+
+//        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+//        mechanics.stream().forEach(mechanic -> {
+//            if (isAnyFutureMachineDamaged(mechanic)) {
+//                sendFutureVisits(mechanic);
+//            }
+//        });
 
         if (!dispatchPaused) {
             // Check mechanic fixed or departure events
@@ -267,15 +271,14 @@ public class GameServiceImpl implements GameService {
                 timeMillis);
     }
 
-    private void sendFutureVisits() {
+    private void sendFutureVisits(Mechanic mechanic) {
         int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
-        mechanics.forEach(mechanic -> {
-            int [] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
-                    mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
 
-            downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
-            upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
-        });
+        int[] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
+                mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
+
+        downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+        upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
     }
 
 }
