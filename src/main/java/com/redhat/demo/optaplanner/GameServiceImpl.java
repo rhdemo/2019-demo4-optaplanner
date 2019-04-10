@@ -141,53 +141,71 @@ public class GameServiceImpl implements GameService {
 
         updateMachineHealth();
 
-        if (isAnyMachineDamaged()) {
+        final boolean isAnyMachineDamaged = isAnyMachineDamaged();
+        if (isAnyMachineDamaged) {
             boolean futureIndexesUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
 
             if (futureIndexesUpdated) {
                 sendFutureVisits();
             }
+        }
 
-            if (!dispatchPaused) {
-                // Check mechanic fixed or departure events
-                for (int i = 0; i < mechanics.size(); i++) {
-                    Mechanic mechanic = mechanics.get(i);
-                    if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
-                        // TODO If it didn't already happen for this fix case...
-                        int focusMachineIndex = mechanic.getFocusMachineIndex();
-                        if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
-                            upstreamConnector.resetMachineHealth(focusMachineIndex);
-                        }
+        if (!dispatchPaused) {
+            // Check mechanic fixed or departure events
+            for (int i = 0; i < mechanics.size(); i++) {
+                Mechanic mechanic = mechanics.get(i);
+                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
+                    // TODO If it didn't already happen for this fix case...
+                    int focusMachineIndex = mechanic.getFocusMachineIndex();
+                    if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
+                        upstreamConnector.resetMachineHealth(focusMachineIndex);
                     }
-                    if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
-                        final int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
-                        int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
-                        final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
-                                : futureMachineIndexes[0];
-                        mechanic.setFocusMachineIndex(newFocusMachineIndex);
-                        long travelTime = (long)
-                                (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
-                                        / mechanic.getSpeed());
-
-                        log.debug("Dispatching a mechanic "
-                                + mechanic.getMechanicIndex()
-                                + " from old index "
-                                + oldFocusMachineIndex
-                                + " to a new index "
-                                + newFocusMachineIndex);
-                        mechanic.setOriginalMachineIndex(oldFocusMachineIndex);
-                        long focusTravelTimeMillis = timeMillis + travelTime;
-                        mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
-
-                        solverManager.dispatchMechanic(mechanic);
-                        upstreamConnector.dispatchMechanic(mechanic, timeMillis);
-                        downstreamConnector.dispatchMechanic(mechanic, timeMillis);
+                }
+                if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
+                    if (isAnyMachineDamaged) {
+                        dispatchMechanic(mechanic);
+                    } else {
+                        dispatchMechanicToGate(mechanic);
                     }
                 }
             }
         }
 
         handleMechanicAdditionsAndRemovals();
+    }
+
+    private void dispatchMechanicToGate(Mechanic mechanic) {
+        mechanic.setFutureMachineIndexes(new int[] {});
+        dispatchMechanicToMachine(mechanic, appConfiguration.getGateMachineIndex());
+    }
+
+    private void dispatchMechanic(Mechanic mechanic) {
+        int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
+        final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
+                : futureMachineIndexes[0];
+        dispatchMechanicToMachine(mechanic, newFocusMachineIndex);
+    }
+
+    private void dispatchMechanicToMachine(Mechanic mechanic, final int newFocusMachineIndex) {
+        final int oldFocusMachineIndex = mechanic.getFocusMachineIndex();
+        mechanic.setFocusMachineIndex(newFocusMachineIndex);
+        long travelTime = (long)
+                (machines[oldFocusMachineIndex].getMachineIndexToTravelDistances()[newFocusMachineIndex]
+                        / mechanic.getSpeed());
+
+        log.debug("Dispatching a mechanic "
+                + mechanic.getMechanicIndex()
+                + " from old index "
+                + oldFocusMachineIndex
+                + " to a new index "
+                + newFocusMachineIndex);
+        mechanic.setOriginalMachineIndex(oldFocusMachineIndex);
+        long focusTravelTimeMillis = timeMillis + travelTime;
+        mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
+
+        solverManager.dispatchMechanic(mechanic);
+        upstreamConnector.dispatchMechanic(mechanic, timeMillis);
+        downstreamConnector.dispatchMechanic(mechanic, timeMillis);
     }
 
     private void updateMachineHealth() {
