@@ -18,6 +18,7 @@ package com.redhat.demo.optaplanner.solver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -130,19 +131,19 @@ public class TravelSolverManager {
 
     /**
      * @param mechanics never null
-     * @return true if updated
+     * @return a list of mechanics whose futureMachineIndexes have changed
      */
-    public boolean fetchAndUpdateFutureMachineIndexes(List<Mechanic> mechanics) {
+    public List<Mechanic> fetchAndUpdateFutureMachineIndexes(List<Mechanic> mechanics) {
         OptaSolution bestSolution = bestSolutionReference.getAndSet(null);
         if (bestSolution == null) {
-            return false;
+            return Collections.EMPTY_LIST;
         }
         if (!bestSolution.getScore().isFeasible()) {
-            return false;
+            return Collections.EMPTY_LIST;
         }
         if (bestSolution.getMechanicList().size() != mechanics.size()) {
             // The best solution is stale
-            return false;
+            return Collections.EMPTY_LIST;
         }
         for (int i = 0; i < mechanics.size(); i++) {
             Mechanic mechanic = mechanics.get(i);
@@ -150,27 +151,44 @@ public class TravelSolverManager {
             if (optaMechanic.getFocusMachine().getMachineIndex() != mechanic.getFocusMachineIndex()
                 || optaMechanic.getFocusDepartureTimeMillis() != mechanic.getFocusDepartureTimeMillis()) {
                 // The best solution is stale
-                return false;
+                return Collections.EMPTY_LIST;
             }
         }
+
+        List<Mechanic> updatedMechanics = new ArrayList<>();
         // The best solution isn't stale (except maybe for machine healths, but that's ok)
         for (int i = 0; i < mechanics.size(); i++) {
             Mechanic mechanic = mechanics.get(i);
-            OptaMechanic optaMechanic = bestSolution.getMechanicList().get(i);
-            List<Integer> futureMachineIndexList = new ArrayList<>(bestSolution.getMachineList().size());
-            OptaVisit next = optaMechanic.getNext();
-            while (next != null) {
-                futureMachineIndexList.add(next.getMachineIndex());
-                next = next.getNext();
+            boolean updated = updateMechanicFutureMachineIndexes(mechanic, bestSolution);
+            if (updated) {
+                updatedMechanics.add(mechanic);
             }
-            int[] futureMachineIndexes = futureMachineIndexList.stream().mapToInt(Integer::intValue).toArray();
-            mechanic.setFutureMachineIndexes(futureMachineIndexes);
-            LOGGER.debug("Future machine indexes updated for a mechanic "
-                                       + mechanic.getMechanicIndex()
-                                       + " with the first one being a machine: "
-                                       + (futureMachineIndexes.length == 0 ? "empty" : futureMachineIndexes[0]));
+
         }
-        return true;
+        return updatedMechanics;
+    }
+
+    private boolean updateMechanicFutureMachineIndexes(Mechanic mechanic, OptaSolution bestSolution) {
+        OptaMechanic optaMechanic = bestSolution.getMechanicList().get(mechanic.getMechanicIndex());
+        List<Integer> futureMachineIndexList = new ArrayList<>(bestSolution.getMachineList().size());
+        OptaVisit next = optaMechanic.getNext();
+
+        int [] previousFutureMachineIndexes = mechanic.getFutureMachineIndexes();
+        while (next != null) {
+            futureMachineIndexList.add(next.getMachineIndex());
+            next = next.getNext();
+        }
+        int[] futureMachineIndexes = futureMachineIndexList.stream().mapToInt(Integer::intValue).toArray();
+        mechanic.setFutureMachineIndexes(futureMachineIndexes);
+        boolean updated = !Arrays.equals(previousFutureMachineIndexes, futureMachineIndexes);
+        if (updated) {
+            LOGGER.debug("Future machine indexes updated for a mechanic "
+                    + mechanic.getMechanicIndex()
+                    + " with the first one being a machine: "
+                    + (futureMachineIndexes.length == 0 ? "empty" : futureMachineIndexes[0]));
+        }
+
+        return updated;
     }
 
     public void updateMachineHealths(Machine[] machines) {
