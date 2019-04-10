@@ -19,15 +19,15 @@ public class OptaPlannerRestController {
         this.gameService = gameService;
     }
 
-    @PostMapping("/pauze")
+    @PostMapping("/pauzeDispatch")
     @ResponseStatus(HttpStatus.OK)
-    public void pauze() {
+    public void pauzeDispatch() {
         gameService.pauseGame();
     }
 
-    @PostMapping("/unpauze")
+    @PostMapping("/unpauzeDispatch")
     @ResponseStatus(HttpStatus.OK)
-    public void unpauze() {
+    public void unpauzeDispatch() {
         gameService.resumeGame();
     }
 

@@ -102,7 +102,7 @@ function disconnect() {
 }
 
 function pauze() {
-    sendToServer("/app/pauze");
+    sendToServer("/app/pauzeDispatch");
     showPauzed(true);
 }
 
@@ -112,7 +112,7 @@ function showPauzed(pauzed) {
 }
 
 function unpauze() {
-    sendToServer("/app/unpauze");
+    sendToServer("/app/unpauzeDispatch");
     showPauzed(false);
 }
 
