@@ -67,5 +67,9 @@ public interface UpstreamConnector {
      */
     void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes);
 
+    void setDispatchStatus(boolean isDispatchActive);
+
+    void setSimulationStatus(boolean isSimulationActive);
+
 
 }

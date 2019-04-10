@@ -71,4 +71,14 @@ public class FakeUpstreamConnector implements UpstreamConnector {
     @Override
     public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
     }
+
+    @Override
+    public void setDispatchStatus(boolean isDispatchActive) {
+
+    }
+
+    @Override
+    public void setSimulationStatus(boolean isSimulationActive) {
+
+    }
 }

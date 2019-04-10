@@ -42,10 +42,12 @@ public class SimulationService {
 
     public void startSimulation() {
         isSimulationOn = true;
+        upstreamConnector.setSimulationStatus(isSimulationOn);
     }
 
     public void stopSimulation() {
         isSimulationOn = false;
+        upstreamConnector.setSimulationStatus(isSimulationOn);
     }
 
     public void damageMachine(int machineIndex) {
