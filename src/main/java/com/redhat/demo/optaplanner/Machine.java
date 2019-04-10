@@ -80,6 +80,10 @@ public class Machine {
         this.health = health;
     }
 
+    public boolean isDamaged() {
+        return health < 1.0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
