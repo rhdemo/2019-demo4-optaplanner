@@ -121,14 +121,14 @@ public class InfinispanConnector implements UpstreamConnector {
     }
 
     @Override
-    public void setDispatchStatus(boolean isDispatchActive) {
+    public synchronized void setDispatchStatus(boolean isDispatchActive) {
         OptaPlannerConfig config = convertFromJsonString(defaultCache.get(OPTA_PLANNER_CONFIG_KEY_NAME), OptaPlannerConfig.class);
         config.setDispatchActive(isDispatchActive);
         defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
     }
 
     @Override
-    public void setSimulationStatus(boolean isSimulationActive) {
+    public synchronized void setSimulationStatus(boolean isSimulationActive) {
         OptaPlannerConfig config = convertFromJsonString(defaultCache.get(OPTA_PLANNER_CONFIG_KEY_NAME), OptaPlannerConfig.class);
         config.setSimulationActive(isSimulationActive);
         defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
