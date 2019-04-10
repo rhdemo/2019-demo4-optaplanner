@@ -20,7 +20,7 @@ public class TravelSolverManagerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelSolverManagerTest.class);
     // TODO Don't do this, use OptaConditions <jiraURL>
-    private static final long SLEEP_TIME = 500;
+    private static final long SLEEP_TIME = 1000;
 
     private TravelSolverManager travelSolverManager;
 
