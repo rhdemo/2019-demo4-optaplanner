@@ -24,7 +24,6 @@ const USE_WEBSOCKET = false;
 const sendToServer = USE_WEBSOCKET ? sendViaWebSocket : postAndForget;
 
 const DAMAGE_AMOUNT = 0.2;
-const SHOW_NEXT_VISITS = 3;
 const HEALTH_TEXT_OFFSET = 20;
 const MECHANIC_RADIUS = 20; 
 const MACHINE_SPOT_RADIUS = 3;
@@ -411,31 +410,33 @@ function getMechanicColorByState(mechanicState) {
 }
 
 function drawNextVisits(ctx, mechanic) {
-    let isTravelling = mechanic.state === MechanicState.TRAVELLING;
     let futureIndexes = mechanic.futureMachineIndexes;
-    let previousMachineIndex = isTravelling ? mechanic.originalMachineIndex : mechanic.focusMachineIndex;
-    let nextMachineIndex;
+    let isTravelling = mechanic.state === MechanicState.TRAVELLING;
+
+    if (isTravelling) {
+        drawPathBetweenTwoMachines(ctx, mechanic, mechanic.originalMachineIndex, mechanic.focusMachineIndex);
+    }
 
     if (futureIndexes == null) {
         return;
     }
-    for (i = 0; i < futureIndexes.length; i++) {
-        if (i > SHOW_NEXT_VISITS) { // show only next N visits
-            break;
-        }
 
+    let previousMachineIndex = mechanic.focusMachineIndex;
+    let nextMachineIndex;
+
+    for (i = 0; i < futureIndexes.length; i++) {
         nextMachineIndex = futureIndexes[i];
 
-        let travellingAndNotLastConnection = isTravelling && i < SHOW_NEXT_VISITS;
+        let travellingAndNotLastConnection = isTravelling && i < futureIndexes.length;
         if (travellingAndNotLastConnection || !isTravelling) {
-            drawPathBetweenTwoMachines(ctx, mechanic, previousMachineIndex, nextMachineIndex, i);
+            drawPathBetweenTwoMachines(ctx, mechanic, previousMachineIndex, nextMachineIndex);
         }
 
         previousMachineIndex = nextMachineIndex;
     }
 }
 
-function drawPathBetweenTwoMachines(ctx, mechanic, machineIndex1, machineIndex2, index) {
+function drawPathBetweenTwoMachines(ctx, mechanic, machineIndex1, machineIndex2) {
     if (machineIndex1 == machineIndex2) {
         return;
     }
