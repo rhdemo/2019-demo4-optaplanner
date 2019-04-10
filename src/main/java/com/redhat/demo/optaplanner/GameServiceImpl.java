@@ -19,6 +19,7 @@ package com.redhat.demo.optaplanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 
@@ -120,7 +121,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public void reset() {
         simulationService.init();
-        solverManager.stopSolver();
+        solverManager.stopSolver(1L, TimeUnit.SECONDS);
         healAllMachines();
         initializeGame();
         initializeDownstream();

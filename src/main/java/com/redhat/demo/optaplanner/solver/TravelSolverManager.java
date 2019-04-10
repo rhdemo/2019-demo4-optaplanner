@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
@@ -70,8 +71,31 @@ public class TravelSolverManager {
         executorService.shutdownNow();
     }
 
-    public void stopSolver() {
+    public void stopSolver(long timeout, TimeUnit timeoutUnit) {
+        final long WAIT_STEP_MILLIS = 100L;
+
+        TimeUnit millisTimeUnit = TimeUnit.MILLISECONDS;
+        long timeoutMillis = millisTimeUnit.convert(timeout, timeoutUnit);
+        long waitingMillis = 0L;
         solver.terminateEarly();
+
+        while (solver.isSolving()) {
+            sleep(WAIT_STEP_MILLIS);
+            waitingMillis += WAIT_STEP_MILLIS;
+
+            if (waitingMillis > timeoutMillis) {
+                LOGGER.error("Waiting for a solver to terminate timed out");
+                break;
+            }
+        }
+    }
+
+    private void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted waiting.", ex);
+        }
     }
 
     public void startSolver(Machine[] machines, List<Mechanic> mechanics) {
