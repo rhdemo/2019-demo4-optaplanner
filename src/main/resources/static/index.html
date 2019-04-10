@@ -26,14 +26,11 @@
 </head>
 <body onload="connect()">
 <div id="main-content" class="container">
-    <div class="row" style="visibility: hidden"><!-- This control is commented out -->
+    <div class="row">
         <div class="col-md-12">
             <form class="form-inline">
                 <div class="form-group">
-                    <label for="connect">WebSocket connection:</label>
-                    <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                    </button>
+                    <button id="reset" class="btn btn-default" type="submit">Reset the game</button>
                 </div>
             </form>
         </div>
@@ -79,7 +76,7 @@
     </div>
 </div>
 
-<canvas id="canvas" width="1900" height="1068" style="margin-left:2px; border:black 3px solid"/>
+<canvas id="canvas" width="1890" height="1064" style="margin-left:2px; border:black 3px solid"/>
 
 </body>
 </html>

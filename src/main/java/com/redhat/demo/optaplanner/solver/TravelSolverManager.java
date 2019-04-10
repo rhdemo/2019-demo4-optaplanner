@@ -70,6 +70,10 @@ public class TravelSolverManager {
         executorService.shutdownNow();
     }
 
+    public void stopSolver() {
+        solver.terminateEarly();
+    }
+
     public void startSolver(Machine[] machines, List<Mechanic> mechanics) {
         List<OptaMachine> machineList = Arrays.stream(machines)
                 .map(machine -> new OptaMachine(
@@ -180,15 +184,20 @@ public class TravelSolverManager {
             OptaSolution solution = scoreDirector.getWorkingSolution();
             List<OptaMachine> machines = solution.getMachineList();
 
-            // The last machine is the entry point to the factory. A new mechanic is supposed to show up there.
-            OptaMachine gate = machines.get(focusMachineIndex);
+            OptaMachine focusMachine = machines.get(focusMachineIndex);
+            if (!focusMachine.isGate()) {
+                LOGGER.warn("A mechanic ({}) was added but didn't start at the gate. A new mechanic is supposed to show up there.", mechanicIndex);
+                scoreDirector.beforeProblemPropertyChanged(focusMachine);
+                focusMachine.setFocused(true);
+                scoreDirector.afterProblemPropertyChanged(focusMachine);
+            }
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
             OptaMechanic optaMechanic = new OptaMechanic(mechanicIndex,
                                                          speed,
                                                          fixDurationMillis,
                                                          thumbUpdurationMillis,
-                                                         gate,
+                                                         focusMachine,
                                                          focusDepartureTimeMillis);
             scoreDirector.beforeEntityAdded(optaMechanic);
             mechanicList.add(optaMechanic);
@@ -203,6 +212,11 @@ public class TravelSolverManager {
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
             OptaMechanic mechanic = mechanicList.get(mechanicIndex);
+
+            OptaMachine oldFocusMachine = mechanic.getFocusMachine();
+            scoreDirector.beforeProblemPropertyChanged(oldFocusMachine);
+            oldFocusMachine.setFocused(false);
+            scoreDirector.afterProblemPropertyChanged(oldFocusMachine);
 
             OptaVisit visit = mechanic.getNext();
             while (visit != null) {

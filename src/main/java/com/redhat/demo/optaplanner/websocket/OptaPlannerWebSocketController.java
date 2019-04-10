@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
+@Deprecated
 @Controller
 public class OptaPlannerWebSocketController {
 
@@ -35,8 +36,8 @@ public class OptaPlannerWebSocketController {
         gameService.removeMechanic();
     }
 
-    @MessageMapping("/locations")
+    @MessageMapping("/connect")
     public void machineLocations() {
-        gameService.machineLocations();
+        gameService.initializeDownstream();
     }
 }

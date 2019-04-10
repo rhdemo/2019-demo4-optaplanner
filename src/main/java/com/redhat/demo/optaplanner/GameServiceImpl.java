@@ -17,11 +17,13 @@
 package com.redhat.demo.optaplanner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 
 import com.redhat.demo.optaplanner.config.AppConfiguration;
+import com.redhat.demo.optaplanner.simulation.SimulationService;
 import com.redhat.demo.optaplanner.solver.TravelSolverManager;
 import com.redhat.demo.optaplanner.upstream.UpstreamConnector;
 import org.slf4j.Logger;
@@ -43,6 +45,8 @@ public class GameServiceImpl implements GameService {
     private DownstreamConnector downstreamConnector;
     @Autowired
     private TravelSolverManager solverManager;
+    @Autowired
+    private SimulationService simulationService;
 
     private AtomicInteger mechanicAdditionCount = new AtomicInteger(0);
 
@@ -51,10 +55,16 @@ public class GameServiceImpl implements GameService {
     private List<Mechanic> mechanics = new ArrayList<>();
     private Machine[] machines;
 
-    private boolean dispatchPaused = true;
+    private boolean dispatchPaused;
 
     @PostConstruct
-    public void init() {
+    public void beanInit() {
+        initializeGame();
+    }
+
+    private void initializeGame() {
+        dispatchPaused = true;
+        mechanics.clear();
         machines = new Machine[appConfiguration.getMachinesAndGateLength()];
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
         for (int i = 0; i < machines.length; i++) {
@@ -69,7 +79,9 @@ public class GameServiceImpl implements GameService {
         }
 
         for (int i = 0; i < appConfiguration.getInitialMechanicsSize(); i++) {
-            mechanics.add(createMechanic());
+            Mechanic mechanic = createMechanic();
+            mechanics.add(mechanic);
+            upstreamConnector.mechanicAdded(mechanic, timeMillis);
         }
         solverManager.startSolver(machines, mechanics);
     }
@@ -101,8 +113,23 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void machineLocations() {
-        downstreamConnector.sendMachineLocations(machines);
+    public void initializeDownstream() {
+        downstreamConnector.connect(machines, mechanics, timeMillis);
+    }
+
+    @Override
+    public void reset() {
+        simulationService.init();
+        solverManager.stopSolver();
+        healAllMachines();
+        initializeGame();
+        initializeDownstream();
+    }
+
+    private void healAllMachines() {
+        for (int i = 0; i < appConfiguration.getMachinesOnlyLength(); i++) {
+            upstreamConnector.resetMachineHealth(machines[i].getMachineIndex());
+        }
     }
 
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
@@ -110,7 +137,12 @@ public class GameServiceImpl implements GameService {
         timeMillis += AppConfiguration.TIME_TICK_MILLIS;
 
         // Update futureMachineIndexes first (it might affect mechanic dispatch events)
-        boolean futureIndexedUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+        // TODO: possibly could return a list of mechanic Ids for which the future visits changed
+        boolean futureIndexesUpdated = solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
+
+        if (futureIndexesUpdated) {
+            sendFutureVisits();
+        }
 
         // Update machine healths
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
@@ -201,4 +233,16 @@ public class GameServiceImpl implements GameService {
                 appConfiguration.getGateMachineIndex(),
                 timeMillis);
     }
+
+    private void sendFutureVisits() {
+        int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
+        mechanics.forEach(mechanic -> {
+            int [] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
+                    mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
+
+            downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+            upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+        });
+    }
+
 }

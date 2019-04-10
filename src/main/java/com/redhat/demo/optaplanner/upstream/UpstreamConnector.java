@@ -60,4 +60,12 @@ public interface UpstreamConnector {
      */
     void damageMachine(int machineIndex, double damage);
 
+    /**
+     * Sends future visits of a mechanic without moving him.
+     * @param mechanicIndex >= 0
+     * @param futureMachineIndexes each index >= 0, <= {@link AppConfiguration#getMachinesOnlyLength()}
+     */
+    void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes);
+
+
 }
