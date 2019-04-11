@@ -276,8 +276,10 @@ function drawGame(ctx) {
 
     backgroundImage.onload = function() {
         ctx.drawImage(backgroundImage, 0, 0);
+        ctx.save();
         ctx.fillStyle = 'rgba(225, 225, 225, ' + BACKGROUND_FOG + ')';
         ctx.fillRect(0,0, canvas.width, canvas.height);
+        ctx.restore();
         drawMachines(ctx);
         drawMechanics(ctx);
     }
@@ -312,11 +314,14 @@ function drawMachine(ctx, machine) {
 
     let textPositionX = positionX + HEALTH_TEXT_OFFSET;
     let textPositionY = positionY - HEALTH_TEXT_OFFSET;
-    ctx.fillStyle = 'white';
+
     let borderSizeX = 43;
     let borderSizeY = 20;
     let borderStartX = textPositionX - 3;
     let borderStartY = textPositionY - 15;
+
+    ctx.save();
+    ctx.fillStyle = 'white';
     ctx.fillRect(borderStartX, borderStartY, borderSizeX, borderSizeY);
 
     if (machineHealth > 80) {
@@ -332,18 +337,23 @@ function drawMachine(ctx, machine) {
     ctx.font = "15px Georgia";
     let healthString = Math.round(machineHealth) + ' %';
     ctx.fillText(healthString, textPositionX, textPositionY);
+    ctx.restore();
 
     // draw the spot for the mechanic
+    ctx.save();
     ctx.beginPath();
     ctx.arc(positionX, positionY, MACHINE_SPOT_RADIUS, 0, 2 * Math.PI, false);
     ctx.fillStyle = 'black';
     ctx.fill();
     ctx.stroke();
+    ctx.restore();
 
     if (DEBUG_ENABLED) {
+        ctx.save();
         ctx.fillStyle = 'black';
         let machineString = 'machine: ' + machine.machineIndex;
         ctx.fillText(machineString, position.x + 2 * HEALTH_TEXT_OFFSET, position.y - 2 * HEALTH_TEXT_OFFSET);
+        ctx.restore();
     }
 }
 
@@ -386,6 +396,7 @@ function drawMechanic(ctx, mechanic) {
 
     let mechanicStyle = getMechanicColorByState(mechanicState);
 
+    ctx.save();
     ctx.beginPath();
     ctx.arc(positionX, positionY, MECHANIC_RADIUS, 0, 2 * Math.PI, false);
     ctx.fillStyle = mechanicStyle;
@@ -394,6 +405,7 @@ function drawMechanic(ctx, mechanic) {
     ctx.strokeStyle = mechanicStyle;
     ctx.setLineDash([]);
     ctx.stroke();
+    ctx.restore();
 
     drawNextVisits(ctx, mechanic)
 }
@@ -448,7 +460,8 @@ function drawPathBetweenTwoMachines(ctx, mechanic, machineIndex1, machineIndex2)
     let isTravelling = mechanic.state === MechanicState.TRAVELLING
 
     let style = isFirstConnection && isTravelling ? FIRST_VISIT_STYLE : NEXT_VISIT_STYLE;
-    
+
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(position1.x, position1.y);
     ctx.lineTo(position2.x, position2.y);
@@ -456,11 +469,14 @@ function drawPathBetweenTwoMachines(ctx, mechanic, machineIndex1, machineIndex2)
     ctx.lineWidth = 2;
     ctx.strokeStyle = style;
     ctx.stroke();
-    
+    ctx.restore();
+
+    ctx.save();
     ctx.beginPath();
     ctx.arc(position2.x, position2.y, MECHANIC_RADIUS/2, 0, 2 * Math.PI, false);
     ctx.fillStyle = style;
     ctx.setLineDash([]);
     ctx.fill();
-    ctx.stroke();  
+    ctx.stroke();
+    ctx.restore();
 }
