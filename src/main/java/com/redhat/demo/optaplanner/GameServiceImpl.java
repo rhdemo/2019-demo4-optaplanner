@@ -155,14 +155,13 @@ public class GameServiceImpl implements GameService {
             for (int i = 0; i < mechanics.size(); i++) {
                 Mechanic mechanic = mechanics.get(i);
                 if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
-                    // TODO If it didn't already happen for this fix case...
                     int focusMachineIndex = mechanic.getFocusMachineIndex();
                     if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
                         upstreamConnector.resetMachineHealth(focusMachineIndex);
                     }
                 }
                 if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
-                    if (isAnyMachineDamaged) {
+                    if (isAnyFutureMachineDamaged(mechanic)) {
                         dispatchMechanic(mechanic);
                     } else {
                         dispatchMechanicToGate(mechanic);
@@ -173,6 +172,28 @@ public class GameServiceImpl implements GameService {
 
         handleMechanicAdditionsAndRemovals();
     }
+
+    private void updateMachineHealth() {
+        double[] machineHealths = upstreamConnector.fetchMachineHealths();
+        for (int i = 0; i < machineHealths.length; i++) {
+            machines[i].setHealth(machineHealths[i]);
+        }
+        if (timeMillis % AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE == 0L) {
+            solverManager.updateMachineHealths(machines);
+        }
+
+        downstreamConnector.updateMachinesHealths(machines);
+    }
+
+    private boolean isAnyMachineDamaged() {
+        return Arrays.stream(machines).anyMatch(machine -> machine.isDamaged());
+    }
+
+    private boolean isAnyFutureMachineDamaged(Mechanic mechanic) {
+        return Arrays.stream(mechanic.getFutureMachineIndexes())
+                .anyMatch(machineIndex -> machines[machineIndex].isDamaged());
+    }
+
 
     private void dispatchMechanicToGate(Mechanic mechanic) {
         mechanic.setFutureMachineIndexes(new int[] {});
@@ -206,22 +227,6 @@ public class GameServiceImpl implements GameService {
         solverManager.dispatchMechanic(mechanic);
         upstreamConnector.dispatchMechanic(mechanic, timeMillis);
         downstreamConnector.dispatchMechanic(mechanic, timeMillis);
-    }
-
-    private void updateMachineHealth() {
-        double[] machineHealths = upstreamConnector.fetchMachineHealths();
-        for (int i = 0; i < machineHealths.length; i++) {
-            machines[i].setHealth(machineHealths[i]);
-        }
-        if (timeMillis % AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE == 0L) {
-            solverManager.updateMachineHealths(machines);
-        }
-
-        downstreamConnector.updateMachinesHealths(machines);
-    }
-
-    private boolean isAnyMachineDamaged() {
-        return Arrays.stream(machines).anyMatch(machine -> machine.isDamaged());
     }
 
     private void handleMechanicAdditionsAndRemovals() {
