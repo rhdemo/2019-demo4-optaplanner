@@ -156,6 +156,7 @@
             <goals>
               <goal>build</goal>
               <goal>resource</goal>
+              <goal>push</goal>
             </goals>
           </execution>
         </executions>
