@@ -1,7 +1,9 @@
 package com.redhat.demo.optaplanner.websocket;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
 
 import com.redhat.demo.optaplanner.DownstreamConnector;
 import com.redhat.demo.optaplanner.Machine;
@@ -18,6 +20,10 @@ import org.springframework.stereotype.Service;
 public class WebSocketDownstreamConnector implements DownstreamConnector {
 
     private static final String WEB_SOCKET_ENDPOINT = "/topic/roster";
+
+    private boolean isConnected = false;
+
+    private Queue<FutureVisitsResponse> futureVisitsResponseQueue = new ArrayDeque<>();
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -63,13 +69,23 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
 
         ConnectResponse connectResponse = new ConnectResponse(locations, jsonMechanics);
         this.template.convertAndSend(WEB_SOCKET_ENDPOINT, connectResponse);
+
+        while (!futureVisitsResponseQueue.isEmpty()) {
+            this.template.convertAndSend(WEB_SOCKET_ENDPOINT, futureVisitsResponseQueue.poll());
+        }
+
+        isConnected = true;
     }
 
     @Override
     public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
         FutureVisitsResponse futureVisitsResponse =
                 new FutureVisitsResponse(mechanicIndex, futureMachineIndexes);
-        this.template.convertAndSend(WEB_SOCKET_ENDPOINT, futureVisitsResponse);
+        if (isConnected) {
+            this.template.convertAndSend(WEB_SOCKET_ENDPOINT, futureVisitsResponse);
+        } else {
+            futureVisitsResponseQueue.add(futureVisitsResponse);
+        }
     }
 
     private JsonMachine convertMachineToJson(Machine machine) {
