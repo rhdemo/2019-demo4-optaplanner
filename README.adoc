@@ -47,6 +47,7 @@ Below are examples on key/value pairs in Infinispan caches that are relevant to 
 
 === Cache `DispatchMechanic`
 
+
 ```
 MECHANIC_ID: {
     responseType: "DISPATCH_MECHANIC" or "ADD_MECHANIC",
@@ -82,14 +83,39 @@ OptaPlannerConfig: {
 
 == Building an image and pushing it to a docker registry
 
-First make sure docker daemon is running, if not type `sudo systemctl start docker` or add another property
-`-Ddocker.host=DOCKER_DAEMON_URL`.
+First make sure docker daemon is running, if not type `sudo systemctl start docker`
+(or add the property `-Ddocker.host=DOCKER_DAEMON_URL`).
 
-    mvn clean install -Prelease fabric8:build fabric8:push \
-        -Ddocker.username=... -Ddocker.password=...
+```
+mvn clean install -Prelease fabric8:build fabric8:push -Ddocker.username=`whoami` -Ddocker.password='...'
+```
 
-Where username and password are those of your quay.io account.
+Where username and password are those of your docker.io and quay.io account.
 
 This command will build an image `optaplanner-demo:latest` and tag it temporarily as
-`quay.io/redhatdemo/optaplanner-demo:latest` then push it to quay.io registry. Therefore, remove any images
-with the same tag before executing the command above.
+`quay.io/redhatdemo/optaplanner-demo:latest` then push it to quay.io registry.
+Therefore, remove any images with the same tag before executing the command above.
+
+=== Troubleshooting
+
+Running the `docker` command without `sudo` should work, but doesn't on a vanilla Fedora installation.
+If it doesn't, try this:
+
+```
+dnf install docker
+sudo groupadd docker
+sudo usermod -aG docker `whoami`
+sudo systemctl start docker
+// If this fails with a permission problem, reboot first
+docker run hello-world
+```
+
+If you're getting 401 authorization issues during the `mvn` build, try this first:
+
+```
+docker login docker.io
+docker login quay.io/redhatdemo
+```
+
+If you follow security protocols and have different passwords for both services,
+first run the `mvn` command with the docker.io credentials and after that fails, do it again with the quay credentials.
