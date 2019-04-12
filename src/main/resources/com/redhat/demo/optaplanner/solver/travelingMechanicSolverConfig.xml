@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
+  <daemon>true</daemon>
   <!--<environmentMode>FULL_ASSERT</environmentMode>--><!-- To slowly prove there are no bugs in this code -->
   <!--<moveThreadCount>AUTO</moveThreadCount>--><!-- To solve faster by saturating multiple CPU cores -->
 
@@ -14,6 +15,9 @@
 
   <constructionHeuristic/>
   <localSearch>
+    <termination>
+      <unimprovedMinutesSpentLimit>5</unimprovedMinutesSpentLimit>
+    </termination>
     <localSearchType>TABU_SEARCH</localSearchType>
     <unionMoveSelector>
       <changeMoveSelector/>

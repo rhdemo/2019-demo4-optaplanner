@@ -31,6 +31,7 @@ public class AppConfiguration {
 
     public static final long TIME_TICK_MILLIS = 40L;
     public static final long OPTA_MACHINE_HEALTH_REFRESH_RATE = TIME_TICK_MILLIS * 15L;
+    public static double HEALTH_COMPARISON_THRESHOLD = 0.0001;
 
     private int machinesAndGateLength;
     private int initialMechanicsSize = 1;
