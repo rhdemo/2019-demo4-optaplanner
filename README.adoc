@@ -87,7 +87,7 @@ First make sure docker daemon is running, if not type `sudo systemctl start dock
 (or add the property `-Ddocker.host=DOCKER_DAEMON_URL`).
 
 ```
-mvn clean install -Prelease fabric8:build fabric8:push -Ddocker.username=`whoami` -Ddocker.password='...'
+mvn clean install -Prelease -Ddocker.username=`whoami` -Ddocker.password='...'
 ```
 
 Where username and password are those of your docker.io and quay.io account.
