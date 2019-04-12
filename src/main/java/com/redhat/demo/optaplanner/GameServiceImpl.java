@@ -147,13 +147,6 @@ public class GameServiceImpl implements GameService {
             }
         });
 
-//        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics);
-//        mechanics.stream().forEach(mechanic -> {
-//            if (isAnyFutureMachineDamaged(mechanic)) {
-//                sendFutureVisits(mechanic);
-//            }
-//        });
-
         if (!dispatchPaused) {
             // Check mechanic fixed or departure events
             for (int i = 0; i < mechanics.size(); i++) {
