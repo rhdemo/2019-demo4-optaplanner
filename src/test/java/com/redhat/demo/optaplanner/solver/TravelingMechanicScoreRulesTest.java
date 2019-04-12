@@ -154,7 +154,6 @@ public class TravelingMechanicScoreRulesTest {
             Score[] scores = Arrays.stream(solutions).map(solution -> {
                 ScoreDirector<Solution_> scoreDirector = scoreDirectorFactory.buildScoreDirector();
                 scoreDirector.setWorkingSolution(solution);
-    System.out.println("calculating");
                 return scoreDirector.calculateScore();
             }).toArray(Score[]::new);
             for (int i = 0; i < scores.length -1; i++) {

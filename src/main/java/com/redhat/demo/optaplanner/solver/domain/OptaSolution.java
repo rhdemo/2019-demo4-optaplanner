@@ -69,10 +69,6 @@ public class OptaSolution {
         return configuration;
     }
 
-    public void setConfiguration(OptaConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
     public List<OptaMachine> getMachineList() {
         return machineList;
     }
