@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import static com.redhat.demo.optaplanner.config.AppConfiguration.HEALTH_COMPARISON_THRESHOLD;
+
 @Service
 public class GameServiceImpl implements GameService {
 
@@ -191,11 +193,18 @@ public class GameServiceImpl implements GameService {
 
     private void updateMachineHealth() {
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
+
+        boolean machinesHealthDropped = false;
         for (int i = 0; i < machineHealths.length; i++) {
+            if (machineHealths[i] < 1.0) {
+                machinesHealthDropped = true;
+            }
             machines[i].setHealth(machineHealths[i]);
         }
         if (timeMillis >= optaMachineHealthRefreshTimeMillis) {
-            solverManager.updateMachineHealths(machines);
+            if (machinesHealthDropped) {
+                solverManager.updateMachineHealths(machines);
+            }
             optaMachineHealthRefreshTimeMillis = timeMillis + AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE;
         }
         downstreamConnector.updateMachinesHealths(machines);
@@ -206,10 +215,14 @@ public class GameServiceImpl implements GameService {
                 .anyMatch(machineIndex -> machines[machineIndex].isDamaged());
     }
 
-
     private void dispatchMechanicToGate(Mechanic mechanic) {
         mechanic.setFutureMachineIndexes(new int[] {});
-        dispatchMechanicToMachine(mechanic, appConfiguration.getGateMachineIndex());
+        final int gateIndex = appConfiguration.getGateMachineIndex();
+
+        // don't send the mechanic to a gate if he is already there
+        if (mechanic.getFocusMachineIndex() != gateIndex) {
+            dispatchMechanicToMachine(mechanic, appConfiguration.getGateMachineIndex());
+        }
     }
 
     private void dispatchMechanic(Mechanic mechanic) {
