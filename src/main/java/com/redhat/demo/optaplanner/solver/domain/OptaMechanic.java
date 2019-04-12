@@ -22,6 +22,7 @@ public class OptaMechanic extends OptaVisitOrMechanic {
 
     @PlanningId
     private Integer mechanicIndex;
+    private OptaConfiguration optaConfiguration;
     private boolean dummy;
     private double speed;
     private long fixDurationMillis;
@@ -36,15 +37,16 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     private OptaMechanic() {
     }
 
-    public static OptaMechanic createDummy() {
-        OptaMechanic mechanic = new OptaMechanic(Integer.MIN_VALUE, Double.NaN, 0L, 0L, null, null);
+    public static OptaMechanic createDummy(OptaConfiguration optaConfiguration) {
+        OptaMechanic mechanic = new OptaMechanic(Integer.MIN_VALUE, optaConfiguration, Double.NaN, 0L, 0L, null, null);
         mechanic.dummy = true;
         return mechanic;
     }
 
-    public OptaMechanic(int mechanicIndex, double speed, long fixDurationMillis, long thumbUpDurationMillis,
+    public OptaMechanic(int mechanicIndex, OptaConfiguration optaConfiguration, double speed, long fixDurationMillis, long thumbUpDurationMillis,
             OptaMachine focusMachine, Long focusDepartureTimeMillis) {
         this.mechanicIndex = mechanicIndex;
+        this.optaConfiguration = optaConfiguration;
         dummy = false;
         this.speed = speed;
         this.fixDurationMillis = fixDurationMillis;
@@ -59,8 +61,12 @@ public class OptaMechanic extends OptaVisitOrMechanic {
     }
 
     @Override
-    public Long getFixTimeMillis() {
-        return focusDepartureTimeMillis == null ? null : focusDepartureTimeMillis - thumbUpDurationMillis;
+    public Long getFixOffsetMillis() {
+        if (focusDepartureTimeMillis == null) {
+            return null;
+        }
+        long focusDepartureOffsetMillis = focusDepartureTimeMillis - optaConfiguration.getLastDispatchOfAnyMechanicTimeMillis();
+        return focusDepartureOffsetMillis - thumbUpDurationMillis;
     }
 
     @Override

@@ -22,11 +22,15 @@ import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.domain.solution.drools.ProblemFactCollectionProperty;
+import org.optaplanner.core.api.domain.solution.drools.ProblemFactProperty;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 
 @PlanningSolution
 public class OptaSolution {
+
+    @ProblemFactProperty
+    private OptaConfiguration configuration;
 
     @ProblemFactCollectionProperty
     private List<OptaMachine> machineList;
@@ -49,7 +53,8 @@ public class OptaSolution {
     private OptaSolution() {
     }
 
-    public OptaSolution(List<OptaMachine> machineList, List<OptaMechanic> mechanicList, OptaMechanic dummyMechanic, List<OptaVisit> visitList) {
+    public OptaSolution(OptaConfiguration configuration, List<OptaMachine> machineList, List<OptaMechanic> mechanicList, OptaMechanic dummyMechanic, List<OptaVisit> visitList) {
+        this.configuration = configuration;
         this.machineList = machineList;
         this.mechanicList = mechanicList;
         this.dummyMechanics = new OptaMechanic[] {dummyMechanic};
@@ -59,6 +64,14 @@ public class OptaSolution {
     // ************************************************************************
     // Getter and setters boilerplate
     // ************************************************************************
+
+    public OptaConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(OptaConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
     public List<OptaMachine> getMachineList() {
         return machineList;

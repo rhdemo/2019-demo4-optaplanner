@@ -28,9 +28,10 @@ public class OptaMachine {
     private boolean focused;
     private double health;
 
-    public OptaMachine(int machineIndex, double[] machineIndexToTravelDistances, boolean gate) {
+    public OptaMachine(int machineIndex, double[] machineIndexToTravelDistances, double health, boolean gate) {
         this.machineIndex = machineIndex;
         this.machineIndexToTravelDistances = machineIndexToTravelDistances;
+        this.health = health;
         this.gate = gate;
     }
 

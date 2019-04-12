@@ -51,7 +51,8 @@ public class GameServiceImpl implements GameService {
 
     private AtomicInteger mechanicAdditionCount = new AtomicInteger(0);
 
-    private long timeMillis = 0L; // This class is the keeper of time
+    private long timeMillis; // This class is the keeper of time
+    private long optaMachineHealthRefreshTimeMillis;
 
     private List<Mechanic> mechanics = new ArrayList<>();
     private Machine[] machines;
@@ -79,12 +80,14 @@ public class GameServiceImpl implements GameService {
             }
         }
 
+        timeMillis = System.currentTimeMillis();
+        optaMachineHealthRefreshTimeMillis = timeMillis;
         for (int i = 0; i < appConfiguration.getInitialMechanicsSize(); i++) {
             Mechanic mechanic = createMechanic();
             mechanics.add(mechanic);
             upstreamConnector.mechanicAdded(mechanic, timeMillis);
         }
-        solverManager.startSolver(machines, mechanics);
+        solverManager.startSolver(machines, mechanics, timeMillis);
     }
 
     public void pauseGame() {
@@ -178,10 +181,10 @@ public class GameServiceImpl implements GameService {
         for (int i = 0; i < machineHealths.length; i++) {
             machines[i].setHealth(machineHealths[i]);
         }
-        if (timeMillis % AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE == 0L) {
+        if (timeMillis >= optaMachineHealthRefreshTimeMillis) {
             solverManager.updateMachineHealths(machines);
+            optaMachineHealthRefreshTimeMillis = timeMillis + AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE;
         }
-
         downstreamConnector.updateMachinesHealths(machines);
     }
 
@@ -224,7 +227,7 @@ public class GameServiceImpl implements GameService {
         long focusTravelTimeMillis = timeMillis + travelTime;
         mechanic.setFocusTravelTimeMillis(focusTravelTimeMillis);
 
-        solverManager.dispatchMechanic(mechanic);
+        solverManager.dispatchMechanic(mechanic, timeMillis);
         upstreamConnector.dispatchMechanic(mechanic, timeMillis);
         downstreamConnector.dispatchMechanic(mechanic, timeMillis);
     }
@@ -235,7 +238,7 @@ public class GameServiceImpl implements GameService {
             for (int i = 0; i < mechanicAddition; i++) {
                 Mechanic mechanic = createMechanic();
                 mechanics.add(mechanic);
-                solverManager.addMechanic(mechanic);
+                solverManager.addMechanic(mechanic, timeMillis);
                 upstreamConnector.mechanicAdded(mechanic, timeMillis);
                 downstreamConnector.mechanicAdded(mechanic, timeMillis);
             }
