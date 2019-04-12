@@ -66,7 +66,24 @@ public class GameServiceImpl implements GameService {
 
     private void initializeGame() {
         dispatchPaused = true;
+
+        eraseMechanics();
+        initMachines();
+
+        timeMillis = System.currentTimeMillis();
+        optaMachineHealthRefreshTimeMillis = timeMillis;
+
+        initMechanics(timeMillis);
+
+        solverManager.startSolver(machines, mechanics, timeMillis);
+    }
+
+    private void eraseMechanics() {
+        mechanics.stream().forEach(mechanic -> upstreamConnector.mechanicRemoved(mechanic));
         mechanics.clear();
+    }
+
+    private void initMachines() {
         machines = new Machine[appConfiguration.getMachinesAndGateLength()];
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
         for (int i = 0; i < machines.length; i++) {
@@ -79,15 +96,14 @@ public class GameServiceImpl implements GameService {
                 machines[i] = Machine.createMachine(i, x, y, machineIndexToTravelDistances, machineHealths[i]);
             }
         }
+    }
 
-        timeMillis = System.currentTimeMillis();
-        optaMachineHealthRefreshTimeMillis = timeMillis;
+    private void initMechanics(long timeMillis) {
         for (int i = 0; i < appConfiguration.getInitialMechanicsSize(); i++) {
             Mechanic mechanic = createMechanic();
             mechanics.add(mechanic);
             upstreamConnector.mechanicAdded(mechanic, timeMillis);
         }
-        solverManager.startSolver(machines, mechanics, timeMillis);
     }
 
     public void pauseGame() {
@@ -183,10 +199,6 @@ public class GameServiceImpl implements GameService {
             optaMachineHealthRefreshTimeMillis = timeMillis + AppConfiguration.OPTA_MACHINE_HEALTH_REFRESH_RATE;
         }
         downstreamConnector.updateMachinesHealths(machines);
-    }
-
-    private boolean isAnyMachineDamaged() {
-        return Arrays.stream(machines).anyMatch(machine -> machine.isDamaged());
     }
 
     private boolean isAnyFutureMachineDamaged(Mechanic mechanic) {
