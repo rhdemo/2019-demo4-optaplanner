@@ -59,18 +59,18 @@ public class FixTimeUpdatingVariableListener implements VariableListener<OptaVis
     private void updateFixTime(ScoreDirector scoreDirector, OptaVisit sourceVisit) {
         OptaMechanic mechanic = sourceVisit.getMechanic();
         OptaVisitOrMechanic previous = sourceVisit.getPrevious();
-        Long previousFixTimeMillis = (previous == null) ? null : previous.getFixTimeMillis();
+        Long previousFixOffsetMillis = (previous == null) ? null : previous.getFixOffsetMillis();
         OptaVisit shadowVisit = sourceVisit;
-        Long fixTimeMillis = (previousFixTimeMillis == null) ? null
-                : previousFixTimeMillis + mechanic.getThumbUpDurationMillis()
+        Long fixOffsetMillis = (previousFixOffsetMillis == null) ? null
+                : previousFixOffsetMillis + mechanic.getThumbUpDurationMillis()
                 + shadowVisit.getTravelTimeMillisFromPrevious() + mechanic.getFixDurationMillis();
-        while (shadowVisit != null && !Objects.equals(shadowVisit.getFixTimeMillis(), fixTimeMillis)) {
-            scoreDirector.beforeVariableChanged(shadowVisit, "fixTimeMillis");
-            shadowVisit.setFixTimeMillis(fixTimeMillis);
-            scoreDirector.afterVariableChanged(shadowVisit, "fixTimeMillis");
+        while (shadowVisit != null && !Objects.equals(shadowVisit.getFixOffsetMillis(), fixOffsetMillis)) {
+            scoreDirector.beforeVariableChanged(shadowVisit, "fixOffsetMillis");
+            shadowVisit.setFixOffsetMillis(fixOffsetMillis);
+            scoreDirector.afterVariableChanged(shadowVisit, "fixOffsetMillis");
             shadowVisit = shadowVisit.getNext();
-            fixTimeMillis = (fixTimeMillis == null || shadowVisit == null) ? null
-                    : fixTimeMillis + mechanic.getThumbUpDurationMillis()
+            fixOffsetMillis = (fixOffsetMillis == null || shadowVisit == null) ? null
+                    : fixOffsetMillis + mechanic.getThumbUpDurationMillis()
                     + shadowVisit.getTravelTimeMillisFromPrevious() + mechanic.getFixDurationMillis();
         }
     }

@@ -48,9 +48,9 @@ end
 
 rule "Attrition"
     when
-        $visit : OptaVisit(previous != null, !isMechanicDummy(), $timeMillis : fixTimeMillis, $attritionMicros : getAttritionMicros())
+        $visit : OptaVisit(previous != null, !isMechanicDummy(), $fixOffsetMillis : fixOffsetMillis, $attritionMicros : getAttritionMicros())
     then
-        scoreHolder.addMediumConstraintMatch(kcontext, - $timeMillis * $attritionMicros);
+        scoreHolder.addMediumConstraintMatch(kcontext, - $fixOffsetMillis * $attritionMicros);
 end
 
 // ############################################################################
@@ -59,9 +59,9 @@ end
 
 rule "TravelTimeMillis"
     when
-        $visit : OptaVisit(previous != null, !isMechanicDummy(), $timeMillis : fixTimeMillis)
+        $visit : OptaVisit(previous != null, !isMechanicDummy(), $fixOffsetMillis : fixOffsetMillis)
     then
-        scoreHolder.addSoftConstraintMatch(kcontext, - $timeMillis);
+        scoreHolder.addSoftConstraintMatch(kcontext, - $fixOffsetMillis);
 end
 
 

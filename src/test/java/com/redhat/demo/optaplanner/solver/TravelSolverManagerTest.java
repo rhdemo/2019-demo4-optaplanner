@@ -42,7 +42,7 @@ public class TravelSolverManagerTest {
         Mechanic mechanicA = prepareMechanic(0);
         mechanics.add(mechanicA);
 
-        travelSolverManager.startSolver(machines, mechanics);
+        travelSolverManager.startSolver(machines, mechanics, 0L);
 
         LOGGER.debug("Damage a machineA.");
         final int indexMachineA = 4;
@@ -62,7 +62,7 @@ public class TravelSolverManagerTest {
         LOGGER.debug("Add a mechanicB.");
         Mechanic mechanicB = prepareMechanic(1);
         mechanics.add(mechanicB);
-        travelSolverManager.addMechanic(mechanicB);
+        travelSolverManager.addMechanic(mechanicB, 0L);
 
         LOGGER.debug("Check that mechanicB is going to fix either the machineA or machineB.");
         mechanicA.setFutureMachineIndexes(null);

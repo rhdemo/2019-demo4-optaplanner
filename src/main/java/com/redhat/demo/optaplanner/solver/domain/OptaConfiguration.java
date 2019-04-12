@@ -16,26 +16,20 @@
 
 package com.redhat.demo.optaplanner.solver.domain;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
+public class OptaConfiguration {
 
-// The joy of working with a chained variable until OptaPlanner simplifies this. See https://issues.jboss.org/browse/PLANNER-728
-@PlanningEntity
-public abstract class OptaVisitOrMechanic {
+    private long lastDispatchOfAnyMechanicTimeMillis;
 
-    @InverseRelationShadowVariable(sourceVariableName = "previous")
-    private OptaVisit next;
-
-    public OptaVisit getNext() {
-        return next;
+    public OptaConfiguration(long lastDispatchOfAnyMechanicTimeMillis) {
+        this.lastDispatchOfAnyMechanicTimeMillis = lastDispatchOfAnyMechanicTimeMillis;
     }
 
-    public void setNext(OptaVisit next) {
-        this.next = next;
+    public long getLastDispatchOfAnyMechanicTimeMillis() {
+        return lastDispatchOfAnyMechanicTimeMillis;
     }
 
-    public abstract OptaMachine getMachine();
-
-    public abstract Long getFixOffsetMillis();
+    public void setLastDispatchOfAnyMechanicTimeMillis(long lastDispatchOfAnyMechanicTimeMillis) {
+        this.lastDispatchOfAnyMechanicTimeMillis = lastDispatchOfAnyMechanicTimeMillis;
+    }
 
 }

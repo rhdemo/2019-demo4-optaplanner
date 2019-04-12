@@ -41,7 +41,7 @@ public class OptaVisit extends OptaVisitOrMechanic {
     @CustomShadowVariable(variableListenerClass = FixTimeUpdatingVariableListener.class,
             sources = {@PlanningVariableReference(variableName = "previous"),
                     @PlanningVariableReference(variableName = "mechanic")})
-    private Long fixTimeMillis = null; // Always after OptaMechanic.focusDepartureTimeMillis
+    private Long fixOffsetMillis = null; // Always after OptaMechanic.getFixOffsetMillis()
 
     @SuppressWarnings("unused")
     private OptaVisit() {
@@ -107,12 +107,12 @@ public class OptaVisit extends OptaVisitOrMechanic {
     }
 
     @Override
-    public Long getFixTimeMillis() {
-        return fixTimeMillis;
+    public Long getFixOffsetMillis() {
+        return fixOffsetMillis;
     }
 
-    public void setFixTimeMillis(Long fixTimeMillis) {
-        this.fixTimeMillis = fixTimeMillis;
+    public void setFixOffsetMillis(Long fixOffsetMillis) {
+        this.fixOffsetMillis = fixOffsetMillis;
     }
 
 }

@@ -30,6 +30,7 @@ import javax.annotation.PreDestroy;
 
 import com.redhat.demo.optaplanner.Machine;
 import com.redhat.demo.optaplanner.Mechanic;
+import com.redhat.demo.optaplanner.solver.domain.OptaConfiguration;
 import com.redhat.demo.optaplanner.solver.domain.OptaMachine;
 import com.redhat.demo.optaplanner.solver.domain.OptaMechanic;
 import com.redhat.demo.optaplanner.solver.domain.OptaSolution;
@@ -37,6 +38,8 @@ import com.redhat.demo.optaplanner.solver.domain.OptaVisit;
 import com.redhat.demo.optaplanner.solver.domain.OptaVisitOrMechanic;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
+import org.optaplanner.core.impl.domain.variable.listener.support.VariableListenerSupport;
+import org.optaplanner.core.impl.score.director.AbstractScoreDirector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -46,7 +49,7 @@ public class TravelSolverManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelSolverManager.class);
 
-    private static final String SOLVER_CONFIG = "com/redhat/demo/optaplanner/solver/travelingMechanicSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "com/redhat/demo/optaplanner/solver/travelingMechanicSolverConfig.xml";
 
     private ExecutorService executorService;
     private SolverFactory<OptaSolution> solverFactory;
@@ -63,7 +66,20 @@ public class TravelSolverManager {
         executorService = Executors.newFixedThreadPool(1);
         solver = solverFactory.buildSolver();
         solver.addEventListener(bestSolutionEvent -> {
-            bestSolutionReference.set(bestSolutionEvent.getNewBestSolution());
+            OptaSolution solution = bestSolutionEvent.getNewBestSolution();
+            if (LOGGER.isTraceEnabled()) {
+                StringBuilder s = new StringBuilder();
+                for (OptaMechanic mechanic : solution.getMechanicList()) {
+                    s.append("Mech-").append(mechanic.getMechanicIndex())
+                            .append("[").append(mechanic.getFixOffsetMillis()).append("ms");
+                    for (OptaVisit visit = mechanic.getNext(); visit != null; visit = visit.getNext()) {
+                        s.append(" ").append(visit.getFixOffsetMillis()).append("ms@").append(visit.getMachineIndex());
+                    }
+                    s.append("] - ");
+                }
+                LOGGER.trace("New best solution with score ({}): {}", solution.getScore().toShortString(), s);
+            }
+            bestSolutionReference.set(solution);
         });
     }
 
@@ -99,26 +115,27 @@ public class TravelSolverManager {
         }
     }
 
-    public void startSolver(Machine[] machines, List<Mechanic> mechanics) {
-        List<OptaMachine> machineList = Arrays.stream(machines)
+    public void startSolver(Machine[] machines, List<Mechanic> mechanics, long timeMillis) {
+        OptaConfiguration optaConfiguration = new OptaConfiguration(timeMillis);
+        List<OptaMachine> optaMachineList = Arrays.stream(machines)
                 .map(machine -> new OptaMachine(
-                        machine.getMachineIndex(), machine.getMachineIndexToTravelDistances(), machine.isGate()))
+                        machine.getMachineIndex(), machine.getMachineIndexToTravelDistances(), machine.getHealth(), machine.isGate()))
                 .collect(Collectors.toList());
         List<OptaMechanic> mechanicList = mechanics.stream()
                 .map(mechanic -> {
-                    OptaMachine focusMachine = machineList.get(mechanic.getFocusMachineIndex());
+                    OptaMachine focusMachine = optaMachineList.get(mechanic.getFocusMachineIndex());
                     return new OptaMechanic(
-                            mechanic.getMechanicIndex(), mechanic.getSpeed(),
+                            mechanic.getMechanicIndex(), optaConfiguration, mechanic.getSpeed(),
                             mechanic.getFixDurationMillis(), mechanic.getThumbUpDurationMillis(),
                             focusMachine, mechanic.getFocusDepartureTimeMillis());
                 })
                 .collect(Collectors.toList());
-        OptaMechanic dummyMechanic = OptaMechanic.createDummy();
-        List<OptaVisit> visitList = machineList.stream()
-                .filter(machine -> !machine.isGate())
-                .map(machine -> new OptaVisit(machine.getMachineIndex(), machine))
+        OptaMechanic dummyMechanic = OptaMechanic.createDummy(optaConfiguration);
+        List<OptaVisit> visitList = optaMachineList.stream()
+                .filter(optaMachine -> !optaMachine.isGate())
+                .map(optaMachine -> new OptaVisit(optaMachine.getMachineIndex(), optaMachine))
                 .collect(Collectors.toList());
-        OptaSolution solution = new OptaSolution(machineList, mechanicList, dummyMechanic, visitList);
+        OptaSolution solution = new OptaSolution(optaConfiguration, optaMachineList, mechanicList, dummyMechanic, visitList);
 
         executorService.submit(() -> {
             try {
@@ -214,18 +231,23 @@ public class TravelSolverManager {
         });
     }
 
-    public void addMechanic(Mechanic mechanic) {
+    public void addMechanic(Mechanic mechanic, long timeMillis) {
         final int mechanicIndex = mechanic.getMechanicIndex();
         final int focusMachineIndex = mechanic.getFocusMachineIndex();
         final double speed = mechanic.getSpeed();
         final long fixDurationMillis = mechanic.getFixDurationMillis();
-        final long thumbUpdurationMillis = mechanic.getThumbUpDurationMillis();
+        final long thumbUpDurationMillis = mechanic.getThumbUpDurationMillis();
         final long focusDepartureTimeMillis = mechanic.getFocusDepartureTimeMillis();
 
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
-            List<OptaMachine> machines = solution.getMachineList();
 
+            OptaConfiguration optaConfiguration = solution.getConfiguration();
+            scoreDirector.beforeProblemPropertyChanged(optaConfiguration);
+            optaConfiguration.setLastDispatchOfAnyMechanicTimeMillis(timeMillis);
+            scoreDirector.afterProblemPropertyChanged(optaConfiguration);
+
+            List<OptaMachine> machines = solution.getMachineList();
             OptaMachine focusMachine = machines.get(focusMachineIndex);
             if (!focusMachine.isGate()) {
                 LOGGER.warn("A mechanic ({}) was added but didn't start at the gate. A new mechanic is supposed to show up there.", mechanicIndex);
@@ -236,15 +258,18 @@ public class TravelSolverManager {
             // A SolutionCloner clones planning entity lists (such as mechanicList), so no need to clone the mechanicList here
             List<OptaMechanic> mechanicList = solution.getMechanicList();
             OptaMechanic optaMechanic = new OptaMechanic(mechanicIndex,
+                                                         solution.getConfiguration(),
                                                          speed,
                                                          fixDurationMillis,
-                                                         thumbUpdurationMillis,
+                                                         thumbUpDurationMillis,
                                                          focusMachine,
                                                          focusDepartureTimeMillis);
             scoreDirector.beforeEntityAdded(optaMechanic);
             mechanicList.add(optaMechanic);
             scoreDirector.afterEntityAdded(optaMechanic);
             scoreDirector.triggerVariableListeners();
+            // Workaround for https://issues.jboss.org/browse/PLANNER-1477
+            ((VariableListenerSupport) ((AbstractScoreDirector) scoreDirector).getSupplyManager()).triggerAllVariableListeners();
         });
     }
 
@@ -276,7 +301,7 @@ public class TravelSolverManager {
         });
     }
 
-    public void dispatchMechanic(Mechanic mechanic) {
+    public void dispatchMechanic(Mechanic mechanic, long timeMillis) {
         final int focusMachineIndex = mechanic.getFocusMachineIndex();
         final int mechanicIndex = mechanic.getMechanicIndex();
         final long focusDepartureTimeMillis = mechanic.getFocusDepartureTimeMillis();
@@ -284,6 +309,11 @@ public class TravelSolverManager {
         solver.addProblemFactChange(scoreDirector -> {
             OptaSolution solution = scoreDirector.getWorkingSolution();
             OptaMachine newFocusMachine = solution.getMachineList().get(focusMachineIndex);
+
+            OptaConfiguration optaConfiguration = solution.getConfiguration();
+            scoreDirector.beforeProblemPropertyChanged(optaConfiguration);
+            optaConfiguration.setLastDispatchOfAnyMechanicTimeMillis(timeMillis);
+            scoreDirector.afterProblemPropertyChanged(optaConfiguration);
 
             OptaMechanic optaMechanic = solution.getMechanicList().get(mechanicIndex);
             OptaMachine oldFocusMachine = optaMechanic.getFocusMachine();
@@ -314,8 +344,10 @@ public class TravelSolverManager {
                 scoreDirector.beforeVariableChanged(visit, "previous");
                 visit.setPrevious(null);
                 scoreDirector.afterVariableChanged(visit, "previous");
-                scoreDirector.triggerVariableListeners();
             }
+            scoreDirector.triggerVariableListeners();
+            // Workaround for https://issues.jboss.org/browse/PLANNER-1477
+            ((VariableListenerSupport) ((AbstractScoreDirector) scoreDirector).getSupplyManager()).triggerAllVariableListeners();
         });
     }
 }
