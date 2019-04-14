@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -23,11 +25,19 @@ public class SimulationController {
     public SimulationController() {
     }
 
+    @GetMapping("/damageDistributionTypes")
+    public DamageDistributionType[] getDamageDistributionTypes() {
+        return DamageDistributionType.values();
+    }
+
     @PostMapping("/start")
     @ResponseStatus(HttpStatus.OK)
-    public void startSimulation() {
-        log.info("Starting simulation");
-        simulationService.startSimulation();
+    public void startSimulation(@RequestBody SimulationRequest simulationRequest) {
+        double totalDamagePerSecond = simulationRequest.getTotalDamagePerSecond();
+        DamageDistributionType damageDistributionType = simulationRequest.getDamageDistributionType();
+        log.info("Starting simulation with totalDamagePerSecond ({}) and damageDistributionType ({}).",
+                totalDamagePerSecond, damageDistributionType);
+        simulationService.startSimulation(totalDamagePerSecond, damageDistributionType);
     }
 
     @PostMapping("/stop")
@@ -42,7 +52,7 @@ public class SimulationController {
     @ResponseBody
     public void damageMachine(@RequestBody DamageMachine damageMachine) {
         String damageAmountString = String.format("%.2f", damageMachine.getAmount());
-        log.info("Damaging a machine " + damageMachine.getMachineIndex() + " by amount of " + damageAmountString);
+        log.info("Damaging machine {} by amount of {}.", damageMachine.getMachineIndex(), damageAmountString);
         simulationService.damageMachine(damageMachine.getMachineIndex(), damageMachine.getAmount());
     }
 
