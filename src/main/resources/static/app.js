@@ -126,7 +126,16 @@ function removeMechanic() {
 
 function startSimulation() {
     console.log('starting simulation');
-    $.post('/simulation/start', {}, function(data, status, jqXHR) { console.log('sent post start simulation') });
+    $.ajax({
+        'type': 'POST',
+        'url': "/simulation/start",
+        'contentType': 'application/json',
+        'data': JSON.stringify({ "totalDamagePerSecond" : 0.20, "damageDistributionType" : "UNIFORM" }),
+        'dataType': 'json',
+        'success': function(data, status, jqXHR) {
+            console.log('sent post start simulation');
+        }
+    });
     showSimulation(true);
 }
 
