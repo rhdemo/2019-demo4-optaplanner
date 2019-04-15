@@ -52,11 +52,17 @@ public class SimulationService {
                     damagePerSecond = totalDamagePerSecond / ((double) machinesOnlyLength);
                     break;
                 case GAUSS:
-                    damagePerSecond = totalDamagePerSecond / ((double) machinesOnlyLength);
-                    damagePerSecond += Math.min(0, Math.max( damagePerSecond * 2.0,
-                            random.nextGaussian() * damagePerSecond / 2.0));
+                    double damagePerSecondBase = totalDamagePerSecond / ((double) machinesOnlyLength);
+                    double deviation = random.nextGaussian() * damagePerSecondBase / 2.0;
+                    damagePerSecond = damagePerSecondBase + deviation;
+                    if (damagePerSecond < 0) {
+                        damagePerSecond = 0;
+                    } else if (damagePerSecond > damagePerSecondBase * 2.0) {
+                        damagePerSecond = damagePerSecondBase * 2.0;
+                    }
                     break;
                 case DOUBLE_DISTRIBUTION_ON_MACHINE_D_AND_I:
+                    // Add 2 because of machine D and I
                     damagePerSecond = totalDamagePerSecond / (((double) machinesOnlyLength) + 2.0);
                     if (machineIndex == 3 || machineIndex == 8) {
                         damagePerSecond *= 2.0;
