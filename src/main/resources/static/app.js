@@ -77,6 +77,22 @@ function connect() {
         });
         sendToServer("/app/connect");
     });
+
+    $.ajax({
+        'type': 'GET',
+        'url': "/simulation/damageDistributionTypes",
+        'contentType': 'application/json',
+        'success': function (damageDistributionTypes, status, jqXHR) {
+            var damageDistributionTypeElement = document.getElementById('damageDistributionType');
+            for (var i = 0; i < damageDistributionTypes.length; i++) {
+                var damageDistributionType = damageDistributionTypes[i];
+                var opt = document.createElement('option');
+                opt.appendChild( document.createTextNode(damageDistributionType) );
+                opt.value = damageDistributionType;
+                damageDistributionTypeElement.appendChild(opt);
+            }
+        }
+    });
 }
 
 function reset() {
@@ -126,11 +142,16 @@ function removeMechanic() {
 
 function startSimulation() {
     console.log('starting simulation');
+
+    var totalDamagePerSecondElement = document.getElementById('totalDamagePerSecond');
+    var totalDamagePerSecond = totalDamagePerSecondElement.value;
+    var damageDistributionTypeElement = document.getElementById('damageDistributionType');
+    var damageDistributionType = damageDistributionTypeElement.value;
     $.ajax({
         'type': 'POST',
         'url': "/simulation/start",
         'contentType': 'application/json',
-        'data': JSON.stringify({ "totalDamagePerSecond" : 0.20, "damageDistributionType" : "UNIFORM" }),
+        'data': JSON.stringify({ "totalDamagePerSecond" : totalDamagePerSecond, "damageDistributionType" : damageDistributionType }),
         'dataType': 'json',
         'success': function(data, status, jqXHR) {
             console.log('sent post start simulation');

@@ -1,5 +1,8 @@
 package com.redhat.demo.optaplanner.simulation;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +29,10 @@ public class SimulationController {
     }
 
     @GetMapping("/damageDistributionTypes")
-    public DamageDistributionType[] getDamageDistributionTypes() {
-        return DamageDistributionType.values();
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<DamageDistributionType> getDamageDistributionTypes() {
+        return Arrays.asList(DamageDistributionType.values());
     }
 
     @PostMapping("/start")

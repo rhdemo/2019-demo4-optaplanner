@@ -46,17 +46,27 @@
             </form>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <form class="form-inline">
+    <form class="form-inline">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label for="totalDamagePerSecond">Simulation total damage per second:</label>
+                    <input id="totalDamagePerSecond" type="number" step="0.01" value="0.10"></input>
+                    <label for="damageDistributionType">Damage distribution:</label>
+                    <select id="damageDistributionType"></select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
                 <div class="form-group">
                     <label for="start-simulation">Simulation: </label>
                     <button id="start-simulation" class="btn btn-default" type="submit">Start</button>
                     <button id="stop-simulation" class="btn btn-default" type="submit" disabled="disabled">Stop</button>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
     <div class="row">
         <div class="col-md-12">
             <form class="form-inline">
