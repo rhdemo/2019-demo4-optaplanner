@@ -140,7 +140,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void reset() {
+    public synchronized void reset() {
         simulationService.init();
         solverManager.stopSolver(1L, TimeUnit.SECONDS);
         healAllMachines();

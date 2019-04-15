@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
+import com.redhat.demo.optaplanner.upstream.utils.GameConfigListener;
 import com.redhat.demo.optaplanner.upstream.utils.OptaPlannerConfig;
 import com.redhat.demo.optaplanner.websocket.response.FutureVisitsResponse;
 import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
@@ -39,6 +40,8 @@ public class InfinispanConnector implements UpstreamConnector {
 
     @Autowired
     private AppConfiguration appConfiguration;
+    @Autowired
+    GameConfigListener gameConfigListener;
 
     private StrongCounter[] counters;
     private Map<StrongCounter, Integer> counterIndices;
@@ -60,6 +63,7 @@ public class InfinispanConnector implements UpstreamConnector {
         }
         dispatchMechanicEventsCache = remoteCacheManager.getCache(DISPATCH_MECHANIC_EVENTS_CACHE_NAME);
         defaultCache = remoteCacheManager.getCache(DEFAULT_CACHE_NAME);
+        defaultCache.addClientListener(gameConfigListener);
         objectMapper = new ObjectMapper();
 
         OptaPlannerConfig defaultConfig = new OptaPlannerConfig(false, false);
