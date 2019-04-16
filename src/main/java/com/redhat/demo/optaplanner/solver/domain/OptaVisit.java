@@ -32,7 +32,7 @@ public class OptaVisit extends OptaVisitOrMechanic {
     private Integer machineIndex;
     private OptaMachine machine;
 
-    @PlanningVariable(valueRangeProviderRefs = {"mechanicRange", "dummyMechanicRange", "visitRange"},
+    @PlanningVariable(valueRangeProviderRefs = {"mechanicRange", "visitRange"},
             graphType = PlanningVariableGraphType.CHAINED)
     private OptaVisitOrMechanic previous;
 

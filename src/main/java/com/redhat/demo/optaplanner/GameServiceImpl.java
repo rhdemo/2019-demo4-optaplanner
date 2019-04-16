@@ -33,8 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import static com.redhat.demo.optaplanner.config.AppConfiguration.HEALTH_COMPARISON_THRESHOLD;
-
 @Service
 public class GameServiceImpl implements GameService {
 
@@ -269,7 +267,7 @@ public class GameServiceImpl implements GameService {
             final int mechanicsSize = mechanics.size();
             final int boundary = Math.min(mechanicRemoval, mechanicsSize);
 
-            if (mechanicsSize == 1) { // the last mechanic cannot disappear
+            if (mechanicsSize == 0) {
                 return;
             }
 
