@@ -22,9 +22,8 @@ public class GameConfigDeserializer extends StdDeserializer<GameConfig> {
     @Override
     public GameConfig deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
             throws IOException, JsonProcessingException {
-        ObjectCodec codec = jsonParser.getCodec();
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        String state = node.get("state").asText();
-        return new GameConfig(state);
+        String stateString = node.get("state").asText().toUpperCase();
+        return new GameConfig(GameState.valueOf(stateString));
     }
 }
