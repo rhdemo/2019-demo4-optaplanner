@@ -118,4 +118,5 @@ docker login quay.io/redhatdemo
 ```
 
 If you follow security protocols and have different passwords for both services,
-first run the `mvn` command with the docker.io credentials and after that fails, do it again with the quay credentials.
+run `docker pull fabric8/java-centos-openjdk8-jdk:1.5` first with the docker.io credentials
+and then run the `mvn` command with the quay credentials.
