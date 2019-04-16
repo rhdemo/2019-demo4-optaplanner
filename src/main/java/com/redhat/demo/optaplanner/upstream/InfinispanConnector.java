@@ -106,6 +106,7 @@ public class InfinispanConnector implements UpstreamConnector {
     @Override
     public void mechanicRemoved(Mechanic mechanic) {
         dispatchMechanicEventsCache.remove(String.valueOf(mechanic.getMechanicIndex()));
+        dispatchMechanicEventsCache.remove(String.format("%d-futureIndexes", mechanic.getMechanicIndex()));
     }
 
     @Override
