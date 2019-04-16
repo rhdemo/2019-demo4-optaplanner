@@ -125,7 +125,7 @@ public class TravelingMechanicScoreRulesTest {
                 .filter(machine -> !machine.isGate())
                 .map(machine -> new OptaVisit(machine.getMachineIndex(), machine))
                 .collect(Collectors.toList());
-        return new OptaSolution(optaConfiguration, machineList, mechanicList, dummyMechanic, visitList);
+        return new OptaSolution(optaConfiguration, machineList, mechanicList, visitList);
     }
 
     private void putVisits(OptaSolution solution, int mechanicIndex, int... futureVisitIndexes) {

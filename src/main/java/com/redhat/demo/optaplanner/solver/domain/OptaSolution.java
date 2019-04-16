@@ -16,6 +16,7 @@
 
 package com.redhat.demo.optaplanner.solver.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -35,12 +36,7 @@ public class OptaSolution {
     @ProblemFactCollectionProperty
     private List<OptaMachine> machineList;
 
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider(id = "mechanicRange")
     private List<OptaMechanic> mechanicList;
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider(id = "dummyMechanicRange")
-    private OptaMechanic[] dummyMechanics;
 
     @PlanningEntityCollectionProperty
     @ValueRangeProvider(id = "visitRange")
@@ -49,16 +45,26 @@ public class OptaSolution {
     @PlanningScore
     private HardMediumSoftLongScore score;
 
+    private OptaMechanic dummyMechanic;
+
     @SuppressWarnings("unused")
     private OptaSolution() {
     }
 
-    public OptaSolution(OptaConfiguration configuration, List<OptaMachine> machineList, List<OptaMechanic> mechanicList, OptaMechanic dummyMechanic, List<OptaVisit> visitList) {
+    public OptaSolution(OptaConfiguration configuration, List<OptaMachine> machineList, List<OptaMechanic> mechanicList, List<OptaVisit> visitList) {
         this.configuration = configuration;
         this.machineList = machineList;
         this.mechanicList = mechanicList;
-        this.dummyMechanics = new OptaMechanic[] {dummyMechanic};
         this.visitList = visitList;
+        this.dummyMechanic = OptaMechanic.createDummy(configuration);
+    }
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider(id = "mechanicRange")
+    public List<OptaMechanic> getMechanicsAndDummies() {
+        List<OptaMechanic> mechanicsAndDummies = new ArrayList<>(mechanicList);
+        mechanicsAndDummies.add(dummyMechanic);
+        return mechanicsAndDummies;
     }
 
     // ************************************************************************
@@ -83,14 +89,6 @@ public class OptaSolution {
 
     public void setMechanicList(List<OptaMechanic> mechanicList) {
         this.mechanicList = mechanicList;
-    }
-
-    public OptaMechanic getDummyMechanic() {
-        return dummyMechanics[0];
-    }
-
-    public void setDummyMechanic(OptaMechanic dummyMechanic) {
-        this.dummyMechanics[0] = dummyMechanic;
     }
 
     public List<OptaVisit> getVisitList() {

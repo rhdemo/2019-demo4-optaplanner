@@ -130,18 +130,17 @@ public class TravelSolverManager {
                             focusMachine, mechanic.getFocusDepartureTimeMillis());
                 })
                 .collect(Collectors.toList());
-        OptaMechanic dummyMechanic = OptaMechanic.createDummy(optaConfiguration);
         List<OptaVisit> visitList = optaMachineList.stream()
                 .filter(optaMachine -> !optaMachine.isGate())
                 .map(optaMachine -> new OptaVisit(optaMachine.getMachineIndex(), optaMachine))
                 .collect(Collectors.toList());
-        OptaSolution solution = new OptaSolution(optaConfiguration, optaMachineList, mechanicList, dummyMechanic, visitList);
+        OptaSolution solution = new OptaSolution(optaConfiguration, optaMachineList, mechanicList, visitList);
 
         executorService.submit(() -> {
             try {
                 solver.solve(solution);
-            } catch (Throwable th) {
-                th.printStackTrace();
+            } catch (Throwable error) {
+                LOGGER.error("An exception was thrown in the solver thread.", error);
             }
         });
     }
