@@ -142,25 +142,6 @@
           </execution>
         </executions>
       </plugin>
-
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>fabric8-maven-plugin</artifactId>
-        <version>${version.fabric8.maven.plugin}</version>
-        <configuration>
-          <mode>kubernetes</mode>
-          <pushRegistry>quay.io/redhatdemo</pushRegistry>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-              <goal>resource</goal>
-              <goal>push</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -241,6 +222,28 @@
       <properties>
         <spring.profiles.active>prod</spring.profiles.active>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>fabric8-maven-plugin</artifactId>
+            <version>${version.fabric8.maven.plugin}</version>
+            <configuration>
+              <mode>kubernetes</mode>
+              <pushRegistry>quay.io/redhatdemo</pushRegistry>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>build</goal>
+                  <goal>resource</goal>
+                  <goal>push</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
