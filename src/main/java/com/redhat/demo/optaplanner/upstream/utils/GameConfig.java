@@ -5,20 +5,20 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonDeserialize(using = GameConfigDeserializer.class)
 public class GameConfig {
 
-    private String state;
+    private GameState state;
 
     public GameConfig() {
     }
 
-    public GameConfig(String state) {
+    public GameConfig(GameState state) {
         this.state = state;
     }
 
-    public String getState() {
+    public GameState getState() {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(GameState state) {
         this.state = state;
     }
 }

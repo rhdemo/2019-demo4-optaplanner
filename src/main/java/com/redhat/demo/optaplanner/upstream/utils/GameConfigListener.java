@@ -49,9 +49,9 @@ public class GameConfigListener {
         if (key.equals("game")) {
             try {
                 GameConfig gameConfig = objectMapper.readValue(value, GameConfig.class);
-                String state = gameConfig.getState();
+                GameState state = gameConfig.getState();
                 logger.info("Game state is " + state);
-                if (state.equals("lobby")) {
+                if (state == GameState.LOBBY) {
                     logger.info("resetting...");
                     gameService.reset();
                 }
