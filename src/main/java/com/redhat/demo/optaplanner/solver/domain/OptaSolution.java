@@ -61,6 +61,7 @@ public class OptaSolution {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider(id = "mechanicRange")
+    // TODO Workaround for https://issues.jboss.org/browse/PLANNER-776 if mechanicList is empty
     public List<OptaMechanic> getMechanicsAndDummies() {
         List<OptaMechanic> mechanicsAndDummies = new ArrayList<>(mechanicList);
         mechanicsAndDummies.add(dummyMechanic);
