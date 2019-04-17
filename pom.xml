@@ -231,6 +231,13 @@
             <configuration>
               <mode>kubernetes</mode>
               <pushRegistry>quay.io/redhatdemo</pushRegistry>
+              <generator>
+                <config>
+                  <spring-boot>
+                    <name>${project.artifactId}</name>
+                  </spring-boot>
+                </config>
+              </generator>
             </configuration>
             <executions>
               <execution>
