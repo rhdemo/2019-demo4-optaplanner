@@ -194,6 +194,7 @@ function reset() {
     showSimulation(false);
     measurements = new Array(CHART_SECONDS_LENGTH);
     lastMeasuredSecond = 0;
+    updateChart();
 }
 
 function sendViaWebSocket(endpoint) {
