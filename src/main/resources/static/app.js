@@ -117,7 +117,7 @@ function initChart() {
     for (var i = 0; i < CHART_SECONDS_LENGTH; i++) {
         measurements[i] = new Measurement(i, 1.0, 1.0);
     }
-    var margin = {top: 20, right: 30, bottom: 40, left: 40};
+    var margin = {top: 20, right: 30, bottom: 40, left: 60};
     chartInnerSize = {width: 600, height: 200};
     var chart = d3.select(".chart")
             .attr("width", chartInnerSize.width + margin.left + margin.right)
@@ -149,7 +149,16 @@ function initChart() {
             .attr("x",0 - (chartInnerSize.height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Avg/min health");
+            .style("fill", "darkOrange")
+            .text("Average health");
+    chart.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 16 - margin.left)
+            .attr("x",0 - (chartInnerSize.height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .style("fill", "steelblue")
+            .text("Minimum health");
 
     var graphColumn = chart.selectAll(".graphColumn")
             .data(measurements)
