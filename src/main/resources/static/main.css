@@ -25,3 +25,7 @@
 .minimalMachineHealthPoint {
     fill: steelblue;
 }
+
+.axis {
+    font-size: 12px;
+}
