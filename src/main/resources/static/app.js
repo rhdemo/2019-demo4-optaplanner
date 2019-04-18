@@ -15,9 +15,6 @@
  */
 
 var stompClient = null;
-var machines = [];
-var mechanics = [];
-var locations = [];
 
 const USE_WEBSOCKET = false;
 
@@ -51,6 +48,24 @@ const MechanicState = {
     REMOVED: 4
 };
 
+const CHART_SECONDS_LENGTH = 300;
+function Measurement(index, averageMachineHealth, minimumMachineHealth) {
+    this.index = index;
+    this.averageMachineHealth = averageMachineHealth;
+    this.minimumMachineHealth = minimumMachineHealth;
+}
+
+var machines = [];
+var mechanics = [];
+var locations = [];
+var measurements;
+var lastMeasuredSecond = 0;
+var chartInnerSize;
+var xRange;
+var yRange;
+var averageMachineHealthPoint;
+var minimalMachineHealthPoint;
+
 $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
@@ -67,6 +82,8 @@ $(function () {
 });
 
 function connect() {
+    initChart();
+    updateChart();
     var socket = new SockJS('/roster-websocket');
     stompClient = Stomp.over(socket);
     stompClient.debug = null;
@@ -95,11 +112,88 @@ function connect() {
     });
 }
 
+function initChart() {
+    measurements = new Array(CHART_SECONDS_LENGTH);
+    for (var i = 0; i < CHART_SECONDS_LENGTH; i++) {
+        measurements[i] = new Measurement(i, 1.0, 1.0);
+    }
+    var margin = {top: 20, right: 30, bottom: 40, left: 40};
+    chartInnerSize = {width: 600, height: 200};
+    var chart = d3.select(".chart")
+            .attr("width", chartInnerSize.width + margin.left + margin.right)
+            .attr("height", chartInnerSize.height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    xRange = d3.scaleLinear()
+            .domain([0, CHART_SECONDS_LENGTH])
+            .range([0, chartInnerSize.width]);
+    chart.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + chartInnerSize.height + ")")
+            .call(d3.axisBottom().scale(xRange));
+    chart.append("text")
+            .attr("transform",
+                    "translate(" + (chartInnerSize.width / 2) + " ," + (chartInnerSize.height + margin.top + 15) + ")")
+            .style("text-anchor", "middle")
+            .text("Seconds");
+
+    yRange = d3.scaleLinear()
+            .domain([0.0, 1.0])
+            .range([chartInnerSize.height, 0]);
+    chart.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft().scale(yRange));
+    chart.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left)
+            .attr("x",0 - (chartInnerSize.height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Avg/min health");
+
+    var graphColumn = chart.selectAll(".graphColumn")
+            .data(measurements)
+            .enter().append("g")
+            .attr("class", "graphColumn");
+
+    averageMachineHealthPoint = graphColumn.append("rect")
+            .attr("class", "averageMachineHealthPoint")
+            .attr("x", function (measurement) {
+                return xRange(measurement.index);
+            })
+            .attr("width", Math.max(1, chartInnerSize.width / CHART_SECONDS_LENGTH));
+    minimalMachineHealthPoint = graphColumn.append("rect")
+            .attr("class", "minimalMachineHealthPoint")
+            .attr("x", function (measurement) {
+                return xRange(measurement.index);
+            })
+            .attr("width", Math.max(1, chartInnerSize.width / CHART_SECONDS_LENGTH));
+}
+
+function updateChart() {
+    averageMachineHealthPoint
+            .attr("y", function (measurement) {
+                return yRange(measurement.averageMachineHealth);
+            })
+            .attr("height", function (measurement) {
+                return chartInnerSize.height - yRange(measurement.averageMachineHealth);
+            });
+    minimalMachineHealthPoint
+            .attr("y", function (measurement) {
+                return yRange(measurement.minimumMachineHealth);
+            })
+            .attr("height", function (measurement) {
+                return chartInnerSize.height - yRange(measurement.minimumMachineHealth);
+            });
+}
+
 function reset() {
     sendToServer("/app/reset");
     mechanics = [];
     showPauzed(true);
     showSimulation(false);
+    measurements = new Array(CHART_SECONDS_LENGTH);
+    lastMeasuredSecond = 0;
 }
 
 function sendViaWebSocket(endpoint) {
@@ -250,7 +344,7 @@ function processResponse(response) {
             mechanics.splice(mechanicIndex, 1);
         }
     } else if (response.responseType === ResponseType.UPDATE_MACHINE_HEALTHS) {
-        machines = response.machines;
+        updateMachineHealths(response.machines);
     } else if (response.responseType === ResponseType.DISPATCH_MECHANIC) {
         let mechanic = response.mechanic;
         handleDispatchMechanic(mechanic);
@@ -263,10 +357,44 @@ function processResponse(response) {
             console.log("Future visits for a mechanic: " + response.mechanicIndex + " successfully applied");
         }
     } else {
-        console.log("Uknown response type: " + response.responseType);
+        console.log("Unknown response type: " + response.responseType);
     }
 
     draw(drawGame);
+}
+
+function updateMachineHealths(machines) {
+    this.machines = machines;
+    var averageMachineHealth = 0.0;
+    var minimumMachineHealth = 1.0;
+    for (var i = 0; i < machines.length; i++) {
+        var machine = machines[i];
+        averageMachineHealth += machine.health;
+        if (machine.health < minimumMachineHealth) {
+            minimumMachineHealth = machine.health;
+        }
+    }
+    if (machines.length > 0) {
+        averageMachineHealth /= machines.length;
+    }
+    addTimeGraphPoint(averageMachineHealth, minimumMachineHealth);
+}
+
+function addTimeGraphPoint(averageMachineHealth, minimumMachineHealth) {
+    var now = new Date();
+    var measuredSecond = now.getUTCSeconds();
+    if (measuredSecond === lastMeasuredSecond) {
+        // Skip to the next second to measure
+        return;
+    }
+    lastMeasuredSecond = measuredSecond;
+    for (var i = 0; i < measurements.length - 1; i++) {
+        measurements[i].averageMachineHealth = measurements[i + 1].averageMachineHealth;
+        measurements[i].minimumMachineHealth = measurements[i + 1].minimumMachineHealth;
+    }
+    measurements[measurements.length - 1].averageMachineHealth = averageMachineHealth;
+    measurements[measurements.length - 1].minimumMachineHealth = minimumMachineHealth;
+    updateChart();
 }
 
 function handleDispatchMechanic(mechanic) {
