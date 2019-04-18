@@ -17,3 +17,11 @@
 .row {
     margin: 5px;
 }
+
+.averageMachineHealthPoint {
+    fill: darkorange;
+}
+
+.minimalMachineHealthPoint {
+    fill: steelblue;
+}

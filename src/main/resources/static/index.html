@@ -16,72 +16,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hello WebSocket</title>
+    <title>Temp Opta UI</title>
     <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/main.css" rel="stylesheet">
     <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/d3js/d3.min.js"></script>
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="/app.js"></script>
 </head>
 <body onload="connect()">
-<div id="main-content" class="container">
+<div id="main-content" class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <button id="reset" class="btn btn-default" type="submit">Reset the game</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="unpauze">Mechanic dispatching:</label>
+                            <button id="pauze" class="btn btn-default" type="submit" disabled="disabled">Pauze</button>
+                            <button id="unpauze" class="btn btn-default" type="submit">Unpauze</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <form class="form-inline">
-                <div class="form-group">
-                    <button id="reset" class="btn btn-default" type="submit">Reset the game</button>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="totalDamagePerSecond">Simulation total damage per second:</label>
+                            <input id="totalDamagePerSecond" type="number" step="0.01" value="0.16"></input>
+                            <label for="damageDistributionType">Damage distribution:</label>
+                            <select id="damageDistributionType"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="start-simulation">Simulation: </label>
+                            <button id="start-simulation" class="btn btn-default" type="submit">Start</button>
+                            <button id="stop-simulation" class="btn btn-default" type="submit" disabled="disabled">Stop</button>
+                        </div>
+                    </div>
                 </div>
             </form>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="unpauze">Mechanic dispatching:</label>
-                    <button id="pauze" class="btn btn-default" type="submit" disabled="disabled">Pauze</button>
-                    <button id="unpauze" class="btn btn-default" type="submit">Unpauze</button>
+            <div class="row">
+                <div class="col-md-12">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="mechanicCount">Mechanic count:</label>
+                            <input id="mechanicCount" type="text" class="form-control" placeholder="?" disabled="disabled">
+                            <button id="addMechanic" class="btn btn-default" type="submit">Add mechanic</button>
+                            <button id="removeMechanic" class="btn btn-default" type="submit">Remove mechanic</button>
+                        </div>
+                    </form>
                 </div>
-            </form>
-        </div>
-    </div>
-    <form class="form-inline">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    <label for="totalDamagePerSecond">Simulation total damage per second:</label>
-                    <input id="totalDamagePerSecond" type="number" step="0.01" value="0.10"></input>
-                    <label for="damageDistributionType">Damage distribution:</label>
-                    <select id="damageDistributionType"></select>
+            </div>
+            <div class="row" style="margin-top: 50px">
+                <div class="col-md-12">
+                    <span>Left click on a machine to hurt it, right click on a machine to heal it.</span>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group">
-                    <label for="start-simulation">Simulation: </label>
-                    <button id="start-simulation" class="btn btn-default" type="submit">Start</button>
-                    <button id="stop-simulation" class="btn btn-default" type="submit" disabled="disabled">Stop</button>
-                </div>
-            </div>
-        </div>
-    </form>
-    <div class="row">
-        <div class="col-md-12">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="mechanicCount">Mechanic count:</label>
-                    <input id="mechanicCount" type="text" class="form-control" placeholder="?" disabled="disabled">
-                    <button id="addMechanic" class="btn btn-default" type="submit">Add mechanic</button>
-                    <button id="removeMechanic" class="btn btn-default" type="submit">Remove mechanic</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <span>Left click on a machine to hurt it, right click on a machine to heal it.</span>
+        <div class="col-md-6">
+            <svg class="chart"/>
         </div>
     </div>
 </div>
