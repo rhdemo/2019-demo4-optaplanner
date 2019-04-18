@@ -30,7 +30,7 @@ const FIRST_VISIT_STYLE = '#7094db';
 const NEXT_VISIT_STYLE = '#bf8040';
 const BACKGROUND_FOG = '0.6'; //0 = fully saturated image, 1.0 = white background
 
-const DEBUG_ENABLED = true;
+const DEBUG_ENABLED = false;
 
 const ResponseType  = {
     CONNECT : 'CONNECT',
@@ -117,7 +117,7 @@ function initChart() {
     for (var i = 0; i < CHART_SECONDS_LENGTH; i++) {
         measurements[i] = new Measurement(i, 1.0, 1.0);
     }
-    var margin = {top: 20, right: 30, bottom: 40, left: 60};
+    var margin = {top: 10, right: 30, bottom: 40, left: 60};
     chartInnerSize = {width: 600, height: 200};
     var chart = d3.select(".chart")
             .attr("width", chartInnerSize.width + margin.left + margin.right)
@@ -133,7 +133,7 @@ function initChart() {
             .call(d3.axisBottom().scale(xRange));
     chart.append("text")
             .attr("transform",
-                    "translate(" + (chartInnerSize.width / 2) + " ," + (chartInnerSize.height + margin.top + 15) + ")")
+                    "translate(" + (chartInnerSize.width / 2) + " ," + (chartInnerSize.height + margin.top + 25) + ")")
             .style("text-anchor", "middle")
             .text("Seconds");
 
@@ -262,12 +262,14 @@ function startSimulation() {
         }
     });
     showSimulation(true);
+    $( "#benchmarkSimulationDetails" ).text((totalDamagePerSecond * 100).toFixed(0) + "% damage per second under " + damageDistributionType.toLowerCase() + " distribution");
 }
 
 function stopSimulation() {
     console.log('stopping simulation');
     $.post('/simulation/stop', {}, function(data, status, jqXHR) { console.log('sent post stop simulation') });
     showSimulation(false);
+    $( "#benchmarkSimulationDetails" ).text("Manual damage");
 }
 
 function showSimulation(enabled) {
@@ -344,8 +346,10 @@ function processResponse(response) {
         console.log("Connected to a server");
         locations = response.locations;
         mechanics = response.mechanics;
+        $( "#benchmarkMechanicDetails" ).text("fixed by " + mechanics.length + " mechanics");
     } else if (response.responseType === ResponseType.ADD_MECHANIC) {
         mechanics.push(response.mechanic);
+        $( "#benchmarkMechanicDetails" ).text("fixed by " + mechanics.length + " mechanics");
         console.log("Adding a mechanic");
     } else if (response.responseType === ResponseType.REMOVE_MECHANIC) {
         let mechanicIndex = response.mechanicIndex;
@@ -353,6 +357,7 @@ function processResponse(response) {
             console.log("Removing a mechanic index: " + mechanicIndex);
             mechanics.splice(mechanicIndex, 1);
         }
+        $( "#benchmarkMechanicDetails" ).text("fixed by " + mechanics.length + " mechanics");
     } else if (response.responseType === ResponseType.UPDATE_MACHINE_HEALTHS) {
         updateMachineHealths(response.machines);
     } else if (response.responseType === ResponseType.DISPATCH_MECHANIC) {
@@ -360,7 +365,9 @@ function processResponse(response) {
         handleDispatchMechanic(mechanic);
         console.log("Dispatching a mechanic: " + mechanic.mechanicIndex + " to a machine: " + mechanic.focusMachineIndex);
     } else if (response.responseType === ResponseType.UPDATE_FUTURE_VISITS) {
-        console.log("Future visits for a mechanic: " + response.mechanicIndex + " received");
+        if (DEBUG_ENABLED) {
+            console.log("Future visits for a mechanic: " + response.mechanicIndex + " received");
+        }
         let mechanic = mechanics[response.mechanicIndex];
         if (mechanic != null && mechanic.state !== MechanicState.REMOVED) {
             mechanic.futureMachineIndexes = response.futureMachineIndexes;
