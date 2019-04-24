@@ -170,11 +170,13 @@ public class GameServiceImpl implements GameService {
             // Check mechanic fixed or departure events
             for (int i = 0; i < mechanics.size(); i++) {
                 Mechanic mechanic = mechanics.get(i);
-                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()) {
+                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()
+                        && !mechanic.isFocusFixed()) {
                     int focusMachineIndex = mechanic.getFocusMachineIndex();
                     if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
                         upstreamConnector.resetMachineHealth(focusMachineIndex);
                     }
+                    mechanic.setFocusFixed(true);
                 }
                 if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
                     if (isAnyFutureMachineDamaged(mechanic)) {
@@ -182,6 +184,7 @@ public class GameServiceImpl implements GameService {
                     } else {
                         dispatchMechanicToGate(mechanic);
                     }
+                    mechanic.setFocusFixed(false);
                 }
             }
         }

@@ -9,6 +9,7 @@ public class Mechanic {
     private int originalMachineIndex;
     private int focusMachineIndex;
     private long focusTravelTimeMillis;
+    private boolean focusFixed; // True if in thumbs up duration
 
     private int[] futureMachineIndexes;
 
@@ -26,6 +27,7 @@ public class Mechanic {
         this.originalMachineIndex = originalMachineIndex;
         this.focusMachineIndex = focusMachineIndex;
         this.focusTravelTimeMillis = focusTravelTimeMillis;
+        this.focusFixed = false;
         this.futureMachineIndexes = new int[0];
     }
 
@@ -67,6 +69,14 @@ public class Mechanic {
 
     public void setFocusTravelTimeMillis(long focusTravelTimeMillis) {
         this.focusTravelTimeMillis = focusTravelTimeMillis;
+    }
+
+    public boolean isFocusFixed() {
+        return focusFixed;
+    }
+
+    public void setFocusFixed(boolean focusFixed) {
+        this.focusFixed = focusFixed;
     }
 
     public int[] getFutureMachineIndexes() {
