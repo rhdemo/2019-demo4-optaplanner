@@ -53,7 +53,7 @@ public class GameConfigListener {
                 logger.info("Game state is " + state);
                 if (state == GameState.LOBBY) {
                     logger.info("resetting...");
-                    gameService.reset();
+//                    gameService.reset(); // TODO FIXME (Musa asked to comment this out for the load test)
                 }
             } catch (IOException e) {
                 throw new IllegalArgumentException("Could not convert " + value + "to " + GameConfig.class.getName());
