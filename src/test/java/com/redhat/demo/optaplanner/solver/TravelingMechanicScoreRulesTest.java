@@ -69,14 +69,14 @@ public class TravelingMechanicScoreRulesTest {
     public void onlyMachineDIsDamaged() {
         long timeMillis = 10_000L;
         OptaSolution solution1 = buildSolution(timeMillis, 1);
-        solution1.getMachineList().get(D).setHealth(0.9);
-        solution1.getMechanicList().get(0).setFocusMachine(solution1.getMachineList().get(H));
+        solution1.getMachineList().get(J).setHealth(0.9);
+        solution1.getMechanicList().get(0).setFocusMachine(solution1.getMachineList().get(C));
         OptaSolution solution2 = buildSolution(timeMillis, 1);
-        solution2.getMachineList().get(D).setHealth(0.9);
-        solution2.getMechanicList().get(0).setFocusMachine(solution2.getMachineList().get(H));
+        solution2.getMachineList().get(J).setHealth(0.9);
+        solution2.getMechanicList().get(0).setFocusMachine(solution2.getMachineList().get(C));
 
-        putVisits(solution1, 0, J, D, I);
-        putVisits(solution2, 0, D, J, I);
+        putVisits(solution1, 0, B, J, H);
+        putVisits(solution2, 0, J, B, H);
         scoreVerifier.assertScoresOrdered(solution1, solution2);
     }
 

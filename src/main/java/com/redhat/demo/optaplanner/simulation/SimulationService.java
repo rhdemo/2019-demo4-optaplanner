@@ -61,10 +61,10 @@ public class SimulationService {
                         damagePerSecond = damagePerSecondBase * 2.0;
                     }
                     break;
-                case DOUBLE_DISTRIBUTION_ON_MACHINE_D_AND_I:
-                    // Add 2 because of machine D and I
+                case DOUBLE_DISTRIBUTION_ON_MACHINE_B_AND_J:
+                    // Add 2 because of machine B and J
                     damagePerSecond = totalDamagePerSecond / (((double) machinesOnlyLength) + 2.0);
-                    if (machineIndex == 3 || machineIndex == 8) {
+                    if (machineIndex == 1 || machineIndex == 9) {
                         damagePerSecond *= 2.0;
                     }
                     break;
