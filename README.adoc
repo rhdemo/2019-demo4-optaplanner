@@ -73,7 +73,7 @@ MECHANIC_ID-futureIndexes: {
 }
 ```
 
-=== Cache `default`
+=== Cache `game`
 ```
 OptaPlannerConfig: {
     dispatchActive: true/false,

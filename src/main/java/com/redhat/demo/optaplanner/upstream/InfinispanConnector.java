@@ -28,13 +28,13 @@ class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
     private static final String DISPATCH_MECHANIC_EVENTS_CACHE_NAME = "DispatchEvents";
-    private static final String DEFAULT_CACHE_NAME = "default";
+    private static final String GAME_CACHE_NAME = "game";
     public static final String OPTA_PLANNER_CONFIG_KEY_NAME = "OptaPlannerConfig";
 
     private StrongCounter[] counters;
     private Map<StrongCounter, Integer> counterIndices;
     private RemoteCache<String, String> dispatchMechanicEventsCache;
-    private RemoteCache<String, String> defaultCache;
+    private RemoteCache<String, String> gameCache;
     private RemoteCacheManager remoteCacheManager;
     private ObjectMapper objectMapper;
 
@@ -50,12 +50,12 @@ class InfinispanConnector implements UpstreamConnector {
             counterIndices.put(currentCounter, i);
         }
         dispatchMechanicEventsCache = remoteCacheManager.getCache(DISPATCH_MECHANIC_EVENTS_CACHE_NAME);
-        defaultCache = remoteCacheManager.getCache(DEFAULT_CACHE_NAME);
-        defaultCache.addClientListener(gameConfigListener);
+        gameCache = remoteCacheManager.getCache(GAME_CACHE_NAME);
+        gameCache.addClientListener(gameConfigListener);
         objectMapper = new ObjectMapper();
 
         OptaPlannerConfig defaultConfig = new OptaPlannerConfig(false, false);
-        defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(defaultConfig));
+        gameCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(defaultConfig));
     }
 
     public void disconnect() {
@@ -129,18 +129,18 @@ class InfinispanConnector implements UpstreamConnector {
     public synchronized void setDispatchStatus(boolean isDispatchActive) {
         OptaPlannerConfig config = getOptaPlannerConfig();
         config.setDispatchActive(isDispatchActive);
-        defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
+        gameCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
     }
 
     @Override
     public synchronized void setSimulationStatus(boolean isSimulationActive) {
         OptaPlannerConfig config = getOptaPlannerConfig();
         config.setSimulationActive(isSimulationActive);
-        defaultCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
+        gameCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(config));
     }
 
     private OptaPlannerConfig getOptaPlannerConfig() {
-        String jsonString = defaultCache.get(OPTA_PLANNER_CONFIG_KEY_NAME);
+        String jsonString = gameCache.get(OPTA_PLANNER_CONFIG_KEY_NAME);
         if (jsonString == null) {
             throw new InfinispanException(OPTA_PLANNER_CONFIG_KEY_NAME + " was null. Try to reconnect.");
         }
