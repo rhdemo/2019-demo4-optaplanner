@@ -12,4 +12,6 @@ public interface GameService {
      void initializeDownstream();
 
      void reset();
+
+     boolean isDispatchPaused();
 }
