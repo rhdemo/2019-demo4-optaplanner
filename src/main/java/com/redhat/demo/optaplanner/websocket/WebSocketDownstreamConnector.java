@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Queue;
 
 import com.redhat.demo.optaplanner.DownstreamConnector;
+import com.redhat.demo.optaplanner.GameService;
 import com.redhat.demo.optaplanner.Machine;
 import com.redhat.demo.optaplanner.Mechanic;
+import com.redhat.demo.optaplanner.simulation.SimulationService;
+import com.redhat.demo.optaplanner.upstream.utils.OptaPlannerConfig;
 import com.redhat.demo.optaplanner.websocket.domain.JsonLocation;
 import com.redhat.demo.optaplanner.websocket.domain.JsonMachine;
 import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
@@ -27,6 +30,12 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
 
     @Autowired
     private SimpMessagingTemplate template;
+
+    @Autowired
+    private GameService gameService;
+
+    @Autowired
+    private SimulationService simulationService;
 
     @Override
     public void mechanicAdded(Mechanic mechanic, long currentMillis) {
@@ -67,7 +76,9 @@ public class WebSocketDownstreamConnector implements DownstreamConnector {
                 .map(mechanic -> new JsonMechanic(mechanic, currentMillis))
                 .toArray(JsonMechanic[]::new);
 
-        ConnectResponse connectResponse = new ConnectResponse(locations, jsonMechanics);
+        OptaPlannerConfig optaPlannerConfig =
+                new OptaPlannerConfig(!gameService.isDispatchPaused(), simulationService.isSimulating());
+        ConnectResponse connectResponse = new ConnectResponse(locations, jsonMechanics, optaPlannerConfig);
         this.template.convertAndSend(WEB_SOCKET_ENDPOINT, connectResponse);
 
         while (!futureVisitsResponseQueue.isEmpty()) {

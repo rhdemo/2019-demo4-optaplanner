@@ -11,5 +11,7 @@ public interface GameService {
 
      void initializeDownstream();
 
+     boolean isDispatchPaused();
+
      void reset(boolean healAllMachines);
 }

@@ -346,6 +346,8 @@ function processResponse(response) {
         console.log("Connected to a server");
         locations = response.locations;
         mechanics = response.mechanics;
+        showPauzed(!response.optaPlannerConfig.dispatchActive);
+        showSimulation(response.optaPlannerConfig.simulationActive);
         $( "#benchmarkMechanicDetails" ).text("fixed by " + mechanics.length + " mechanics");
     } else if (response.responseType === ResponseType.ADD_MECHANIC) {
         mechanics.push(response.mechanic);
