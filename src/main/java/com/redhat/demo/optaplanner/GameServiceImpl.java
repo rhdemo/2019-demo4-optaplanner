@@ -66,6 +66,7 @@ public class GameServiceImpl implements GameService {
 
     private void initializeGame() {
         dispatchPaused = true;
+        upstreamConnector.setDispatchStatus(!dispatchPaused);
 
         clearMechanics();
         initMachines();
