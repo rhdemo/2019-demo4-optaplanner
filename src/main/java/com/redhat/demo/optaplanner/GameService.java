@@ -11,5 +11,5 @@ public interface GameService {
 
      void initializeDownstream();
 
-     void reset();
+     void reset(boolean healAllMachines);
 }
