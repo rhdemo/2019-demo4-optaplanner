@@ -52,6 +52,6 @@ public class OptaPlannerRestController {
     @PostMapping("/reset")
     @ResponseStatus(HttpStatus.OK)
     public void reset() {
-        gameService.reset();
+        gameService.reset(false);
     }
 }
