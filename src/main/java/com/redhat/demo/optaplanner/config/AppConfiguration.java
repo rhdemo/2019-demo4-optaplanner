@@ -35,8 +35,8 @@ public class AppConfiguration {
     private int machinesAndGateLength;
     private int initialMechanicsSize = 0;
     private double mechanicSpeed = 0.15;
-    private long fixDurationMillis = 2200L;
-    private long thumbUpDurationMillis = 500L;
+    private long fixDurationMillis = 2400L;
+    private long thumbUpDurationMillis = 80L;
 
     private int[] machineIndexToGridX;
     private int[] machineIndexToGridY;
