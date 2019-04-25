@@ -157,7 +157,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
-    public void tick() {
+    public synchronized void tick() {
         timeMillis += AppConfiguration.TIME_TICK_MILLIS;
 
         updateMachineHealth();
