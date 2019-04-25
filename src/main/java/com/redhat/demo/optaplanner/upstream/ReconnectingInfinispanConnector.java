@@ -1,5 +1,8 @@
 package com.redhat.demo.optaplanner.upstream;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import com.redhat.demo.optaplanner.Mechanic;
 import com.redhat.demo.optaplanner.SpringProfiles;
 import com.redhat.demo.optaplanner.config.AppConfiguration;
@@ -10,9 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 @Service
 @Profile(SpringProfiles.PRODUCTION)
@@ -41,7 +41,8 @@ public class ReconnectingInfinispanConnector implements UpstreamConnector {
 
     private boolean internalConnect() {
         try {
-            infinispanConnector = new InfinispanConnector(appConfiguration.getMachinesOnlyLength(), gameConfigListener);
+            infinispanConnector = new InfinispanConnector(appConfiguration.getMachinesOnlyLength(),
+                    appConfiguration.getMaximumMechanicsSize(), gameConfigListener);
             return true;
         } catch (TransportException ex) {
             LOGGER.debug("Unable to connect to Infinispan server.",  ex);
@@ -103,6 +104,16 @@ public class ReconnectingInfinispanConnector implements UpstreamConnector {
         } catch (TransportException ex) {
             reconnect();
             infinispanConnector.mechanicRemoved(mechanic);
+        }
+    }
+
+    @Override
+    public void clearMechanicsAndFutureVisits() {
+        try {
+            infinispanConnector.clearMechanicsAndFutureVisits();
+        } catch (TransportException ex) {
+            reconnect();
+            infinispanConnector.clearMechanicsAndFutureVisits();
         }
     }
 
