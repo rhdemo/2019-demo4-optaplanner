@@ -1,10 +1,12 @@
 package com.redhat.demo.optaplanner.upstream.utils;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.PreDestroy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.demo.optaplanner.GameService;
@@ -32,14 +34,14 @@ public class GameConfigListener {
     private GameService gameService;
     private Pattern keyValueWithPreviousPattern;
     private ObjectMapper objectMapper;
-    private Executor executor;
+    private ExecutorService executorService;
 
     @Autowired
     public GameConfigListener(GameService gameService) {
         this.gameService = gameService;
         keyValueWithPreviousPattern = Pattern.compile(KEY_VALUE_WITH_PREVIOUS_REGEX);
         objectMapper = new ObjectMapper();
-        executor = Executors.newSingleThreadExecutor();
+        executorService = Executors.newSingleThreadExecutor();
     }
 
     @ClientCacheEntryCreated
@@ -57,7 +59,7 @@ public class GameConfigListener {
                 logger.info("Game state is " + state);
                 if (state == GameState.LOBBY) {
                     logger.info("resetting...");
-                    executor.execute(() -> gameService.reset(true));
+                    executorService.execute(() -> gameService.reset(true));
                 }
             } catch (IOException e) {
                 throw new IllegalArgumentException("Could not convert " + value + "to " + GameConfig.class.getName());
@@ -68,5 +70,10 @@ public class GameConfigListener {
     private String extractKeyValueWithPreviousGroup(String keyValueWithPreviousString, String groupName) {
         Matcher matcher = keyValueWithPreviousPattern.matcher(keyValueWithPreviousString);
         return matcher.matches() ? matcher.group(groupName) : "";
+    }
+
+    @PreDestroy
+    protected void preDestroy() {
+        executorService.shutdownNow();
     }
 }
