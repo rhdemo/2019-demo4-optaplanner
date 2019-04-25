@@ -26,6 +26,7 @@ public class SimulationService {
     @PostConstruct
     public void init() {
         simulating = false;
+        upstreamConnector.setSimulationStatus(simulating);
     }
 
     @Scheduled(fixedDelay = AppConfiguration.TIME_TICK_MILLIS)
