@@ -66,7 +66,7 @@ public class TravelingMechanicScoreRulesTest {
     }
 
     @Test
-    public void onlyMachineDIsDamaged() {
+    public void onlyMachineJIsDamaged() {
         long timeMillis = 10_000L;
         OptaSolution solution1 = buildSolution(timeMillis, 1);
         solution1.getMachineList().get(J).setHealth(0.9);
