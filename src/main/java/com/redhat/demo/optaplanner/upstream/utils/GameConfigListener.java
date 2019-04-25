@@ -1,6 +1,8 @@
 package com.redhat.demo.optaplanner.upstream.utils;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,12 +32,14 @@ public class GameConfigListener {
     private GameService gameService;
     private Pattern keyValueWithPreviousPattern;
     private ObjectMapper objectMapper;
+    private Executor executor;
 
     @Autowired
     public GameConfigListener(GameService gameService) {
         this.gameService = gameService;
         keyValueWithPreviousPattern = Pattern.compile(KEY_VALUE_WITH_PREVIOUS_REGEX);
         objectMapper = new ObjectMapper();
+        executor = Executors.newSingleThreadExecutor();
     }
 
     @ClientCacheEntryCreated
@@ -53,7 +57,7 @@ public class GameConfigListener {
                 logger.info("Game state is " + state);
                 if (state == GameState.LOBBY) {
                     logger.info("resetting...");
-//                    gameService.reset(); // TODO FIXME (Musa asked to comment this out for the load test)
+                    executor.execute(() -> gameService.reset());
                 }
             } catch (IOException e) {
                 throw new IllegalArgumentException("Could not convert " + value + "to " + GameConfig.class.getName());
