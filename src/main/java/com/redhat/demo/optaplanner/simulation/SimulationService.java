@@ -83,6 +83,10 @@ public class SimulationService {
         upstreamConnector.setSimulationStatus(simulating);
     }
 
+    public boolean isSimulating() {
+        return simulating;
+    }
+
     public void damageMachine(int machineIndex, double amount) {
         upstreamConnector.damageMachine(machineIndex, amount);
     }

@@ -155,6 +155,11 @@ public class GameServiceImpl implements GameService {
         initializeDownstream();
     }
 
+    @Override
+    public boolean isDispatchPaused() {
+        return dispatchPaused;
+    }
+
     private void healAllMachines() {
         for (int i = 0; i < appConfiguration.getMachinesOnlyLength(); i++) {
             upstreamConnector.resetMachineHealth(machines[i].getMachineIndex());
