@@ -67,7 +67,7 @@ public class GameServiceImpl implements GameService {
     private void initializeGame() {
         dispatchPaused = true;
 
-        eraseMechanics();
+        clearMechanics();
         initMachines();
 
         timeMillis = System.currentTimeMillis();
@@ -78,8 +78,10 @@ public class GameServiceImpl implements GameService {
         solverManager.startSolver(machines, mechanics, timeMillis);
     }
 
-    private void eraseMechanics() {
-        mechanics.stream().forEach(mechanic -> upstreamConnector.mechanicRemoved(mechanic));
+    private void clearMechanics() {
+        // Don't just remove the mechanics of this.mechanics:
+        // there might be still mechanics in infinispan from previous pods
+        upstreamConnector.clearMechanicsAndFutureVisits();
         mechanics.clear();
     }
 
@@ -259,6 +261,10 @@ public class GameServiceImpl implements GameService {
         int mechanicAddition = mechanicAdditionCount.getAndSet(0);
         if (mechanicAddition > 0) {
             for (int i = 0; i < mechanicAddition; i++) {
+                if (mechanics.size() >= appConfiguration.getMaximumMechanicsSize()) {
+                    // Do not add more mechanics beyond the limit
+                    break;
+                }
                 Mechanic mechanic = createMechanic();
                 mechanics.add(mechanic);
                 solverManager.addMechanic(mechanic, timeMillis);

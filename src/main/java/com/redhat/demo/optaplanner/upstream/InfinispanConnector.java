@@ -1,27 +1,27 @@
 package com.redhat.demo.optaplanner.upstream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.demo.optaplanner.Mechanic;
-import com.redhat.demo.optaplanner.upstream.utils.GameConfigListener;
-import com.redhat.demo.optaplanner.upstream.utils.OptaPlannerConfig;
-import com.redhat.demo.optaplanner.websocket.response.FutureVisitsResponse;
-import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
-import com.redhat.demo.optaplanner.websocket.response.AddMechanicResponse;
-import com.redhat.demo.optaplanner.websocket.response.DispatchMechanicResponse;
-import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
-import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.counter.api.CounterManager;
-import org.infinispan.counter.api.StrongCounter;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.demo.optaplanner.Mechanic;
+import com.redhat.demo.optaplanner.upstream.utils.GameConfigListener;
+import com.redhat.demo.optaplanner.upstream.utils.OptaPlannerConfig;
+import com.redhat.demo.optaplanner.websocket.domain.JsonMechanic;
+import com.redhat.demo.optaplanner.websocket.response.AddMechanicResponse;
+import com.redhat.demo.optaplanner.websocket.response.DispatchMechanicResponse;
+import com.redhat.demo.optaplanner.websocket.response.FutureVisitsResponse;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
+import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.counter.api.CounterManager;
+import org.infinispan.counter.api.StrongCounter;
 
 
 class InfinispanConnector implements UpstreamConnector {
@@ -32,14 +32,16 @@ class InfinispanConnector implements UpstreamConnector {
     public static final String OPTA_PLANNER_CONFIG_KEY_NAME = "OptaPlannerConfig";
 
     private StrongCounter[] counters;
+    private final int maximumMechanicsSize;
     private Map<StrongCounter, Integer> counterIndices;
     private RemoteCache<String, String> dispatchMechanicEventsCache;
     private RemoteCache<String, String> gameCache;
     private RemoteCacheManager remoteCacheManager;
     private ObjectMapper objectMapper;
 
-    protected InfinispanConnector(int machineHealthCountersCount, GameConfigListener gameConfigListener) {
+    protected InfinispanConnector(int machineHealthCountersCount, int maximumMechanicsSize, GameConfigListener gameConfigListener) {
         counters = new StrongCounter[machineHealthCountersCount];
+        this.maximumMechanicsSize = maximumMechanicsSize;
         counterIndices = new HashMap<>(counters.length);
         Configuration configuration = HotRodClientConfiguration.get().build();
         remoteCacheManager = new RemoteCacheManager(configuration);
@@ -105,8 +107,19 @@ class InfinispanConnector implements UpstreamConnector {
 
     @Override
     public void mechanicRemoved(Mechanic mechanic) {
-        dispatchMechanicEventsCache.remove(String.valueOf(mechanic.getMechanicIndex()));
-        dispatchMechanicEventsCache.remove(String.format("%d-futureIndexes", mechanic.getMechanicIndex()));
+        removeMechanicFromInfinispan(mechanic.getMechanicIndex());
+    }
+
+    @Override
+    public void clearMechanicsAndFutureVisits() {
+        for (int mechanicIndex = 0; mechanicIndex < maximumMechanicsSize; mechanicIndex++) {
+            removeMechanicFromInfinispan(mechanicIndex);
+        }
+    }
+
+    private void removeMechanicFromInfinispan(int mechanicIndex) {
+        dispatchMechanicEventsCache.remove(String.valueOf(mechanicIndex));
+        dispatchMechanicEventsCache.remove(String.format("%d-futureIndexes", mechanicIndex));
     }
 
     @Override

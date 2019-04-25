@@ -34,6 +34,7 @@ public class AppConfiguration {
 
     private int machinesAndGateLength;
     private int initialMechanicsSize = 0;
+    private int maximumMechanicsSize = 5;
     private double mechanicSpeed = 0.15;
     private long fixDurationMillis = 2400L;
     private long thumbUpDurationMillis = 80L;
@@ -129,6 +130,10 @@ public class AppConfiguration {
 
     public int getInitialMechanicsSize() {
         return initialMechanicsSize;
+    }
+
+    public int getMaximumMechanicsSize() {
+        return maximumMechanicsSize;
     }
 
     public double getMechanicSpeed() {

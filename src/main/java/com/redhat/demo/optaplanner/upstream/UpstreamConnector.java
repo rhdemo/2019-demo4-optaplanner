@@ -53,6 +53,8 @@ public interface UpstreamConnector {
      */
     void mechanicRemoved(Mechanic mechanic);
 
+    void clearMechanicsAndFutureVisits();
+
     /**
      * For simulation only.
      * @param machineIndex >= 0, <= {@link AppConfiguration#getMachinesOnlyLength()}
@@ -70,6 +72,5 @@ public interface UpstreamConnector {
     void setDispatchStatus(boolean isDispatchActive);
 
     void setSimulationStatus(boolean isSimulationActive);
-
 
 }
