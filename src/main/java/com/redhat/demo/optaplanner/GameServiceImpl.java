@@ -263,6 +263,8 @@ public class GameServiceImpl implements GameService {
             for (int i = 0; i < mechanicAddition; i++) {
                 if (mechanics.size() >= appConfiguration.getMaximumMechanicsSize()) {
                     // Do not add more mechanics beyond the limit
+                    log.warn("Mechanic addition ignored, because there are already {} mechanics.",
+                            appConfiguration.getMaximumMechanicsSize());
                     break;
                 }
                 Mechanic mechanic = createMechanic();
