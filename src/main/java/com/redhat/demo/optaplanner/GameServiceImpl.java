@@ -197,21 +197,13 @@ public class GameServiceImpl implements GameService {
 
     private void updateFutureVisits() {
         solverManager.fetchAndUpdateFutureMachineIndexes(mechanics).forEach(mechanic -> {
-            if (isAnyFutureMachineDamaged(mechanic)) {
-                int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
-
-                int[] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
-                        mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
-
-                downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
-                upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
-            }
+            int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
+            int[] futureVisits = Arrays.stream(mechanic.getFutureMachineIndexes())
+                    .filter(machineIndex -> machines[machineIndex].isDamaged())
+                    .limit(futureVisitsLength).toArray();
+            downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+            upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
         });
-    }
-
-    private boolean isAnyFutureMachineDamaged(Mechanic mechanic) {
-        return Arrays.stream(mechanic.getFutureMachineIndexes())
-                .anyMatch(machineIndex -> machines[machineIndex].isDamaged());
     }
 
     private void handleDispatches() {
@@ -237,6 +229,11 @@ public class GameServiceImpl implements GameService {
                 }
             }
         }
+    }
+
+    private boolean isAnyFutureMachineDamaged(Mechanic mechanic) {
+        return Arrays.stream(mechanic.getFutureMachineIndexes())
+                .anyMatch(machineIndex -> machines[machineIndex].isDamaged());
     }
 
     private void dispatchMechanic(Mechanic mechanic) {
