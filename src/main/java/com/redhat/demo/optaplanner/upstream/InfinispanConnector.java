@@ -5,7 +5,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.stream.IntStream;
+
+import javax.annotation.PreDestroy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +27,6 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.counter.api.CounterManager;
 import org.infinispan.counter.api.StrongCounter;
 
-
 class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
@@ -33,23 +36,26 @@ class InfinispanConnector implements UpstreamConnector {
 
     private StrongCounter[] counters;
     private final int maximumMechanicsSize;
-    private Map<StrongCounter, Integer> counterIndices;
     private RemoteCache<String, String> dispatchMechanicEventsCache;
     private RemoteCache<String, String> gameCache;
     private RemoteCacheManager remoteCacheManager;
     private ObjectMapper objectMapper;
+    private ForkJoinPool customThreadPool;
+
+    @PreDestroy
+    public void shutdown() {
+        customThreadPool.shutdownNow();
+    }
 
     protected InfinispanConnector(int machineHealthCountersCount, int maximumMechanicsSize, GameConfigListener gameConfigListener) {
         counters = new StrongCounter[machineHealthCountersCount];
         this.maximumMechanicsSize = maximumMechanicsSize;
-        counterIndices = new HashMap<>(counters.length);
         Configuration configuration = HotRodClientConfiguration.get().build();
         remoteCacheManager = new RemoteCacheManager(configuration);
         CounterManager counterManager = RemoteCounterManagerFactory.asCounterManager(remoteCacheManager);
         for (int i = 0; i < counters.length; i++) {
             StrongCounter currentCounter = counterManager.getStrongCounter(String.format("machine-%d", i));
             counters[i] = currentCounter;
-            counterIndices.put(currentCounter, i);
         }
         dispatchMechanicEventsCache = remoteCacheManager.getCache(DISPATCH_MECHANIC_EVENTS_CACHE_NAME);
         gameCache = remoteCacheManager.getCache(GAME_CACHE_NAME);
@@ -58,6 +64,7 @@ class InfinispanConnector implements UpstreamConnector {
 
         OptaPlannerConfig defaultConfig = new OptaPlannerConfig(false, false);
         gameCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(defaultConfig));
+        customThreadPool = new ForkJoinPool(machineHealthCountersCount);
     }
 
     public void disconnect() {
@@ -66,20 +73,28 @@ class InfinispanConnector implements UpstreamConnector {
 
     @Override
     public double[] fetchMachineHealths() {
-        return Arrays.stream(counters)
-                .mapToLong(strongCounter -> {
-                    int counterIndex = counterIndices.get(strongCounter);
-                    try {
-                        return counters[counterIndex].getValue().get();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException("Connector thread was interrupted while getting counter value.", e);
-                    } catch (ExecutionException e) {
-                        throw new InfinispanException("Couldn't find StringCounter (" + counterIndex + ").", e.getCause());
-                    }
-                })
-                .mapToDouble(machineHealthLong -> ((double) machineHealthLong) / ((double) FULL_HEALTH))
-                .toArray();
+        try {
+            return customThreadPool.submit(
+                    () -> IntStream.range(0, counters.length).parallel()
+                            .mapToLong(i -> {
+                                try {
+                                    return counters[i].getValue().get();
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    throw new IllegalStateException("Custom thread was interrupted while getting counter value.", e);
+                                } catch (ExecutionException e) {
+                                    throw new InfinispanException("Couldn't find StringCounter (" + i + ").", e.getCause());
+                                }
+                            })
+                            .mapToDouble(machineHealthLong -> ((double) machineHealthLong) / ((double) FULL_HEALTH))
+                            .toArray()
+            ).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Connector thread was interrupted while getting counters values.", e);
+        } catch (ExecutionException e) {
+            throw new InfinispanException("Couldn't get counters", e.getCause());
+        }
     }
 
     @Override
@@ -133,7 +148,7 @@ class InfinispanConnector implements UpstreamConnector {
     }
 
     @Override
-    public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
+    public void sendFutureVisits(int mechanicIndex, int[] futureMachineIndexes) {
         FutureVisitsResponse futureVisitsResponse = new FutureVisitsResponse(mechanicIndex, futureMachineIndexes);
         dispatchMechanicEventsCache.put(String.format("%d-futureIndexes", mechanicIndex), convertToJsonString(futureVisitsResponse));
     }
