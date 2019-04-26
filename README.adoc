@@ -89,7 +89,7 @@ First make sure docker daemon is running, if not type `sudo systemctl start dock
 Create a `.env` file similar to `.env.example` containing your quay.io username and password and run the script
 
 ```
-./push_image
+./pushImage.sh
 ```
 
 This command will build an image `optaplanner-demo:latest` and tag it temporarily as
