@@ -170,38 +170,9 @@ public class GameServiceImpl implements GameService {
     // Synchronized because tick() and reset() must be mutually exclusive
     public synchronized void tick() {
         timeMillis = System.currentTimeMillis();
-
         updateMachineHealth();
-
-        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics).stream().forEach(mechanic -> {
-            if (isAnyFutureMachineDamaged(mechanic)) {
-                sendFutureVisits(mechanic);
-            }
-        });
-
-        if (!dispatchPaused) {
-            // Check mechanic fixed or departure events
-            for (int i = 0; i < mechanics.size(); i++) {
-                Mechanic mechanic = mechanics.get(i);
-                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()
-                        && !mechanic.isFocusFixed()) {
-                    int focusMachineIndex = mechanic.getFocusMachineIndex();
-                    if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
-                        upstreamConnector.resetMachineHealth(focusMachineIndex);
-                    }
-                    mechanic.setFocusFixed(true);
-                }
-                if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
-                    if (isAnyFutureMachineDamaged(mechanic)) {
-                        dispatchMechanic(mechanic);
-                    } else {
-                        dispatchMechanicToGate(mechanic);
-                    }
-                    mechanic.setFocusFixed(false);
-                }
-            }
-        }
-
+        updateFutureVisits();
+        handleDispatches();
         handleMechanicAdditionsAndRemovals();
     }
 
@@ -224,9 +195,55 @@ public class GameServiceImpl implements GameService {
         downstreamConnector.updateMachinesHealths(machines);
     }
 
+    private void updateFutureVisits() {
+        solverManager.fetchAndUpdateFutureMachineIndexes(mechanics).forEach(mechanic -> {
+            if (isAnyFutureMachineDamaged(mechanic)) {
+                int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
+
+                int[] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
+                        mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
+
+                downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+                upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
+            }
+        });
+    }
+
     private boolean isAnyFutureMachineDamaged(Mechanic mechanic) {
         return Arrays.stream(mechanic.getFutureMachineIndexes())
                 .anyMatch(machineIndex -> machines[machineIndex].isDamaged());
+    }
+
+    private void handleDispatches() {
+        if (!dispatchPaused) {
+            // Check mechanic fixed or departure events
+            for (int i = 0; i < mechanics.size(); i++) {
+                Mechanic mechanic = mechanics.get(i);
+                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()
+                        && !mechanic.isFocusFixed()) {
+                    int focusMachineIndex = mechanic.getFocusMachineIndex();
+                    if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
+                        upstreamConnector.resetMachineHealth(focusMachineIndex);
+                    }
+                    mechanic.setFocusFixed(true);
+                }
+                if (timeMillis >= mechanic.getFocusDepartureTimeMillis()) {
+                    if (isAnyFutureMachineDamaged(mechanic)) {
+                        dispatchMechanic(mechanic);
+                    } else {
+                        dispatchMechanicToGate(mechanic);
+                    }
+                    mechanic.setFocusFixed(false);
+                }
+            }
+        }
+    }
+
+    private void dispatchMechanic(Mechanic mechanic) {
+        int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
+        final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
+                : futureMachineIndexes[0];
+        dispatchMechanicToMachine(mechanic, newFocusMachineIndex);
     }
 
     private void dispatchMechanicToGate(Mechanic mechanic) {
@@ -237,13 +254,6 @@ public class GameServiceImpl implements GameService {
         if (mechanic.getFocusMachineIndex() != gateIndex) {
             dispatchMechanicToMachine(mechanic, appConfiguration.getGateMachineIndex());
         }
-    }
-
-    private void dispatchMechanic(Mechanic mechanic) {
-        int[] futureMachineIndexes = mechanic.getFutureMachineIndexes();
-        final int newFocusMachineIndex = futureMachineIndexes.length <= 0 ? mechanic.getFocusMachineIndex()
-                : futureMachineIndexes[0];
-        dispatchMechanicToMachine(mechanic, newFocusMachineIndex);
     }
 
     private void dispatchMechanicToMachine(Mechanic mechanic, final int newFocusMachineIndex) {
@@ -310,16 +320,6 @@ public class GameServiceImpl implements GameService {
                 appConfiguration.getGateMachineIndex(),
                 appConfiguration.getGateMachineIndex(),
                 timeMillis);
-    }
-
-    private void sendFutureVisits(Mechanic mechanic) {
-        int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
-
-        int[] futureVisits = mechanic.getFutureMachineIndexes().length < futureVisitsLength ?
-                mechanic.getFutureMachineIndexes() : Arrays.copyOf(mechanic.getFutureMachineIndexes(), futureVisitsLength);
-
-        downstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
-        upstreamConnector.sendFutureVisits(mechanic.getMechanicIndex(), futureVisits);
     }
 
 }
