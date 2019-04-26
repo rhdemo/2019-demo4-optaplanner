@@ -177,6 +177,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private void updateMachineHealth() {
+        log.trace("  Start updating machine health.");
         double[] machineHealths = upstreamConnector.fetchMachineHealths();
 
         boolean machinesHealthDropped = false;
@@ -196,6 +197,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private void updateFutureVisits() {
+        log.trace("  Start updating future visits.");
         solverManager.fetchAndUpdateFutureMachineIndexes(mechanics).forEach(mechanic -> {
             int futureVisitsLength = appConfiguration.getVisibleFutureIndexesLimit();
             int[] futureVisits = Arrays.stream(mechanic.getFutureMachineIndexes())
@@ -208,6 +210,7 @@ public class GameServiceImpl implements GameService {
 
     private void handleDispatches() {
         if (!dispatchPaused) {
+            log.trace("  Start dispatching mechanics.");
             // Check mechanic fixed or departure events
             for (int i = 0; i < mechanics.size(); i++) {
                 Mechanic mechanic = mechanics.get(i);
@@ -276,6 +279,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private void handleMechanicAdditionsAndRemovals() {
+        log.trace("  Start adding/removing mechanics.");
         int mechanicAddition = mechanicAdditionCount.getAndSet(0);
         if (mechanicAddition > 0) {
             for (int i = 0; i < mechanicAddition; i++) {
