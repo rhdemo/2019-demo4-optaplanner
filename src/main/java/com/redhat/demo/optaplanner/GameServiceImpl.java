@@ -208,10 +208,16 @@ public class GameServiceImpl implements GameService {
 
     private void handleDispatches() {
         if (!dispatchPaused) {
+            long thumbUpDurationMillis = appConfiguration.getThumbUpDurationMillis();
+            long fixAndThumbUpDurationMillis = appConfiguration.getFixDurationMillis() + thumbUpDurationMillis;
             // Check mechanic fixed or departure events
             for (int i = 0; i < mechanics.size(); i++) {
                 Mechanic mechanic = mechanics.get(i);
-                if (timeMillis >= mechanic.getFocusDepartureTimeMillis() - appConfiguration.getThumbUpDurationMillis()
+                if (timeMillis >= (mechanic.getFocusDepartureTimeMillis() - fixAndThumbUpDurationMillis)
+                        && mechanic.getOriginalMachineIndex() != mechanic.getFocusMachineIndex()) {
+                    arriveMechanicToFocus(mechanic);
+                }
+                if (timeMillis >= (mechanic.getFocusDepartureTimeMillis() - thumbUpDurationMillis)
                         && !mechanic.isFocusFixed()) {
                     int focusMachineIndex = mechanic.getFocusMachineIndex();
                     if (focusMachineIndex != appConfiguration.getGateMachineIndex()) {
@@ -229,6 +235,17 @@ public class GameServiceImpl implements GameService {
                 }
             }
         }
+    }
+
+    private void arriveMechanicToFocus(Mechanic mechanic) {
+        log.debug("Arriving a mechanic "
+                + mechanic.getMechanicIndex()
+                + " to " + mechanic.getFocusMachineIndex());
+        mechanic.setOriginalMachineIndex(mechanic.getFocusMachineIndex());
+        mechanic.setFocusTravelTimeMillis(timeMillis);// zero travel time
+
+        upstreamConnector.dispatchMechanic(mechanic, timeMillis);
+        downstreamConnector.dispatchMechanic(mechanic, timeMillis);
     }
 
     private boolean isAnyFutureMachineDamaged(Mechanic mechanic) {
