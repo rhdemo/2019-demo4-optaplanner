@@ -86,11 +86,11 @@ OptaPlannerConfig: {
 First make sure docker daemon is running, if not type `sudo systemctl start docker`
 (or add the property `-Ddocker.host=DOCKER_DAEMON_URL`).
 
-```
-mvn clean install -Prelease -Ddocker.username=`whoami` -Ddocker.password='...'
-```
+Create a `.env` file similar to `.env.example` containing your quay.io username and password and run the script
 
-Where username and password are those of your docker.io and quay.io account.
+```
+./push_image
+```
 
 This command will build an image `optaplanner-demo:latest` and tag it temporarily as
 `quay.io/redhatdemo/optaplanner-demo:latest` then push it to quay.io registry.
