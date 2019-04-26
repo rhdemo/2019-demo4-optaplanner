@@ -84,6 +84,7 @@ public class GameServiceImpl implements GameService {
         // there might be still mechanics in infinispan from previous pods
         upstreamConnector.clearMechanicsAndFutureVisits();
         mechanics.clear();
+        mechanicAdditionCount.set(0);
     }
 
     private void initMachines() {
@@ -143,6 +144,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
+    // Synchronized because tick() and reset() must be mutually exclusive
     public synchronized void reset(boolean healAllMachines) {
         simulationService.init();
         solverManager.stopSolver(1L, TimeUnit.SECONDS);
@@ -160,7 +162,8 @@ public class GameServiceImpl implements GameService {
     }
 
     @Scheduled(fixedRate = AppConfiguration.TIME_TICK_MILLIS)
-    public void tick() {
+    // Synchronized because tick() and reset() must be mutually exclusive
+    public synchronized void tick() {
         timeMillis = System.currentTimeMillis();
 
         updateMachineHealth();
