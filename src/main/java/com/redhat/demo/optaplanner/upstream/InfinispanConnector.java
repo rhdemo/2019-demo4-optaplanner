@@ -1,16 +1,5 @@
 package com.redhat.demo.optaplanner.upstream;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.stream.IntStream;
-
-import javax.annotation.PreDestroy;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.demo.optaplanner.Mechanic;
@@ -27,6 +16,10 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.counter.api.CounterManager;
 import org.infinispan.counter.api.StrongCounter;
 
+import java.io.IOException;
+import java.util.concurrent.*;
+import java.util.stream.IntStream;
+
 class InfinispanConnector implements UpstreamConnector {
 
     private static final long FULL_HEALTH = 1_000_000_000_000_000_000L;
@@ -40,14 +33,11 @@ class InfinispanConnector implements UpstreamConnector {
     private RemoteCache<String, String> gameCache;
     private RemoteCacheManager remoteCacheManager;
     private ObjectMapper objectMapper;
-    private ForkJoinPool customThreadPool;
+    private ForkJoinPool customForkJoinPool;
 
-    @PreDestroy
-    public void shutdown() {
-        customThreadPool.shutdownNow();
-    }
-
-    protected InfinispanConnector(int machineHealthCountersCount, int maximumMechanicsSize, GameConfigListener gameConfigListener) {
+    protected InfinispanConnector(int machineHealthCountersCount,
+                                  int maximumMechanicsSize,
+                                  GameConfigListener gameConfigListener) {
         counters = new StrongCounter[machineHealthCountersCount];
         this.maximumMechanicsSize = maximumMechanicsSize;
         Configuration configuration = HotRodClientConfiguration.get().build();
@@ -64,17 +54,18 @@ class InfinispanConnector implements UpstreamConnector {
 
         OptaPlannerConfig defaultConfig = new OptaPlannerConfig(false, false);
         gameCache.put(OPTA_PLANNER_CONFIG_KEY_NAME, convertToJsonString(defaultConfig));
-        customThreadPool = new ForkJoinPool(machineHealthCountersCount);
+        customForkJoinPool = new ForkJoinPool(machineHealthCountersCount);
     }
 
     public void disconnect() {
+        customForkJoinPool.shutdownNow();
         remoteCacheManager.stop();
     }
 
     @Override
     public double[] fetchMachineHealths() {
         try {
-            return customThreadPool.submit(
+            return customForkJoinPool.submit(
                     () -> IntStream.range(0, counters.length).parallel()
                             .mapToLong(i -> {
                                 try {
@@ -93,7 +84,14 @@ class InfinispanConnector implements UpstreamConnector {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Connector thread was interrupted while getting counters values.", e);
         } catch (ExecutionException e) {
-            throw new InfinispanException("Couldn't get counters", e.getCause());
+            if (e.getCause() instanceof InfinispanException) {
+                throw (InfinispanException) e.getCause();
+            } else {
+                throw new IllegalStateException("Unknown exception occurred when fetching machine healths", e.getCause());
+            }
+        } catch (RejectedExecutionException ree) {
+            // do nothing and wait for reconnect, which will re-create the thread pool
+            throw new InfinispanException("Rejected execution probably caused by losing connection to Infinispan.", ree);
         }
     }
 
@@ -148,7 +146,7 @@ class InfinispanConnector implements UpstreamConnector {
     }
 
     @Override
-    public void sendFutureVisits(int mechanicIndex, int[] futureMachineIndexes) {
+    public void sendFutureVisits(int mechanicIndex, int [] futureMachineIndexes) {
         FutureVisitsResponse futureVisitsResponse = new FutureVisitsResponse(mechanicIndex, futureMachineIndexes);
         dispatchMechanicEventsCache.put(String.format("%d-futureIndexes", mechanicIndex), convertToJsonString(futureVisitsResponse));
     }
