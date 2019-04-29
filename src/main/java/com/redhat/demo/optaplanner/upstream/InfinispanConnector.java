@@ -17,7 +17,9 @@ import org.infinispan.counter.api.CounterManager;
 import org.infinispan.counter.api.StrongCounter;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.IntStream;
 
 class InfinispanConnector implements UpstreamConnector {
