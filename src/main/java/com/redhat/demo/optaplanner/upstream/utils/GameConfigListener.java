@@ -29,7 +29,8 @@ public class GameConfigListener {
     public final String KEY_VALUE_WITH_PREVIOUS_REGEX =
             "KeyValueWithPrevious\\{key=(?<key>[\\w]+), " +
                     "value=(?<value>\\{[([^\\{\\}]*)(\\{[^\\{\\}]*\\})]*\\}), " +
-                    "prev=.*\\}";
+                    "prev=(?<prev>(?:null)|\\{[([^\\{\\}]*)(\\{[^\\{\\}]*\\})]*\\})" +
+                    ".*\\}";
 
     private GameService gameService;
     private Pattern keyValueWithPreviousPattern;
@@ -52,13 +53,14 @@ public class GameConfigListener {
         logger.info(String.valueOf(event.getEventData()));
         String key = extractKeyValueWithPreviousGroup(String.valueOf(event.getEventData()), "key");
         String value = extractKeyValueWithPreviousGroup(String.valueOf(event.getEventData()), "value");
+        String prev = extractKeyValueWithPreviousGroup(String.valueOf(event.getEventData()), "prev");
         if (key.equals("game")) {
             try {
-                GameConfig gameConfig = objectMapper.readValue(value, GameConfig.class);
-                GameState state = gameConfig.getState();
-                logger.info("Game state is " + state);
-                if (state == GameState.LOBBY) {
-                    logger.info("resetting...");
+                GameState currentState = objectMapper.readValue(value, GameConfig.class).getState();
+                GameState prevState = prev.equals("null") ? null
+                        : objectMapper.readValue(prev, GameConfig.class).getState();
+                if (prevState != null && !currentState.equals(prevState) && currentState == GameState.LOBBY) {
+                    logger.info("Game state changed from {} to {}, resetting...", prevState, currentState);
                     executorService.execute(() -> gameService.reset(true));
                 }
             } catch (IOException e) {
