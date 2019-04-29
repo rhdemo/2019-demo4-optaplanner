@@ -66,6 +66,9 @@ class InfinispanConnector implements UpstreamConnector {
 
     @Override
     public double[] fetchMachineHealths() {
+        if (customForkJoinPool.isTerminated() || customForkJoinPool.isShutdown()) {
+            throw new InfinispanException("Thread pool has been terminated probably due to a lost connection to Infinispan.");
+        }
         try {
             return customForkJoinPool.submit(
                     () -> IntStream.range(0, counters.length).parallel()
