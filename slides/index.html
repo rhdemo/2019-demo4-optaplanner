@@ -37,24 +37,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
 </head>
 
 <body>
 <div class="reveal">
 <div class="slides">
-    <section>
-        <img src="mechanicRoutingSummit2019_0.png" class="fullImage">
-        <img src="mechanicRoutingSummit2019_1.png" class="fullImage fragment">
-        <img src="vehicleRoutingSummit2019_0.png" class="fullImage fragment">
-        <img src="vehicleRoutingSummit2019_1.png" class="fullImage fragment">
-        <img src="vehicleRoutingSummit2019_2.png" class="fullImage fragment">
-        <img src="vehicleRoutingSummit2019_3.png" class="fullImage fragment">
-    </section>
-
+    <section data-background-image="mechanicRoutingSummit2019_0.png"></section>
+    <section data-background-image="mechanicRoutingSummit2019_1.png"></section>
+    <section data-background-image="mechanicRoutingSummit2019_2.png"></section>
+    <!--<section data-background-image="optaweb-vehicle-routing-Boston-ATM-40.png"></section>-->
+    <!--<section data-background-image="optaweb-vehicle-routing-Massachusetts-hospitals-65.png"></section>-->
+    <section data-background-image="vehicleRoutingSummit2019_0.png"></section>
+    <section data-background-image="vehicleRoutingSummit2019_1.png"></section>
+    <section data-background-image="vehicleRoutingSummit2019_2.png"></section>
+    <section data-background-image="vehicleRoutingSummit2019_3.png"></section>
 </div></div>
 
     <script src="website/jquery/jquery.min.js"></script>
@@ -65,15 +61,16 @@
 
         Reveal.initialize({
             controls: showControls,
-            progress: true,
-            history: false,
-            center: false,
+            progress: false,
+            history: true,
+            // center: false,
             theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
             transition: Reveal.getQueryHash().transition || 'linear', // page/linear/fade/none
+            backgroundTransition: 'none'
 
-            margin: 0.05,
-            minScale: 0.2,
-            maxScale: 100.0
+            // margin: 0.0,
+            // minScale: 0.2,
+            // maxScale: 100.0
         });
     </script>
     <script src="website/highlight/highlight.js"></script>
