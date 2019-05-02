@@ -14,4 +14,6 @@ public interface GameService {
      boolean isDispatchPaused();
 
      void reset(boolean healAllMachines);
+
+     void setupForStage();
 }

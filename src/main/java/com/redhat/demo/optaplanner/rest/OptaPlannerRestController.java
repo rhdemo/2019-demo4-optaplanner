@@ -54,4 +54,10 @@ public class OptaPlannerRestController {
     public void reset() {
         gameService.reset(false);
     }
+
+    @PostMapping("/setupStage")
+    @ResponseStatus(HttpStatus.OK)
+    public void setupForStage() {
+        gameService.setupForStage();
+    }
 }

@@ -30,7 +30,7 @@ const FIRST_VISIT_STYLE = '#7094db';
 const NEXT_VISIT_STYLE = '#bf8040';
 const BACKGROUND_FOG = '0.6'; //0 = fully saturated image, 1.0 = white background
 
-const DEBUG_ENABLED = false;
+const DEBUG_ENABLED = true;
 
 const ResponseType  = {
     CONNECT : 'CONNECT',
@@ -71,6 +71,7 @@ $(function () {
         e.preventDefault();
     });
     $( "#reset" ).click(function() { reset(); });
+    $( "#setupStage" ).click(function() { setupStage(); });
     $( "#pauze" ).click(function() { pauze(); });
     $( "#unpauze" ).click(function() { unpauze(); });
     $( "#addMechanic" ).click(function() { addMechanic(); });
@@ -204,6 +205,10 @@ function reset() {
     measurements = new Array(CHART_SECONDS_LENGTH);
     lastMeasuredSecond = 0;
     updateChart();
+}
+
+function setupStage() {
+    sendToServer("/app/setupStage");
 }
 
 function sendViaWebSocket(endpoint) {
