@@ -155,6 +155,50 @@ public class GameServiceImpl implements GameService {
         initializeDownstream();
     }
 
+    /**
+     *
+     * New REST method: "prepareForOptaExplanation"
+     * => Button in admin console
+     *
+     * void prepareForOptaExplanation() {
+     *     if (any machine below 80% health) {
+     *         heal to 80% health;
+     *     }
+     *     H = 20% (index 7)
+     *     D = 40% (index 3)
+     *     E = 60% (index 4)
+     *
+     *     // during demo Geof damages C
+     * }
+     */
+    @Override
+    public void setupForStage() {
+        final double HEAL_THRESHOLD = 0.8;
+        int d = 3;
+        int e = 4;
+        int h = 7;
+        for (int i = 0; i < machines.length; i++) {
+            double machineHealth = machines[i].getHealth();
+            if (i == d || i == e || i == h) {
+                continue;
+            }
+            if (machineHealth < HEAL_THRESHOLD) { //heal to 80%
+                bringMachineToHealth(i, HEAL_THRESHOLD);
+            }
+        }
+
+         // bring H to 20%
+        bringMachineToHealth(h, 0.2);
+         // bring D to 40%
+        bringMachineToHealth(d, 0.4);
+         // bring E to 60%
+        bringMachineToHealth(e, 0.6);
+    }
+
+    private void bringMachineToHealth(int machineIndex, double targetHealth) {
+        upstreamConnector.damageMachine(machineIndex, machines[machineIndex].getHealth() - targetHealth);
+    }
+
     @Override
     public boolean isDispatchPaused() {
         return dispatchPaused;
