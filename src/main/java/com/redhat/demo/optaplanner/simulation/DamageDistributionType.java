@@ -36,7 +36,7 @@ public enum DamageDistributionType {
     GAUSS,
     /**
      * With 0.24 total damage per second across 10 machines,
-     * each machine receives 0.02 damage per second on average, except for machine B and J who receive 0.04.
+     * each machine receives 0.02 damage per second on average, except for machine C and J who receive 0.04.
      */
-    DOUBLE_DISTRIBUTION_ON_MACHINE_B_AND_J
+    DOUBLE_DISTRIBUTION_ON_MACHINE_C_AND_J
 }
