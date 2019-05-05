@@ -17,7 +17,7 @@ KNative, TensorFlow, Kafka, Camel, Node.js, Infinispan, Drools and of course Opt
 We wrote a game. A game that simulates a typical manufacturing floor,
 involving machines at assembly lines:
 
-image::RHSummit2019OptaPlanner2MechanicsDance.png[]
+image::RHSummit2019OptaPlanner2MechanicsDance.gif[]
 
 Those machines suffer attrition, which is detected by movements sensors.
 With the help of the audience, we simulate those sensors by capturing accelerometer data from their phones.
@@ -34,5 +34,9 @@ Luckily, OptaPlanner can schedule those mechanics for us, in real-time.
 
 // TODO Link to Musa's and Radovan's blogs
 
-== Mechanic scheduling is a Vehicle Routing Problem
+== It's a Vehicle Routing Problem
+
+
+
+image::mechanicSchedulingIsAVehicleRoutingProblem.png[]
 
