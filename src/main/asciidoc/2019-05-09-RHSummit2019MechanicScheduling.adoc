@@ -1,4 +1,4 @@
-= Scheduling mechanics to fix machines: can OptaPlanner keep up with the audience?
+= Mechanic scheduling: can OptaPlanner keep up with a keynote audience of thousands?
 :page-interpolate: true
 :awestruct-author: ge0ffrey
 :awestruct-layout: blogPostBase
@@ -7,7 +7,7 @@
 
 This year, my team and I participated in the Red Hat Summit keynote.
 In front of 8000 people, we demonstrated real-time scheduling,
-reacting on input that ultimately came from the audience's smartphones.
+reacting on input coming from the audience's smartphones.
 In the past 2 months, we created this application together with the other middleware teams
 and under the excellent guidance of Burr Sutter.
 It integrates various technologies
