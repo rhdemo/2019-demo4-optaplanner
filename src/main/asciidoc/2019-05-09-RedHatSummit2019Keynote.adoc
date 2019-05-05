@@ -1,0 +1,38 @@
+= Scheduling mechanics to fix machines: can OptaPlanner keep up with the audience?
+:page-interpolate: true
+:awestruct-author: ge0ffrey
+:awestruct-layout: blogPostBase
+:awestruct-tags: [vehicle routing, maintenance scheduling, integration, production, benchmark]
+:awestruct-share_image_filename: RHSummit2019OptaPlanner2MechanicsDance.png
+
+This year, my team and I participated in the Red Hat Summit keynote.
+In front of 8000 people, we demonstrated real-time scheduling,
+reacting on input that ultimately came from the audience's smartphones.
+In the past 2 months, we created this application together with the other middleware teams
+and under the excellent guidance of Burr Sutter.
+It integrates various technologies
+such as Android/Iphone accelerometers, OpenShift/Kubernetes, Quarkus,
+KNative, TensorFlow, Kafka, Camel, Node.js, Infinispan, Drools and of course OptaPlanner.
+
+We wrote a game. A game that simulates a typical manufacturing floor,
+involving machines at assembly lines:
+
+image::RHSummit2019OptaPlanner2MechanicsDance.png[]
+
+Those machines suffer attrition, which is detected by movements sensors.
+With the help of the audience, we simulate those sensors by capturing accelerometer data from their phones.
+_When things go shakey, things go breaky._
+So as they shake their phone - or do more complex gestures - their machines receive damage.
+Each part of the audience is connected to one machine,
+and if the health of their machine drops to zero, it falls apart.
+
+Now, those machines require maintenance before they break, which is where OptaPlanner comes in.
+There are only 2 or 3 mechanics to fix them.
+And while mechanics are traveling to a machine or fixing it, all machines continue to lose health.
+Deciding the order in which to fix them, as damage comes in concurrently, is though.
+Luckily, OptaPlanner can schedule those mechanics for us, in real-time.
+
+// TODO Link to Musa's and Radovan's blogs
+
+== Mechanic scheduling is a Vehicle Routing Problem
+
