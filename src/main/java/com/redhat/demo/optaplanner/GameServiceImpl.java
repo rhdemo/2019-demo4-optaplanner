@@ -156,43 +156,20 @@ public class GameServiceImpl implements GameService {
     }
 
     /**
-     *
-     * New REST method: "prepareForOptaExplanation"
-     * => Button in admin console
-     *
-     * void prepareForOptaExplanation() {
-     *     if (any machine below 80% health) {
-     *         heal to 80% health;
-     *     }
-     *     H = 20% (index 7)
-     *     D = 40% (index 3)
+     *     H = 40% (index 7)
+     *     D = 30% (index 3)
      *     E = 60% (index 4)
      *
-     *     // during demo Geof damages C
-     * }
+     *     Other machines will be between 80% and 100%.
+     *
+     *     During the demo, Geof damages C for 50% and OptaPlanner will reschedule
      */
     @Override
     public void setupForStage() {
-        final double HEAL_THRESHOLD = 0.8;
-        int d = 3;
-        int e = 4;
-        int h = 7;
-        for (int i = 0; i < machines.length; i++) {
-            double machineHealth = machines[i].getHealth();
-            if (i == d || i == e || i == h) {
-                continue;
-            }
-            if (machineHealth < HEAL_THRESHOLD) { //heal to 80%
-                bringMachineToHealth(i, HEAL_THRESHOLD);
-            }
+        final double HEAL_THRESHOLD[] = new double [] {0.8, 0.87, 0.93, 0.30, 0.60, 0.95, 0.81, 0.40, 0.90, 0.89};
+        for (int i = 0; i < appConfiguration.getMachinesOnlyLength(); i++) {
+            bringMachineToHealth(i, HEAL_THRESHOLD[i]);
         }
-
-         // bring H to 20%
-        bringMachineToHealth(h, 0.2);
-         // bring D to 40%
-        bringMachineToHealth(d, 0.4);
-         // bring E to 60%
-        bringMachineToHealth(e, 0.6);
     }
 
     private void bringMachineToHealth(int machineIndex, double targetHealth) {
