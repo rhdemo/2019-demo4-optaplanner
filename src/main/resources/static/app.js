@@ -49,6 +49,7 @@ const MechanicState = {
 };
 
 const CHART_SECONDS_LENGTH = 300;
+
 function Measurement(index, averageMachineHealth, minimumMachineHealth) {
     this.index = index;
     this.averageMachineHealth = averageMachineHealth;
@@ -65,6 +66,8 @@ var xRange;
 var yRange;
 var averageMachineHealthPoint;
 var minimalMachineHealthPoint;
+var optaplannerUsername;
+var optaplannerPassword;
 
 $(function () {
     $("form").on('submit', function (e) {
@@ -83,6 +86,9 @@ $(function () {
 });
 
 function connect() {
+    console.log('Connecting: ');
+    optaplannerUsername = prompt("Enter OptaPlanner username");
+    optaplannerPassword = prompt("Enter OptaPlanner password");
     initChart();
     updateChart();
     var socket = new SockJS('/roster-websocket');
@@ -100,6 +106,9 @@ function connect() {
         'type': 'GET',
         'url': "/simulation/damageDistributionTypes",
         'contentType': 'application/json',
+        headers: {
+            "Authorization": "Basic " + btoa(optaplannerUsername + ":" + optaplannerPassword)
+        },
         'success': function (damageDistributionTypes, status, jqXHR) {
             var damageDistributionTypeElement = document.getElementById('damageDistributionType');
             for (var i = 0; i < damageDistributionTypes.length; i++) {
@@ -216,7 +225,31 @@ function sendViaWebSocket(endpoint) {
 }
 
 function postAndForget(endpoint) {
-    $.post(endpoint, {}, function(data, status, jqXHR) { console.log('sent post to ' + endpoint) });
+    $.ajax
+    ({
+        type: "POST",
+        url: endpoint,
+        headers: {
+            "Authorization": "Basic " + btoa(optaplannerUsername + ":" + optaplannerPassword)
+        },
+        success: function(data, status, jqXHR) {
+            console.log('sent post to ' + endpoint)
+        }
+    });
+}
+
+function postWithDataAndForget(url, data, successMessage) {
+    $.ajax({
+        type: 'POST',
+        url,
+        contentType: 'application/json',
+        headers: { "Authorization": "Basic " + btoa(optaplannerUsername + ":" + optaplannerPassword) },
+        data,
+        dataType: 'json',
+        success: function(data, status, jqXHR) {
+            console.log(successMessage);
+        }
+    });
 }
 
 function disconnect() {
@@ -256,16 +289,10 @@ function startSimulation() {
     var totalDamagePerSecond = totalDamagePerSecondElement.value;
     var damageDistributionTypeElement = document.getElementById('damageDistributionType');
     var damageDistributionType = damageDistributionTypeElement.value;
-    $.ajax({
-        'type': 'POST',
-        'url': "/simulation/start",
-        'contentType': 'application/json',
-        'data': JSON.stringify({ "totalDamagePerSecond" : totalDamagePerSecond, "damageDistributionType" : damageDistributionType }),
-        'dataType': 'json',
-        'success': function(data, status, jqXHR) {
-            console.log('sent post start simulation');
-        }
-    });
+    postWithDataAndForget("/simulation/start",
+        JSON.stringify({ "totalDamagePerSecond" : totalDamagePerSecond, "damageDistributionType" : damageDistributionType }),
+        'sent post start simulation');
+
     showSimulation(true);
     $( "#benchmarkSimulationDetails" ).text((totalDamagePerSecond * 100).toFixed(0) + "% damage per second under " + damageDistributionType.toLowerCase() + " distribution");
 }
@@ -325,25 +352,15 @@ function distance(x1, y1, x2, y2) {
 }
 
 function dealDamage(machineIndex) {
-    $.ajax({
-            'type': 'POST',
-            'url': "/simulation/damage",
-            'contentType': 'application/json',
-            'data': JSON.stringify({ "machineIndex" : machineIndex, "amount" : DAMAGE_AMOUNT }),
-            'dataType': 'json',
-            'success': function(data, status, jqXHR) { console.log('sent post damage machine ' + machineIndex) }
-    });
+    postWithDataAndForget("/simulation/damage",
+        JSON.stringify({ "machineIndex" : machineIndex, "amount" : DAMAGE_AMOUNT }),
+        'sent post damage machine ' + machineIndex);
 }
 
 function heal(machineIndex) {
-    $.ajax({
-            'type': 'POST',
-            'url': "/simulation/heal",
-            'contentType': 'application/json',
-            'data': JSON.stringify({ "machineIndex" : machineIndex }),
-            'dataType': 'json',
-            'success': function(data, status, jqXHR) { console.log('sent post heal machine ' + machineIndex) }
-     });
+    postWithDataAndForget("/simulation/heal",
+        JSON.stringify({ "machineIndex" : machineIndex }),
+        'sent post heal machine ' + machineIndex);
 }
 
 function processResponse(response) {
