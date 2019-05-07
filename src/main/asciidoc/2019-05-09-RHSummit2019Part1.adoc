@@ -14,22 +14,45 @@ It integrates various technologies
 such as Android/Iphone accelerometers, OpenShift/Kubernetes, Quarkus,
 KNative, TensorFlow, Kafka, Camel, Node.js, Infinispan, Drools and of course OptaPlanner.
 
-We wrote a game. A game that simulates a typical manufacturing floor,
-involving machines at assembly lines:
+We wrote a simulation of a typical manufacturing floor, involving machines at assembly lines.
+This led to an interesting conversation when I first showed it to my wife:
+
+""
+Look, darling. This is the keynote demo we've been working on the past few weeks.
+""
+
+""
+That looks like a video-game, hun. +
+Is that Mario and Luigi running around?
+""
+
+""
+Well, notice how OptaPlanner optimizes their traveling time so they can spend more time fixing machines.
+""
+
+""
+Are you really going to show this to 8000 business people?
+""
+
+""
+Yes, of course. It's going to be beautiful.
+""
+
+This is how it turned out:
 
 image::RHSummit2019OptaPlanner2MechanicsDance.gif[]
 
-Those machines suffer attrition, which is detected by movements sensors.
-With the help of the audience, we simulate those sensors by capturing accelerometer data from their phones.
+The machines (A-J) suffer attrition, which is detected by movements sensors.
+With the help of the audience, we simulate those sensors, by capturing accelerometer data from their phones.
 _When things go shaky, things go breaky._
 So as they shake their phone - or do more complex gestures - their machines receive damage.
-Each part of the audience is connected to one machine,
+Each part of the audience is damaging one machine,
 and if the health of their machine drops to zero, it falls apart.
 
 Now, those machines require maintenance before they break, which is where OptaPlanner comes in.
 There are only 2 or 3 mechanics to fix them.
 And while mechanics are traveling to a machine or fixing it, all machines continue to lose health.
-Deciding the order in which to fix them, as damage comes in concurrently, is though.
+Deciding the order in which to fix them, as damage comes in concurrently, is difficult.
 Luckily, OptaPlanner can schedule those mechanics for us, in real-time.
 
 == The planning challenge
@@ -43,18 +66,18 @@ non-uniform damage
 
 == It's just a Vehicle Routing Problem
 
-In the Operations Research world, this problem is known as the Vehicle Routing Problem (VRP),
+In the academic Operations Research world, this problem is known as the Vehicle Routing Problem (VRP),
 in which we need to send a number vehicles (such as trucks) to a number of locations:
 
 image::mechanicSchedulingIsAVehicleRoutingProblem.png[]
 
-Their are the same problem, with a few variations on the constraints.
+It's the same problem, with a few variations on the constraints.
 
 Now, OptaPlanner is really good at optimizing vehicle routing problems at scale:
 *it saves some of our customers hundreds of millions of dollars per year*
 by reducing their overall travel time by 15% or more.
-This also leads to heavy reductions in fuel consumption,
-decreasing their carbon footprint, which is a win-win for the environment too!
+This also heavily reduces their fuel consumption,
+decreases their carbon footprint, which is great for the environment too!
 
 https://www.optaplanner.org/learn/useCases/vehicleRoutingProblem.html[Learn more about optimizing VRP's with OptaPlanner]
 or take a look at Jiri's latest demo of the https://github.com/kiegroup/optaweb-vehicle-routing[optaweb-vehicle-routing] reference architecture:
@@ -66,12 +89,11 @@ or take a look at Jiri's latest demo of the https://github.com/kiegroup/optaweb-
 == The real challenges
 
 Implementing this variation of vehicle routing was pretty straightforward at first,
-but we faced bigger challenges to get this interactive demonstration running well enough:
+but we faced bigger challenges to get this interactive demonstration running well enough.
+After all, we couldn't risk that it crashes during the keynote, in front of the audience
+(including all our bosses, all the way up to our CEO, Jim Whitehurst).
 
 * To learn more about *our architecture and the integration with all those other technologies*,
 link::2019-05-09-RHSummit2019Part2.html[read Musa's article].
 * To learn more about the scaling challenges and *the benchmarks on simulations and load tests we ran*,
 link::2019-05-09-RHSummit2019Part3.html[read Radovan's article].
-
-After all, we couldn't risk that it crashed in front of 8000 people
-(including all our bosses, all the way up to our CEO).
