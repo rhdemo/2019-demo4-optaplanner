@@ -1,4 +1,4 @@
-= Mechanic scheduling: can OptaPlanner keep up with a keynote audience of thousands?
+= Mechanic scheduling (part 1): can OptaPlanner keep up with a keynote audience of thousands?
 :page-interpolate: true
 :awestruct-author: ge0ffrey
 :awestruct-layout: blogPostBase
@@ -21,7 +21,7 @@ image::RHSummit2019OptaPlanner2MechanicsDance.gif[]
 
 Those machines suffer attrition, which is detected by movements sensors.
 With the help of the audience, we simulate those sensors by capturing accelerometer data from their phones.
-_When things go shakey, things go breaky._
+_When things go shaky, things go breaky._
 So as they shake their phone - or do more complex gestures - their machines receive damage.
 Each part of the audience is connected to one machine,
 and if the health of their machine drops to zero, it falls apart.
@@ -32,13 +32,6 @@ And while mechanics are traveling to a machine or fixing it, all machines contin
 Deciding the order in which to fix them, as damage comes in concurrently, is though.
 Luckily, OptaPlanner can schedule those mechanics for us, in real-time.
 
-In this article, I 'll focus on the planning challenge. However this just part of the story:
-
-* To learn more about *our architecture and the integration with other technologies*,
-link::2019-05-09-RHSummit2019Part2.html[read Musa's article].
-* To learn more about scaling challenges and *the benchmarks as well as the load tests we ran*,
-link::2019-05-09-RHSummit2019Part3.html[read Radovan's article].
-
 == The planning challenge
 
 TODO shifts over time svg
@@ -46,14 +39,39 @@ explain input constraints
 
 non-uniform damage
 
-TODO Embed youtube video “RH Summit 2019 optaplanner - 2 mechanics - Gauss 0.16 DPS.flv” https://github.com/rhdemo/2019-demo4-optaplanner/blob/master/blog/RH%20Summit%202019%20optaplanner%20-%202%20mechanics%20-%20Gauss%200.16%20DPS.flv
+*TODO* Embed youtube video “RH Summit 2019 optaplanner - 2 mechanics - Gauss 0.16 DPS.flv” https://github.com/rhdemo/2019-demo4-optaplanner/blob/master/blog/RH%20Summit%202019%20optaplanner%20-%202%20mechanics%20-%20Gauss%200.16%20DPS.flv
 
-== It's a Vehicle Routing Problem
+== It's just a Vehicle Routing Problem
 
-In the academic world, this is known as a vehicle routing problem:
+In the Operations Research world, this problem is known as the Vehicle Routing Problem (VRP),
+in which we need to send a number vehicles (such as trucks) to a number of locations:
 
 image::mechanicSchedulingIsAVehicleRoutingProblem.png[]
 
-TODO JIRI's video of optaweb-vehicle-routing
+Their are the same problem, with a few variations on the constraints.
 
+Now, OptaPlanner is really good at optimizing vehicle routing problems at scale:
+*it saves some of our customers hundreds of millions of dollars per year*
+by reducing their overall travel time by 15% or more.
+This also leads to heavy reductions in fuel consumption,
+decreasing their carbon footprint, which is a win-win for the environment too!
 
+https://www.optaplanner.org/learn/useCases/vehicleRoutingProblem.html[Learn more about optimizing VRP's with OptaPlanner]
+or take a look at Jiri's latest demo of the https://github.com/kiegroup/optaweb-vehicle-routing[optaweb-vehicle-routing] reference architecture:
+
++++
+<iframe width="853" height="480" src="https://www.youtube.com/embed/ylPEIf7Mc2M" frameborder="0" allowfullscreen></iframe>
++++
+
+== The real challenges
+
+Implementing this variation of vehicle routing was pretty straightforward at first,
+but we faced bigger challenges to get this interactive demonstration running well enough:
+
+* To learn more about *our architecture and the integration with all those other technologies*,
+link::2019-05-09-RHSummit2019Part2.html[read Musa's article].
+* To learn more about the scaling challenges and *the benchmarks on simulations and load tests we ran*,
+link::2019-05-09-RHSummit2019Part3.html[read Radovan's article].
+
+After all, we couldn't risk that it crashed in front of 8000 people
+(including all our bosses, all the way up to our CEO).
