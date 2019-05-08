@@ -20,11 +20,7 @@ read link::2019-05-09-RHSummit2019Part1.html[Part 1 by Geoffrey].
 image::rhdemo2019SystemDiagram.png[link="rhdemo2019SystemDiagram.png"]
 To simulate damage source, we created a mobile app whose users signalize damage to machines by shaking their phones.
 The shaking data is sent to a web server that filters the bad data using TenserFlow service, then exports resulting
-predictions to AMQ.
-
-??? really? we don't do it
-Since we need to prioritize fixing the machines that are more important to keep running based on customer orders
-and machines maintenance history, we used Red Hat Integration to consume AMQ Streams, process the data and put the result
+predictions to AMQ streams. These predictions are consumed by Red Hat Integration, which process the data and put the result
 in Infinispan. Machine healths and mechanics states are also stored in Infinispan.
 
 Lastly, given the data in Infinispan, we need to decide how to schedule repairs optimally to reduce travel time and failure costs.
