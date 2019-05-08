@@ -1,8 +1,9 @@
 = Mechanic scheduling (part 3): simulation and load testing
 :page-interpolate: true
+:awestruct-hidden: true
 :awestruct-author: rsynek
 :awestruct-layout: blogPostBase
-:awestruct-tags: [vehicle routing, maintenance scheduling, integration, production, benchmark, simulation, load testing]
+:awestruct-tags: [production, benchmark, algorithm]
 :awestruct-share_image_filename: RHSummit2019OptaPlanner2MechanicsDance.png
 
 The goals of the RH Summit 2019 Keynote Demo was showing multiple Red Hat products working together on OpenShift,

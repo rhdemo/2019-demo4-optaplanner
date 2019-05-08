@@ -1,8 +1,9 @@
 = Mechanic scheduling (part 1): can OptaPlanner keep up with a keynote audience of thousands?
 :page-interpolate: true
+:awestruct-hidden: true
 :awestruct-author: ge0ffrey
 :awestruct-layout: blogPostBase
-:awestruct-tags: [vehicle routing, maintenance scheduling, integration, production, benchmark]
+:awestruct-tags: [useCase, vehicle routing, maintenance scheduling, insight]
 :awestruct-share_image_filename: RHSummit2019OptaPlanner2MechanicsDance.png
 
 This year, my team and I participated in the Red Hat Summit keynote.
@@ -12,7 +13,7 @@ In the past 2 months, we created this application together with the other middle
 and under the excellent guidance of Burr Sutter.
 It integrates various technologies
 such as Android/Iphone accelerometers, OpenShift/Kubernetes, Quarkus,
-KNative, TensorFlow, Kafka, Camel, Node.js, Infinispan, Drools and of course OptaPlanner.
+KNative, TensorFlow, Kafka/Strimzi, Camel, Node.js, Godot, Infinispan, Drools and of course OptaPlanner.
 
 We wrote a simulation of a typical manufacturing floor, involving machines at assembly lines.
 This led to an interesting conversation when I first showed it to my wife:
