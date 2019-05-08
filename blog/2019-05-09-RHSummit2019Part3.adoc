@@ -108,7 +108,7 @@ image::gauss_1_mech_8_damage.png[]
 image::gauss_1_mech_10_damage.png[]
 
 8% damage per second didn’t lead to any single machine being broken. With 10% damage per second, after 100 seconds,
-there is a first broken machine.
+there is the first broken machine.
 
 Let’s take a look what amount of damage two mechanics can handle.
 
@@ -128,7 +128,7 @@ blindly hope that the amount of damage mechanics can handle is proportional to t
 
 == Lessons learned from load testing
 
-The purpose of load testing is to be able to tell if the system under test is able to handle certain load. If there are
+The purpose of load testing is to tell if the system under test is able to handle certain load. If there are
 requirements regarding expected throughput, these can be verified based on the results. With no such requirements,
 load testing can help finding limits of the system in terms of load.
 
@@ -167,7 +167,7 @@ about machines healths to be retrieved from Infinispan.
 Once we are supposed to present such a complex platform in front of several thousands of people, we need to avoid
 being surprised. To minimize the risk, we gather as much data as possible to confirm our expectation, our hypothesis.
 Both the simulations and load testing proved to be invaluable source of information.
-They helped us understand what we could expect and build a good level of confidence about what we wanted to show.
+They helped us understand what we could expect and built a good level of confidence about what we wanted to show.
 
 Let me thank Guilherme Baufaker Rego for his great job on load testing the platform.
 
