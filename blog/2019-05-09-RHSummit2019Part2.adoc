@@ -7,16 +7,11 @@
 
 
 The more smart devices are connected to the internet, the more in need of smarter systems we are.
-These systems should monitor, automate and maintain these devices efficiently.
+These systems should monitor, automate and maintain these devices in an robust and efficient way.
 
 In this demo, we simulate a factory plant containing multiple pieces of machinery. The system we built monitors these machines
-and automatically dispatches mechanics to fix them in a smart way.
-
-* To learn more about the use case and challenge,
-read https://www.optaplanner.org/blog/2019/05/09/2019-05-09-RHSummit2019Part1.html[Geoffrey’s article].
-
-* To learn more about scaling challenges and the benchmarks as well as the load tests we ran,
-read https://www.optaplanner.org/blog/2019/05/09/2019-05-09-RHSummit2019Part3.html[Radovan’s article].
+and automatically dispatches mechanics to fix them in a smart way. To learn more about the use case and challenge,
+read https://www.optaplanner.org/blog/2019/05/09/2019-05-09-RHSummit2019Part1.html[Part 1 by Geoffrey].
 
 
 == Overall system architecture
@@ -50,7 +45,7 @@ Therefore, a separate keeper of time thread was used. It submits the planning pr
 submits machines health changes as problemFactChanges to Solver thread, send mechanic dispatches,
 and updates mechanics future visits in Infinispan.
 
-image::KeeperOfTimeVsSolver.png[link="KeeperOfTimeVsSolver.png"]
+image::keeperOfTimeVsSolver.png[link="keeperOfTimeVsSolver.png"]
 In the diagram above, you see the `tick` every 40ms. This value was chosen to address the two pitfalls mentioned above.
 Let’s unravel how the Keeper of Time accomplishes scheduling mechanics:
 
@@ -103,8 +98,5 @@ image::mechanicsOverTime.png[link="mechanicsOverTime.png"]
 In conclusion, the two main challenges in designing the architecture were
 adapting the inner workings to accommodate other services’ behaviour and maintaining consistency with other services.
 
-== Related material
-
-https://www.optaplanner.org/blog/2019/05/09/2019-05-09-RHSummit2019Part1.html[Mechanic Scheduling (Part 1)]
-
-https://www.optaplanner.org/blog/2019/05/09/2019-05-09-RHSummit2019Part1.html[Mechanic Scheduling (Part 3)]
+* To learn more about scaling challenges and the benchmarks as well as the load tests we ran,
+read https://www.optaplanner.org/blog/2019/05/09/2019-05-09-RHSummit2019Part3.html[Part 3 by Radovan].
