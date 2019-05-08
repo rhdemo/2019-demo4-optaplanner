@@ -45,7 +45,7 @@ image::RHSummit2019OptaPlanner2MechanicsDance.gif[]
 The machines (A-J) suffer attrition, which is detected by movements sensors.
 With the help of the audience, we simulate those sensors, by capturing accelerometer data from their phones.
 _When things go shaky, things go breaky._
-So as they shake their phone - or do more complex gestures - their machines receive damage.
+So as the audience shake their phone - or do more complex gestures - their machines receive damage.
 Each part of the audience is damaging one machine,
 and if the health of their machine drops to zero, it falls apart.
 
@@ -53,7 +53,8 @@ Now, those machines require maintenance before they break, which is where OptaPl
 There are only 2 or 3 mechanics to fix them.
 And while mechanics are traveling to a machine or fixing it, all machines continue to lose health.
 Deciding the order in which to fix them, as damage comes in concurrently, is difficult.
-Luckily, OptaPlanner can schedule those mechanics for us, in real-time, as shown in this video:
+Luckily, OptaPlanner schedules those mechanics for us.
+It reacts to health changes in real-time, as shown in this video:
 
 *TODO* Embed youtube video “RH Summit 2019 optaplanner - 2 mechanics - Gauss 0.16 DPS.flv” https://github.com/rhdemo/2019-demo4-optaplanner/blob/master/blog/RH%20Summit%202019%20optaplanner%20-%202%20mechanics%20-%20Gauss%200.16%20DPS.flv
 
@@ -76,7 +77,8 @@ These 2 constraints are in competition with each other. They lead to different s
 image::mechanicsFixTheWorstMachineFirst.png[]
 
 What's less obvious is how this impacts the _makespan_,
-which is the amount of time the mechanics need to fix all the machines once.
+which is the amount of time the mechanics need to fix all the machines one time.
+A longer makespan reduces productivity:
 
 image::mechanicsFixTheWorstMachineFirstMakespan.png[]
 
