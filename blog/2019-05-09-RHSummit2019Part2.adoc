@@ -98,3 +98,5 @@ adapting the inner workings to accommodate other services’ behaviour and maint
 
 * To learn more about scaling challenges and the benchmarks as well as the load tests we ran,
 read link::2019-05-09-RHSummit2019Part3.html[Part 3 by Radovan].
+
+Let me thank to Ryan Emerson, Galder Zamarreno and Christopher Chase for their great work and help on Infinispan integration.
