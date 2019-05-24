@@ -120,3 +120,35 @@ docker login quay.io/redhatdemo
 If you follow security protocols and have different passwords for both services,
 run `docker pull fabric8/java-centos-openjdk8-jdk:1.5` first with the docker.io credentials
 and then run the `mvn` command with the quay credentials.
+
+
+=== Running Mechanical Scheduling demo only (optaplanner, infinispan, webgame server & dashboard UI)
+
+1. Clone cluster-setup repostiory:
+
+  git clone git@github.com:rhdemo/2019-demo4-cluster-setup.git
+
+2. Copy the environment variables file:
+
+  cp .env.example .env
+
+3. Change the first four OC* variables to match your oc cluster info
+4. In .env under # Frontend, add `FRONTEND_DEV=true` and change `ADMIN_PASSWORD` which will be required
+to access the admin UI.
+5. Change the number of datagrid pods from 10 to 1 by changing the value of `INSTANCES` variable in `datagrid/deploy.sh`
+6. Remove all resources requests from projects files so the demo can run on a cluster with limited resources.
+These files are:
+** `optaplanner/optaplanner-demo-template.yaml`
+** `datagrid/datagrid-service-custom-xml.yaml`
+** `frontend/*.yml`
+
+For example, in `optaplanner/optaplanner-demo-template.yaml` line 60 specifies the cpu and memory requests as 4 cpu cores and 4GB of RAM.
+
+7. Now you will be able to deploy the demo apps, run:
+
+  make datagrid
+  make optaplanner
+  make frontend
+
+8. Wait until the pods are running, then you will be able to access the admin UI at https://admin-web-game-demo.127.0.0.1.nip.io
+using the password that you set in step 4 with the variable `ADMIN_PASSWORD`.
